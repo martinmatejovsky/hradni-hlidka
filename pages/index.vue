@@ -1,9 +1,11 @@
 <template>
   <h2>Základní výpočet, jestli je uživatel v herním polygonu</h2>
-  <p>Lat: {{ playerLocation.latitude }}</p>
-  <p>Lon: {{ playerLocation.longitude }}</p>
+  <p>Lat, lon:</p>
+  <p>
+    {{ playerLocation.latitude }} {{ playerLocation.longitude }}</p>
   <p>Accur: {{ playerLocation.accuracy }}</p>
   <p>Is inside? {{ isInsideGameArea }}</p>
+  <p>Geolocation change fired: {{ geolocationFiredNumberTimes}}</p>
 </template>
 
 <script setup lang="ts">
@@ -16,21 +18,18 @@ const playerLocation = ref({
   longitude: undefined,
   accuracy: undefined,
 } as Coordinates)
-
 const isInsideGameArea = ref(false)
-
 const geolocationOptions = {
   enableHighAccuracy: true,
   timeout: 5000,
 }
-
+const geolocationFiredNumberTimes = ref(0)
 const gameArea = ref ([
   {latitude: 50.1918117, longitude: 12.7414242},
   {latitude: 50.1904517, longitude: 12.7405606},
   {latitude: 50.1904036, longitude: 12.7443800},
   {latitude: 50.1917397, longitude: 12.7443103},
 ] as Coordinates[])
-
 function isPointInsidePolygon(point: Coordinates, gameArea: Coordinates[]) {
   const x = point.latitude;
   const y = point.longitude;
@@ -55,9 +54,13 @@ function isPointInsidePolygon(point: Coordinates, gameArea: Coordinates[]) {
   return isInside;
 }
 
+watch(playerLocation, () => {
+  geolocationFiredNumberTimes.value++
+})
+
 onMounted(() => {
   if ('geolocation' in navigator) {
-    navigator.geolocation.getCurrentPosition( position => {
+    navigator.geolocation.watchPosition( position => {
       playerLocation.value.latitude = position.coords.latitude
       playerLocation.value.longitude = position.coords.longitude
       playerLocation.value.accuracy = position.coords.accuracy
