@@ -9,7 +9,7 @@ export default defineNuxtConfig({
   modules: [
     async (options, nuxt) => {
       nuxt.hooks.hook('vite:extendConfig', config => config.plugins.push(
-          vuetify()
+        vuetify()
       ))
     },
     (_options, nuxt) => {
@@ -19,6 +19,15 @@ export default defineNuxtConfig({
       })
     },
   ],
+  app: {
+    head: {
+        title: 'Hradní hlídka',
+        meta: [
+          { charset: 'utf-8' },
+          { name: 'description', content: 'Hra pod otevřeným nebem' },
+        ],
+      },
+  },
   vite: {
     vue: {
       template: {
