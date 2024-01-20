@@ -3,14 +3,15 @@
   <p>Lat, lon:</p>
   <p>
     {{ playerLocation.latitude }} {{ playerLocation.longitude }}</p>
-  <p>Accur: {{ playerLocation.accuracy }}</p>
-  <p>Is inside? {{ isInsideGameArea }}</p>
-  <p>Geolocation change fired: {{ geolocationFiredNumberTimes}}</p>
+  <p>Accuracy: {{ playerLocation.accuracy }}</p>
+  <p>Is inside?</p>
+  <p class="text-h1 text-red">{{ isInsideArea }}</p>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import type { Coordinates } from '~/types/CustomTypes'
+import {ref, onMounted, computed} from 'vue'
+import type { Coordinates } from '../types/CustomTypes'
+import { gameAreas } from '../data/gameAreas'
 
 const errorMessage = ref(null as string | null)
 const playerLocation = ref({
@@ -18,18 +19,10 @@ const playerLocation = ref({
   longitude: undefined,
   accuracy: undefined,
 } as Coordinates)
-const isInsideGameArea = ref(false)
 const geolocationOptions = {
   enableHighAccuracy: true,
   timeout: 5000,
 }
-const geolocationFiredNumberTimes = ref(0)
-const gameArea = ref ([
-  {latitude: 50.1918117, longitude: 12.7414242},
-  {latitude: 50.1904517, longitude: 12.7405606},
-  {latitude: 50.1904036, longitude: 12.7443800},
-  {latitude: 50.1917397, longitude: 12.7443103},
-] as Coordinates[])
 function isPointInsidePolygon(point: Coordinates, gameArea: Coordinates[]) {
   const x = point.latitude;
   const y = point.longitude;
@@ -53,9 +46,15 @@ function isPointInsidePolygon(point: Coordinates, gameArea: Coordinates[]) {
 
   return isInside;
 }
-
-watch(playerLocation, () => {
-  geolocationFiredNumberTimes.value++
+const insideAreaName = computed(() => {
+  return gameAreas.filter(gameArea => {
+    return isPointInsidePolygon(playerLocation.value, gameArea.areaCornerCoordinates)
+  }).map(gameArea => {
+    return gameArea.areaName
+  }).join(', ')
+})
+const isInsideArea = computed(() => {
+  return insideAreaName.value || '-'
 })
 
 onMounted(() => {
@@ -64,8 +63,6 @@ onMounted(() => {
       playerLocation.value.latitude = position.coords.latitude
       playerLocation.value.longitude = position.coords.longitude
       playerLocation.value.accuracy = position.coords.accuracy
-
-      isInsideGameArea.value = isPointInsidePolygon(playerLocation.value, gameArea.value);
     }, function(error) {
       errorMessage.value = error.message
     }, geolocationOptions);
