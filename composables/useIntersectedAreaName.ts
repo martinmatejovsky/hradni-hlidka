@@ -3,14 +3,20 @@ import {gameAreas} from "~/data/gameAreas";
 import {useIsPositionInsidePolygon} from "./useIsInsidePolygon";
 import type {PlayerCoordinates} from "~/types/CustomTypes";
 
-export function useIntersectedAreaName(playerLocationValue: PlayerCoordinates) {
-    const intersectedAreaName = computed(() => {
-        return gameAreas.filter(gameArea  => {
-            return useIsPositionInsidePolygon(playerLocationValue, gameArea.areaCornerCoordinates)
-        }).map(gameArea => {
-            return gameArea.areaName
-        }).join(', ')
-    })
+export function useIntersectedAreaName(playerLocationValue: PlayerCoordinates | null): string {
+    return computed((): string => {
+        if (!playerLocationValue) {
+            return 'Není k dispozici';
+        }
 
-    return {intersectedAreaName}
+        const foundAres = gameAreas.filter(gameArea => {
+            return useIsPositionInsidePolygon(playerLocationValue, gameArea.areaCornerCoordinates);
+        });
+
+        if (foundAres.length === 0) {
+            return 'Není v žádném polygonu';
+        } else {
+            return foundAres[0].areaName;
+        }
+    }).value;
 }

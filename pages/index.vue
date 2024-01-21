@@ -5,7 +5,7 @@
     {{ playerLocation?.latitude || 'zařízení nerozpoznává polohu' }} {{ playerLocation?.longitude }}</p>
   <p>Accuracy: {{ playerAccuracy }}</p>
   <p>Is inside?</p>
-  <p class="text-h1 text-red">{{ nameOfIntersectedArea }}</p>
+  <p class="text-h2 text-red">{{ nameOfIntersectedArea }}</p>
 </template>
 
 <script setup lang="ts">
@@ -15,19 +15,13 @@ import { useIntersectedAreaName } from '~/composables/useIntersectedAreaName'
 import { usePlayerLocationAccuracy } from '~/composables/usePlayerLocationAccuracy'
 
 const errorMessage = ref(null as string | null)
-const playerLocation = ref(undefined as PlayerCoordinates | undefined)
-const playerLocationValue = playerLocation.value;
-const playerAccuracy = usePlayerLocationAccuracy(playerLocationValue)
+const playerLocation = ref<PlayerCoordinates | null>(null)
+const playerAccuracy = computed(() => usePlayerLocationAccuracy(playerLocation.value))
 const geolocationOptions = {
   enableHighAccuracy: true,
-  timeout: 5000,
+  timeout: 10000,
 }
-
-const nameOfIntersectedArea = computed(() => {
-  return typeof playerLocationValue !== 'undefined'
-    ? useIntersectedAreaName(playerLocationValue)
-    : '-'
-})
+const nameOfIntersectedArea = computed(() => useIntersectedAreaName(playerLocation.value))
 
 onMounted(() => {
   if ('geolocation' in navigator) {
@@ -41,7 +35,7 @@ onMounted(() => {
       errorMessage.value = error.message
     }, geolocationOptions);
   } else {
-    console.error('Geolokace není podporována');
+    console.error('Geolokace není podporována')
   }
 })
 </script>
