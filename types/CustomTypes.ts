@@ -1,5 +1,6 @@
 export type Coordinates = {
-    latitude: number | undefined,
-    longitude: number | undefined,
-    accuracy?: number | undefined,
+    latitude: number,
+    longitude: number,
 }
+
+export type PlayerCoordinates = Coordinates & {accuracy: number}
