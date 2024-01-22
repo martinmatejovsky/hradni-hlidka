@@ -5,11 +5,9 @@ const playerLocation = ref<PlayerCoordinates | null>(null)
 const geolocationWatcher = ref(0)
 const geolocationOptions = {
     enableHighAccuracy: true,
-    timeout: 5000,
 }
 const geolocationErrorMessage = ref('' as string)
 const initializeGeolocationWatcher = ():void => {
-    console.log('initializeGeolocationWatcher ++')
     if ('geolocation' in navigator) {
         geolocationWatcher.value = navigator.geolocation.watchPosition( position => {
             playerLocation.value = {
@@ -17,10 +15,8 @@ const initializeGeolocationWatcher = ():void => {
                 longitude: position.coords.longitude,
                 accuracy: position.coords.accuracy
             }
-        }, function(error) {
-            console.log(error.message)
-            geolocationErrorMessage.value = 'GPS není zapnuto.'
-        }, geolocationOptions);
+        }, function() {},
+        geolocationOptions);
     } else {
         geolocationErrorMessage.value = 'Geolokace není podporována.'
     }

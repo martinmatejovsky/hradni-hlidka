@@ -3,7 +3,7 @@
   <p v-if="geolocationErrorMessage" class="text-red">{{ geolocationErrorMessage }}</p>
   <p>Lat, lon:</p>
   <p>
-    {{ playerLocation?.latitude || 'zařízení nerozpoznává polohu' }} {{ playerLocation?.longitude }}</p>
+    {{ playerLocation?.latitude || 'Zařízení nerozpoznává polohu.' }} {{ playerLocation?.longitude }}</p>
   <p>Accuracy: <span :class="[accuracyClass, 'font-weight-bold']">{{ playerAccuracy }}</span> m</p>
   <p>Is inside?</p>
   <p class="text-h2 text-red">{{ nameOfIntersectedArea }}</p>
@@ -36,7 +36,7 @@ onMounted((): void => {
 })
 
 onUnmounted((): void => {
-  if (geolocationWatcher) {
+  if (geolocationWatcher.value) {
     navigator.geolocation.clearWatch(geolocationWatcher.value)
   }
   releaseWakeLockScreen()
