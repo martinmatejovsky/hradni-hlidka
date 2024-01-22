@@ -7,7 +7,7 @@
   <p>Accuracy: <span :class="[accuracyClass, 'font-weight-bold']">{{ playerAccuracy }}</span> m</p>
   <p>Is inside?</p>
   <p class="text-h2 text-red">{{ nameOfIntersectedArea }}</p>
-REVERT </template>
+</template>
 
 <script setup lang="ts">
 import {ref, onMounted, onUnmounted, computed} from 'vue'
