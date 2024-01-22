@@ -34,10 +34,11 @@
 </template>
 
 <script setup lang="ts">
-import {ref, onMounted, computed} from 'vue'
+import {ref, onMounted, onUnmounted, computed} from 'vue'
 import type { PlayerCoordinates } from '~/types/CustomTypes'
 import { useIntersectedAreaName } from '~/composables/useIntersectedAreaName'
 import { usePlayerLocationAccuracy } from '~/composables/usePlayerLocationAccuracy'
+import { requestWakeLockScreen, releaseWakeLockScreen} from '~/composables/useWakeLockScreen'
 
 const errorMessage = ref(null as string | null)
 const showPermissionDialog = ref(false as boolean)
@@ -58,7 +59,7 @@ const accuracyClass = computed(() => {
   }
 })
 
-onMounted(() => {
+onMounted((): void => {
   if ('geolocation' in navigator) {
     navigator.permissions.query({name: 'geolocation'}).then(permissionStatus => {
       if (permissionStatus.state === 'granted') {
@@ -80,8 +81,13 @@ onMounted(() => {
   } else {
     console.error('Geolokace není podporována.')
   }
+
+  requestWakeLockScreen()
 })
 
+onUnmounted((): void => {
+  releaseWakeLockScreen()
+})
 const grantPermission = () => {
   showPermissionDialog.value = false;
   navigator.geolocation.watchPosition(
