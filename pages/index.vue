@@ -19,15 +19,15 @@ import { requestWakeLockScreen, releaseWakeLockScreen} from '~/composables/useWa
 const errorMessage = ref(null as string | null)
 const playerLocation = ref<PlayerCoordinates | null>(null)
 const playerAccuracy = computed(() => usePlayerLocationAccuracy(playerLocation.value))
+const geolocationWatcher = ref(0)
 const geolocationOptions = {
   enableHighAccuracy: true,
-  timeout: 10000,
 }
 const nameOfIntersectedArea = computed(() => useIntersectedAreaName(playerLocation.value))
 const accuracyClass = computed(() => {
-  if (playerAccuracy.value < 6) {
+  if (playerAccuracy.value < 7) {
     return 'text-green'
-  } else if (playerAccuracy.value < 20) {
+  } else if (playerAccuracy.value < 25) {
     return 'text-yellow'
   } else {
     return 'text-red'
@@ -36,7 +36,7 @@ const accuracyClass = computed(() => {
 
 onMounted((): void => {
   if ('geolocation' in navigator) {
-    navigator.geolocation.watchPosition( position => {
+    geolocationWatcher.value = navigator.geolocation.watchPosition( position => {
       playerLocation.value = {
         latitude: position.coords.latitude,
         longitude: position.coords.longitude,
@@ -53,6 +53,9 @@ onMounted((): void => {
 })
 
 onUnmounted((): void => {
+  if (geolocationWatcher) {
+    navigator.geolocation.clearWatch(geolocationWatcher.value)
+  }
   releaseWakeLockScreen()
 })
 </script>
