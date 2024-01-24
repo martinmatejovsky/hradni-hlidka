@@ -1,44 +1,53 @@
 <template>
   <h2>Základní výpočet, jestli je uživatel v herním polygonu</h2>
-  <p v-if="geolocationErrorMessage" class="text-red">{{ geolocationErrorMessage }}</p>
-  <p>Lat, lon:</p>
-  <p>
-    {{ playerLocation?.latitude || 'Zařízení nerozpoznává polohu.' }} {{ playerLocation?.longitude }}</p>
-  <p>Accuracy: <span :class="[accuracyClass, 'font-weight-bold']">{{ playerAccuracy }}</span> m</p>
-  <p>Is inside?</p>
-  <p class="text-h2 text-red">{{ nameOfIntersectedArea }}</p>
+  <div v-if="storedGeolocationWatcher">
+    <p>Lat, lon:</p>
+    {{ currentPlayerData?.location.latitude }} {{ currentPlayerData?.location.longitude }}
+    <br>
+    Hrajete jako {{ currentPlayerData?.name }}
+    <p>Accuracy: <span :class="[accuracyClass, 'font-weight-bold']">{{ playerAccuracy }}</span> m</p>
+    <p>Is inside?</p>
+    <p class="text-h2 text-red">{{ nameOfIntersectedArea }}</p>
+  </div>
+  <p v-else>Zařízení nerozpoznává polohu.</p>
 </template>
 
 <script setup lang="ts">
-// IMPORT
-import { onMounted, onUnmounted, computed} from 'vue'
-import { useIntersectedAreaName } from '~/composables/useIntersectedAreaName'
-import { usePlayerLocationAccuracy } from '~/composables/usePlayerLocationAccuracy'
-import { requestWakeLockScreen, releaseWakeLockScreen} from '~/composables/useWakeLockScreen'
-import {playerLocation, geolocationWatcher, geolocationErrorMessage, initializeGeolocationWatcher} from '~/composables/useGeolocationWatchPosition'
+// CONSTANTS
+const testerPlayerName = 'TestMartin';
+
+// IMPORTS
+import { onMounted, onUnmounted, computed } from 'vue';
+import { useIntersectedAreaName } from '~/composables/useIntersectedAreaName';
+import { requestWakeLockScreen, releaseWakeLockScreen } from '~/composables/useWakeLockScreen';
+import { useInitializePlayerGeolocationWatcher } from '~/composables/useInitializePlayerGeolocationWatcher';
+import { useStoredPlayersLocation, useStoredGeolocationWatcher } from '~/composables/states'
 
 // DATA
-const playerAccuracy = computed(() => usePlayerLocationAccuracy(playerLocation.value))
-const nameOfIntersectedArea = computed(() => useIntersectedAreaName(playerLocation.value))
+const storedPlayersLocation = useStoredPlayersLocation();
+const storedGeolocationWatcher = useStoredGeolocationWatcher();
+const currentPlayerData = computed(() => storedPlayersLocation.value.find((player) => player.name === testerPlayerName));
+const nameOfIntersectedArea = computed(() => useIntersectedAreaName(currentPlayerData.value?.location));
+const playerAccuracy = computed(() => currentPlayerData.value?.location.accuracy);
 const accuracyClass = computed(() => {
   if (playerAccuracy.value < 7) {
-    return 'text-green'
+    return 'text-green';
   } else if (playerAccuracy.value < 25) {
-    return 'text-yellow'
+    return 'text-yellow';
   } else {
-    return 'text-red'
+    return 'text-red';
   }
-})
+});
 
-onMounted((): void => {
-  initializeGeolocationWatcher()
-  requestWakeLockScreen()
-})
+onMounted(() => {
+  requestWakeLockScreen();
+  useInitializePlayerGeolocationWatcher(testerPlayerName);
+});
 
-onUnmounted((): void => {
-  if (geolocationWatcher.value) {
-    navigator.geolocation.clearWatch(geolocationWatcher.value)
+onUnmounted(() => {
+  if (storedGeolocationWatcher.value) {
+    navigator.geolocation.clearWatch(storedGeolocationWatcher.value);
   }
-  releaseWakeLockScreen()
-})
+  releaseWakeLockScreen();
+});
 </script>

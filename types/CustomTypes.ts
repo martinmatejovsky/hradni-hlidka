@@ -1,6 +1,6 @@
 export type Coordinates = {
-    latitude: number,
-    longitude: number,
+    latitude: number | null,
+    longitude: number | null,
 }
 
-export type PlayerCoordinates = Coordinates & {accuracy: number}
+export type PlayerCoordinates = Coordinates & {accuracy: number | null}
