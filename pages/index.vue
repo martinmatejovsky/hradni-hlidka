@@ -2,9 +2,9 @@
   <h2>Základní výpočet, jestli je uživatel v herním polygonu</h2>
   <div v-if="storedGeolocationWatcher">
     <p>Lat, lon:</p>
-    {{ currentPlayerData?.location.latitude }} {{ currentPlayerData?.location.longitude }}
+    {{ currentPlayerDataValue?.location.latitude }} {{ currentPlayerDataValue?.location.longitude }}
     <br>
-    Hrajete jako {{ currentPlayerData?.name }}
+    Hrajete jako {{ currentPlayerDataValue?.name }}
     <p>Accuracy: <span :class="[accuracyClass, 'font-weight-bold']">{{ playerAccuracy }}</span> m</p>
     <p>Is inside?</p>
     <p class="text-h2 text-red">{{ nameOfIntersectedArea }}</p>
@@ -14,7 +14,7 @@
 
 <script setup lang="ts">
 // CONSTANTS
-const testerPlayerName = 'TestMartin';
+const testerPlayerName = 'TestBeolf';
 
 // IMPORTS
 import { onMounted, onUnmounted, computed } from 'vue';
@@ -26,9 +26,9 @@ import { useStoredPlayersLocation, useStoredGeolocationWatcher } from '~/composa
 // DATA
 const storedPlayersLocation = useStoredPlayersLocation();
 const storedGeolocationWatcher = useStoredGeolocationWatcher();
-const currentPlayerData = computed(() => storedPlayersLocation.value.find((player) => player.name === testerPlayerName));
-const nameOfIntersectedArea = computed(() => useIntersectedAreaName(currentPlayerData.value?.location));
-const playerAccuracy = computed(() => currentPlayerData.value?.location.accuracy);
+const currentPlayerDataValue = computed(() => storedPlayersLocation.value.find((player) => player.name === testerPlayerName));
+const nameOfIntersectedArea = computed(() => useIntersectedAreaName(currentPlayerDataValue.value?.location));
+const playerAccuracy = computed(() => Math.round(currentPlayerDataValue.value?.location.accuracy || 0));
 const accuracyClass = computed(() => {
   if (playerAccuracy.value < 7) {
     return 'text-green';

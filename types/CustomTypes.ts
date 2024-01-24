@@ -4,3 +4,8 @@ export type Coordinates = {
 }
 
 export type PlayerCoordinates = Coordinates & {accuracy: number | null}
+
+export type PlayerData = {
+    name: string,
+    location: PlayerCoordinates,
+}

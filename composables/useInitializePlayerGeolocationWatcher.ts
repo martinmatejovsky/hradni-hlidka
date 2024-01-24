@@ -1,4 +1,5 @@
 import {useState} from "nuxt/app";
+import type {PlayerData} from "~/types/CustomTypes";
 
 function useInitializePlayerGeolocationWatcher(playerName: string): void {
     // TODO: verify if this name is not already taken
@@ -8,14 +9,14 @@ function useInitializePlayerGeolocationWatcher(playerName: string): void {
     }
     if ('geolocation' in navigator) {
         useState('geolocationWatcher').value = navigator.geolocation.watchPosition( position => {
-                useState('playersLocation').value.push({
+                useState<PlayerData[]>('playersLocation').value.push({
                     name: playerName,
                     location: {
                         latitude: position.coords.latitude,
                         longitude: position.coords.longitude,
                         accuracy: position.coords.accuracy
                     }
-                })
+                } as PlayerData)
             },
             function() {},
             geolocationOptions);

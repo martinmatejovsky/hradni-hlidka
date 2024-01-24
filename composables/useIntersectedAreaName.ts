@@ -2,7 +2,7 @@ import {gameAreas} from "~/data/gameAreas";
 import {useIsPositionInsidePolygon} from "./useIsInsidePolygon";
 import type {PlayerCoordinates} from "~/types/CustomTypes";
 
-export function useIntersectedAreaName(playerLocationValue: PlayerCoordinates | null): string {
+export function useIntersectedAreaName(playerLocationValue: PlayerCoordinates | undefined): string {
     if (!playerLocationValue) {
         return 'Pozice hráče není k dispozici';
     }
