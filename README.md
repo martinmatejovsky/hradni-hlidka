@@ -15,7 +15,7 @@ npm install
 
 Start the development server on `http://localhost:3000`:
 
-Serverless sevice running on https://app.netlify.com/
+Serverless service running on https://app.netlify.com/
 
 ```bash
 # npm
