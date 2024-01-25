@@ -1,6 +1,6 @@
 export const gameAreas = [
     {
-        areaName: 'A',
+        areaName: 'Panelak',
         areaCornerCoordinates: [
             {latitude: 50.1918117, longitude: 12.7414242},
             {latitude: 50.1904517, longitude: 12.7405606},
@@ -9,7 +9,7 @@ export const gameAreas = [
         ],
     },
     {
-        areaName: 'B',
+        areaName: 'Baracek',
         areaCornerCoordinates: [
             {latitude: 50.1910781, longitude: 12.7442539},
             {latitude: 50.1906900, longitude: 12.7439081},

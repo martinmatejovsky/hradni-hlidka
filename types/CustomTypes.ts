@@ -1,11 +1,24 @@
-export type Coordinates = {
+type Coordinates = {
     latitude: number | null,
     longitude: number | null,
 }
 
-export type PlayerCoordinates = Coordinates & {accuracy: number | null}
+type PlayerCoordinates = Coordinates & {accuracy: number | null}
 
-export type PlayerData = {
+type PlayerData = {
     name: string,
     location: PlayerCoordinates,
+}
+
+type AttackThreat = {
+    areaName: string,
+    threatLevel: number,
+    attackersAmount: number,
+}
+
+export type {
+    Coordinates,
+    PlayerCoordinates,
+    PlayerData,
+    AttackThreat,
 }
