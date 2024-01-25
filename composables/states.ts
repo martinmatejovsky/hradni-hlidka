@@ -1,5 +1,5 @@
 import {useState} from "nuxt/app";
-import type {PlayerData, AttackThreat} from "~/types/CustomTypes";
+import type {PlayerData, AttackThreat, GameState} from "~/types/CustomTypes";
 import {gameAreas} from "~/data/gameAreas";
 
 // TODO - when initializing from server use this tutorial on
@@ -14,13 +14,16 @@ const useStoredAttackThreat = () => useState<AttackThreat[]>('attackThread', ():
             areaName: area.areaName,
             threatLevel: 0,
             attackersAmount: 0,
+            conquered: false,
         })
     })
     return threat;
 })
+const useGameState = () => useState<GameState>('gameState', (): GameState => 'ready')
 
 export {
     useStoredPlayersLocation,
     useStoredGeolocationWatcher,
     useStoredAttackThreat,
+    useGameState,
 }
