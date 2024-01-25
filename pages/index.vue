@@ -71,6 +71,7 @@ const accuracyClass = computed(() => {
 
 // METHODS
 const startAttack = () => {
+  requestWakeLockScreen();
   storedGameState.value = 'running';
   updateThreatLevels();
 };
@@ -78,7 +79,6 @@ const restartAttack = () => {}
 
 // LIFECYCLE HOOKS
 onMounted(() => {
-  requestWakeLockScreen();
   useInitializePlayerGeolocationWatcher(testerPlayerName);
   // fill mock data of attackers
   for (let i = 0; i < gameAreas.length; i++) {

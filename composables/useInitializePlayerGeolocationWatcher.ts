@@ -23,7 +23,6 @@ function useInitializePlayerGeolocationWatcher(playerName: string): void {
     } else {
         console.log('Geolokace není podporována.')
     }
-    console.log('Hrajete jako ' + playerName)
 }
 
 export {
