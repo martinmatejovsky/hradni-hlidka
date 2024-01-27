@@ -40,13 +40,6 @@
 <script setup lang="ts">
 // IMPORTS
 import { onMounted, onUnmounted, computed } from 'vue';
-import { gameAreas } from '~/data/gameAreas';
-import { useIntersectedAreaName } from '~/composables/useIntersectedAreaName';
-import { requestWakeLockScreen, releaseWakeLockScreen } from '~/composables/useWakeLockScreen';
-import { useInitializePlayerGeolocationWatcher } from '~/composables/useInitializePlayerGeolocationWatcher';
-import { useStoredPlayersLocation, useStoredGeolocationWatcher, useStoredAttackThreat, useGameState } from '~/composables/states'
-import { useAttackersAmountCorrection } from '~/composables/useAttackersAmountCorrection';
-import { updateThreatLevels } from "~/composables/updateThreatLevels";
 
 // CONSTANTS
 const testerPlayerName = 'TestBeolf';
@@ -75,15 +68,14 @@ const startAttack = () => {
   storedGameState.value = 'running';
   updateThreatLevels();
 };
-const restartAttack = () => {}
+const restartAttack = () => {
+  storedAttackThreat.value = useClearGameAreas();
+  storedGameState.value = 'ready';
+}
 
 // LIFECYCLE HOOKS
 onMounted(() => {
   useInitializePlayerGeolocationWatcher(testerPlayerName);
-  // fill mock data of attackers
-  for (let i = 0; i < gameAreas.length; i++) {
-    useAttackersAmountCorrection(gameAreas[i].areaName, i + 2);
-  }
 });
 
 onUnmounted(() => {
