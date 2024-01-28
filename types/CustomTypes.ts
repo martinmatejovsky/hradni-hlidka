@@ -15,6 +15,10 @@ type AreaAttackStat = {
     guardians: PlayerData[],
 }
 type GameState = "ready" | "running" | "won" | "lost"
+type GamePolygons = {
+    areaName: string,
+    areaCornerCoordinates: Coordinates[],
+}
 
 export type {
     Coordinates,
@@ -22,4 +26,5 @@ export type {
     PlayerData,
     AreaAttackStat,
     GameState,
+    GamePolygons,
 }

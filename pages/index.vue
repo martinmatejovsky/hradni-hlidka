@@ -45,11 +45,14 @@ import type {PlayerData, AreaAttackStat} from "~/types/CustomTypes";
 // CONSTANTS
 const testerPlayerName = 'TestBeolf';
 
-// DATA
+// STATE INITIAL VALUES
+const storedGamePolygon = useStoredGamePolygons();
 const storedGeolocationWatcher = useStoredGeolocationWatcher();
 const storedAreaAttackStat = useStoredAreaAttackStat();
 const storedGameState = useGameState();
 const currentPlayer = useStoredCurrentPlayer();
+
+// DATA
 const nameOfIntersectedArea = computed(() => useIntersectedAreaName(currentPlayer.value?.location));
 const playerAccuracy = computed(() => Math.round(currentPlayer.value?.location.accuracy || 0));
 const accuracyClass = computed(() => {
@@ -71,25 +74,28 @@ const startAttack = () => {
 const restartAttack = () => {
   storedAreaAttackStat.value = useClearGameAreas();
   storedGameState.value = 'ready';
+  updateAreasOfCurrentPlayer();
 }
-
-// WATCHERS
-watch(nameOfIntersectedArea, (newValue: string, oldValue: string): void => {
-  if (newValue.length > 0) {
-    storedAreaAttackStat.value.each((area: AreaAttackStat) => {
-      if (area.areaName === newValue) {
+const updateAreasOfCurrentPlayer = ():void => {
+  if (nameOfIntersectedArea.value.length > 0) {
+    storedAreaAttackStat.value.forEach((area: AreaAttackStat) => {
+      if (area.areaName === nameOfIntersectedArea.value) {
         area.guardians.push(currentPlayer.value);
       }
     })
-  } else if (newValue === '') {
-    storedAreaAttackStat.value.find((area: AreaAttackStat) => {
-      if (area.areaName === oldValue) {
-        const index = area.guardians.findIndex((guardian: PlayerData) => guardian.name === currentPlayer.value.name);
-        area.guardians.splice(index, 1);
-      }
+  } else if (nameOfIntersectedArea.value === '') {
+    storedAreaAttackStat.value.forEach((area: AreaAttackStat) => {
+      const index = area.guardians.findIndex((guardian: PlayerData) => guardian.name === currentPlayer.value.name);
+      area.guardians.splice(index, 1);
     })
   }
+}
+
+// WATCHERS
+watch(nameOfIntersectedArea, (): void => {
+  updateAreasOfCurrentPlayer()
 });
+
 // LIFECYCLE HOOKS
 onMounted(() => {
   currentPlayer.value.name = testerPlayerName;

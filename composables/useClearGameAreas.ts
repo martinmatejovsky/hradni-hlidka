@@ -1,10 +1,10 @@
-import { AreaAttackStat } from "~/types/customTypes";
-import { gameAreas } from "~/data/gameAreas";
-import {PlayerData} from "../types/CustomTypes";
+import type {AreaAttackStat, GamePolygons, PlayerData} from "~/types/CustomTypes";
+import {useState} from "nuxt/app";
+import {STORE_GAME_POLYGONS} from "~/constants";
 
 export const useClearGameAreas = (): AreaAttackStat[] => {
     let threat = [] as AreaAttackStat[];
-    gameAreas.forEach(area => {
+    useState<GamePolygons[]>(STORE_GAME_POLYGONS).value.forEach(area => {
         threat.push({
             areaName: area.areaName,
             threatLevel: 0,

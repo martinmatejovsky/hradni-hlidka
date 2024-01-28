@@ -1,8 +1,8 @@
 import {useState} from "nuxt/app";
-import type {PlayerData, PlayerCoordinates} from "~/types/CustomTypes";
-import { STORE_GEOLOCATION_WATCHER, STORE_CURRENT_PLAYER} from "../constants";
+import type {PlayerData} from "~/types/CustomTypes";
+import { STORE_GEOLOCATION_WATCHER, STORE_CURRENT_PLAYER} from "~/constants";
 
-export function useInitializePlayerGeolocationWatcher(playerName: string): void {
+export function useInitializePlayerGeolocationWatcher(): void {
     // TODO: verify if this name is not already taken
     // or preset some fixed characters/names
     const geolocationOptions = {
@@ -14,7 +14,7 @@ export function useInitializePlayerGeolocationWatcher(playerName: string): void 
                 latitude: position.coords.latitude,
                 longitude: position.coords.longitude,
                 accuracy: position.coords.accuracy
-                }
+            }
         },
         function() {},
         geolocationOptions);

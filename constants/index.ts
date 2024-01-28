@@ -5,3 +5,4 @@ export const STORE_GEOLOCATION_WATCHER = 'geolocationWatcher';
 export const STORE_GAME_STATE = 'gameState';
 export const STORE_WAKE_LOCK = 'wakeLock';
 export const STORE_CURRENT_PLAYER = 'currentPlayer';
+export const STORE_GAME_POLYGONS = 'gamePolygons';

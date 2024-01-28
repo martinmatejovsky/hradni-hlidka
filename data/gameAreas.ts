@@ -1,4 +1,4 @@
-export const gameAreas = [
+export const gameAreasLoket = [
     {
         areaName: 'Panelák',
         areaCornerCoordinates: [
@@ -17,4 +17,16 @@ export const gameAreas = [
             {latitude: 50.1908497, longitude: 12.7447314},
         ]
     },
+]
+
+export const gameAreasCzechia = [
+    {
+        areaName: 'Česko',
+        areaCornerCoordinates: [
+            {latitude: 51.0842650, longitude: 11.8788950},
+            {latitude: 48.6634603, longitude: 11.7910044},
+            {latitude: 48.3614256, longitude: 17.6686900},
+            {latitude: 51.1704517, longitude: 17.7346081},
+        ],
+    }
 ]
