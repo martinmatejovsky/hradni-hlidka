@@ -11,7 +11,7 @@ export function useIntersectedAreaName(playerLocationValue: PlayerCoordinates | 
     });
 
     if (foundAreas.length === 0) {
-        return 'Hráč není v žádném polygonu';
+        return '';
     } else {
         return foundAreas[0].areaName;
     }

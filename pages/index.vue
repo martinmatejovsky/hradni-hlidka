@@ -22,7 +22,7 @@
     <p v-if="storedAttackThreat.length === 0">Žádná data o útoku.</p>
     <div v-else>
       <div v-for="attack in storedAttackThreat" :key="attack.areaName">
-        <h3>{{ attack.areaName }}</h3>
+        <h3>{{ attack.areaName }}, uvnitř je {{ attack.guardians }}</h3>
         <v-progress-linear
             v-model="attack.threatLevel"
             :color="attack.conquered ? 'error' : 'primary'"
@@ -39,7 +39,8 @@
 
 <script setup lang="ts">
 // IMPORTS
-import { onMounted, onUnmounted, computed } from 'vue';
+import {onMounted, onUnmounted, computed, watch} from 'vue';
+import type {PlayerData, AttackThreat} from "~/types/CustomTypes";
 
 // CONSTANTS
 const testerPlayerName = 'TestBeolf';
@@ -49,7 +50,7 @@ const storedPlayersLocation = useStoredPlayersLocation();
 const storedGeolocationWatcher = useStoredGeolocationWatcher();
 const storedAttackThreat = useStoredAttackThreat();
 const storedGameState = useGameState();
-const currentPlayerDataValue = computed(() => storedPlayersLocation.value.find((player) => player.name === testerPlayerName));
+const currentPlayerDataValue = computed((): PlayerData => storedPlayersLocation.value.find((player) => player.name === testerPlayerName));
 const nameOfIntersectedArea = computed(() => useIntersectedAreaName(currentPlayerDataValue.value?.location));
 const playerAccuracy = computed(() => Math.round(currentPlayerDataValue.value?.location.accuracy || 0));
 const accuracyClass = computed(() => {
@@ -73,6 +74,23 @@ const restartAttack = () => {
   storedGameState.value = 'ready';
 }
 
+// WATCHERS
+watch(nameOfIntersectedArea, (newValue: string, oldValue: string): void => {
+  if (newValue.length > 0) {
+    storedAttackThreat.value.each((area: AttackThreat) => {
+      if (area.areaName === newValue) {
+        area.guardians.push(currentPlayerDataValue.value);
+      }
+    })
+  } else if (newValue === '') {
+    storedAttackThreat.value.find((area: AttackThreat) => {
+      if (area.areaName === oldValue) {
+        const index = area.guardians.findIndex((guardian: PlayerData) => guardian.name === currentPlayerDataValue.value.name);
+        area.guardians.splice(index, 1);
+      }
+    })
+  }
+});
 // LIFECYCLE HOOKS
 onMounted(() => {
   useInitializePlayerGeolocationWatcher(testerPlayerName);

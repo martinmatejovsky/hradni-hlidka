@@ -1,5 +1,6 @@
 import { AttackThreat } from "~/types/AttackThreat";
 import { gameAreas } from "~/data/gameAreas";
+import {PlayerData} from "../types/CustomTypes";
 
 export const useClearGameAreas = (): AttackThreat[] => {
     let threat = [] as AttackThreat[];
@@ -9,6 +10,7 @@ export const useClearGameAreas = (): AttackThreat[] => {
             threatLevel: 0,
             attackersAmount: 0,
             conquered: false,
+            guardians: [] as PlayerData[],
         })
     })
     return threat;

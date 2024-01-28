@@ -2,7 +2,7 @@ import {useState} from "nuxt/app";
 import type {AttackThreat} from "~/types/CustomTypes";
 import {gameAreas} from "../data/gameAreas";
 
-export const updateThreatLevels = () => {
+export const useUpdateThreatLevels = () => {
     let attackThreatState = useState<AttackThreat[]>('attackThread').value
     // fill mock data of first attackers
     for (let i = 0; i < gameAreas.length; i++) {

@@ -12,6 +12,7 @@ type AttackThreat = {
     threatLevel: number,
     attackersAmount: number,
     conquered: boolean,
+    guardians: PlayerData[],
 }
 type GameState = "ready" | "running" | "won" | "lost"
 
