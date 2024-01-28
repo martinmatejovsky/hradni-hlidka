@@ -4,8 +4,8 @@ import {STORE_AREA_ATTACK_STAT, STORE_GAME_POLYGONS, STORE_GAME_STATE} from "~/c
 import type {GamePolygons} from "~/types/CustomTypes";
 
 export const useUpdateThreatLevels = () => {
-    let attackThreatState = useState<AreaAttackStat[]>(STORE_AREA_ATTACK_STAT).value
-    let gamePolygons = useState<GamePolygons[]>(STORE_GAME_POLYGONS).value
+    let attackThreatState: AreaAttackStat[] = useState<AreaAttackStat[]>(STORE_AREA_ATTACK_STAT).value
+    let gamePolygons: GamePolygons[] = useState<GamePolygons[]>(STORE_GAME_POLYGONS).value
 
     // fill mock data of first attackers
     for (let i = 0; i < gamePolygons.length; i++) {
@@ -13,9 +13,10 @@ export const useUpdateThreatLevels = () => {
     }
 
     // interval for updating threat levels
-    const intervalId = setInterval(() => {
-        attackThreatState.forEach((item) => {
-            // Update threatLevel based on attackersAmount
+    const intervalId = setInterval((): void => {
+        attackThreatState.forEach((item: AreaAttackStat): void => {
+            const guardiansAmount = item.guardians.length;
+            useAttackersAmountCorrection(item.areaName, -1 * guardiansAmount);
             item.threatLevel += item.attackersAmount;
 
             if (item.threatLevel >= 100) {
@@ -25,5 +26,5 @@ export const useUpdateThreatLevels = () => {
                 useState(STORE_GAME_STATE).value = 'lost';
             }
         });
-    }, 1000);
+    }, 2000);
 }

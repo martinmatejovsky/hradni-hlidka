@@ -10,7 +10,7 @@
     Hrajete jako {{ currentPlayer?.name }}
     <p>Přesnost: <span :class="[accuracyClass, 'font-weight-bold']">{{ playerAccuracy }}</span> m</p>
     <p>Je uvnitř?</p>
-    <p class="text-h3 mb-6 text-indigo-lighten-4">{{ nameOfIntersectedArea || '-'}}</p>
+    <p class="text-h3 mb-6 text-indigo-lighten-4">{{ nameOfIntersectedArea || '--'}}</p>
 
     <v-btn v-if="storedGameState === 'ready'" @click="startAttack" rounded="xs" class="mb-6">Zahájit útok</v-btn>
     <div v-else-if="storedGameState === 'lost'">
@@ -22,11 +22,11 @@
     <p v-if="storedAreaAttackStat.length === 0">Žádná data o útoku.</p>
     <div v-else>
       <div v-for="attack in storedAreaAttackStat" :key="attack.areaName">
-        <h3>{{ attack.areaName }}, uvnitř je {{ attack.guardians[0].name }}</h3>
+        <h3>{{ attack.areaName }}, strážce: {{ attack.guardians[0]?.name || '--' }} Útočníků: {{ attack.attackersAmount }}</h3>
         <v-progress-linear
             v-model="attack.threatLevel"
             bg-color="blue-lighten-5"
-            :color="attack.conquered ? 'error' : 'primary'"
+            :color="attack.conquered ? 'error' : 'amber-lighten-2'"
             height="25"
         >
           <template v-slot:default="{ value }">
