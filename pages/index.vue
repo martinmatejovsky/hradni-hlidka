@@ -40,7 +40,7 @@
 <script setup lang="ts">
 // IMPORTS
 import {onMounted, onUnmounted, computed, watch} from 'vue';
-import type {PlayerData, AttackThreat} from "~/types/CustomTypes";
+import type {PlayerData, AreaAttackStat} from "~/types/CustomTypes";
 
 // CONSTANTS
 const testerPlayerName = 'TestBeolf';
@@ -77,13 +77,13 @@ const restartAttack = () => {
 // WATCHERS
 watch(nameOfIntersectedArea, (newValue: string, oldValue: string): void => {
   if (newValue.length > 0) {
-    storedAttackThreat.value.each((area: AttackThreat) => {
+    storedAttackThreat.value.each((area: AreaAttackStat) => {
       if (area.areaName === newValue) {
         area.guardians.push(currentPlayerDataValue.value);
       }
     })
   } else if (newValue === '') {
-    storedAttackThreat.value.find((area: AttackThreat) => {
+    storedAttackThreat.value.find((area: AreaAttackStat) => {
       if (area.areaName === oldValue) {
         const index = area.guardians.findIndex((guardian: PlayerData) => guardian.name === currentPlayerDataValue.value.name);
         area.guardians.splice(index, 1);

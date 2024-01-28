@@ -7,7 +7,7 @@ type PlayerData = {
     name: string,
     location: PlayerCoordinates,
 }
-type AttackThreat = {
+type AreaAttackStat = {
     areaName: string,
     threatLevel: number,
     attackersAmount: number,
@@ -20,6 +20,6 @@ export type {
     Coordinates,
     PlayerCoordinates,
     PlayerData,
-    AttackThreat,
+    AreaAttackStat,
     GameState,
 }

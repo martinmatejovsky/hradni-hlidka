@@ -1,9 +1,10 @@
 import {useState} from "nuxt/app";
-import type {AttackThreat} from "~/types/CustomTypes";
+import type {AreaAttackStat} from "~/types/CustomTypes";
 import {gameAreas} from "../data/gameAreas";
+import { STORE_AREA_ATTACK_STAT, STORE_GAME_STATE } from "../constants";
 
 export const useUpdateThreatLevels = () => {
-    let attackThreatState = useState<AttackThreat[]>('attackThread').value
+    let attackThreatState = useState<AreaAttackStat[]>(STORE_AREA_ATTACK_STAT).value
     // fill mock data of first attackers
     for (let i = 0; i < gameAreas.length; i++) {
         useAttackersAmountCorrection(gameAreas[i].areaName, i + 4);
@@ -17,7 +18,7 @@ export const useUpdateThreatLevels = () => {
                 clearInterval(intervalId); // Clear the interval
                 item.threatLevel = 100;
                 item.conquered = true;
-                useState('gameState').value = 'lost';
+                useState(STORE_GAME_STATE).value = 'lost';
             }
         });
     }, 1000);

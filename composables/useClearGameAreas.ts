@@ -1,9 +1,9 @@
-import { AttackThreat } from "~/types/AttackThreat";
+import { AreaAttackStat } from "~/types/customTypes";
 import { gameAreas } from "~/data/gameAreas";
 import {PlayerData} from "../types/CustomTypes";
 
-export const useClearGameAreas = (): AttackThreat[] => {
-    let threat = [] as AttackThreat[];
+export const useClearGameAreas = (): AreaAttackStat[] => {
+    let threat = [] as AreaAttackStat[];
     gameAreas.forEach(area => {
         threat.push({
             areaName: area.areaName,

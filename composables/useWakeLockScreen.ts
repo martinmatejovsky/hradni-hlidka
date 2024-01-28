@@ -1,7 +1,8 @@
 import {useState} from "nuxt/app";
+import {STORE_WAKE_LOCK} from "../constants";
 
 const requestWakeLockScreen = async (): Promise<void> => {
-    const wakeLockScreen = useState('wakeLock');
+    const wakeLockScreen = useState(STORE_WAKE_LOCK);
     if(('wakeLock' in navigator) && !wakeLockScreen.value) {
         const wakeLockScreen = useWakeLock();
         try {
