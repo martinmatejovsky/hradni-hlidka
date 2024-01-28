@@ -5,9 +5,9 @@
   </div>
   <div v-else>
     <p>Lat, lon:</p>
-    {{ currentPlayerDataValue?.location.latitude }} {{ currentPlayerDataValue?.location.longitude }}
+    {{ currentPlayer?.location.latitude }} {{ currentPlayer?.location.longitude }}
     <br>
-    Hrajete jako {{ currentPlayerDataValue?.name }}
+    Hrajete jako {{ currentPlayer?.name }}
     <p>Přesnost: <span :class="[accuracyClass, 'font-weight-bold']">{{ playerAccuracy }}</span> m</p>
     <p>Je uvnitř?</p>
     <p class="text-h3 mb-6 text-indigo-lighten-4">{{ nameOfIntersectedArea }}</p>
@@ -19,9 +19,9 @@
     </div>
 
     <h2>Postup útoku</h2>
-    <p v-if="storedAttackThreat.length === 0">Žádná data o útoku.</p>
+    <p v-if="storedAreaAttackStat.length === 0">Žádná data o útoku.</p>
     <div v-else>
-      <div v-for="attack in storedAttackThreat" :key="attack.areaName">
+      <div v-for="attack in storedAreaAttackStat" :key="attack.areaName">
         <h3>{{ attack.areaName }}, uvnitř je {{ attack.guardians }}</h3>
         <v-progress-linear
             v-model="attack.threatLevel"
@@ -46,13 +46,12 @@ import type {PlayerData, AreaAttackStat} from "~/types/CustomTypes";
 const testerPlayerName = 'TestBeolf';
 
 // DATA
-const storedPlayersLocation = useStoredPlayersLocation();
 const storedGeolocationWatcher = useStoredGeolocationWatcher();
-const storedAttackThreat = useStoredAttackThreat();
+const storedAreaAttackStat = useStoredAreaAttackStat();
 const storedGameState = useGameState();
-const currentPlayerDataValue = computed((): PlayerData => storedPlayersLocation.value.find((player) => player.name === testerPlayerName));
-const nameOfIntersectedArea = computed(() => useIntersectedAreaName(currentPlayerDataValue.value?.location));
-const playerAccuracy = computed(() => Math.round(currentPlayerDataValue.value?.location.accuracy || 0));
+const currentPlayer = useStoredCurrentPlayer();
+const nameOfIntersectedArea = computed(() => useIntersectedAreaName(currentPlayer.value?.location));
+const playerAccuracy = computed(() => Math.round(currentPlayer.value?.location.accuracy || 0));
 const accuracyClass = computed(() => {
   if (playerAccuracy.value < 7) {
     return 'text-green';
@@ -70,22 +69,22 @@ const startAttack = () => {
   useUpdateThreatLevels();
 };
 const restartAttack = () => {
-  storedAttackThreat.value = useClearGameAreas();
+  storedAreaAttackStat.value = useClearGameAreas();
   storedGameState.value = 'ready';
 }
 
 // WATCHERS
 watch(nameOfIntersectedArea, (newValue: string, oldValue: string): void => {
   if (newValue.length > 0) {
-    storedAttackThreat.value.each((area: AreaAttackStat) => {
+    storedAreaAttackStat.value.each((area: AreaAttackStat) => {
       if (area.areaName === newValue) {
-        area.guardians.push(currentPlayerDataValue.value);
+        area.guardians.push(currentPlayer.value);
       }
     })
   } else if (newValue === '') {
-    storedAttackThreat.value.find((area: AreaAttackStat) => {
+    storedAreaAttackStat.value.find((area: AreaAttackStat) => {
       if (area.areaName === oldValue) {
-        const index = area.guardians.findIndex((guardian: PlayerData) => guardian.name === currentPlayerDataValue.value.name);
+        const index = area.guardians.findIndex((guardian: PlayerData) => guardian.name === currentPlayer.value.name);
         area.guardians.splice(index, 1);
       }
     })
@@ -93,7 +92,8 @@ watch(nameOfIntersectedArea, (newValue: string, oldValue: string): void => {
 });
 // LIFECYCLE HOOKS
 onMounted(() => {
-  useInitializePlayerGeolocationWatcher(testerPlayerName);
+  currentPlayer.value.name = testerPlayerName;
+  useInitializePlayerGeolocationWatcher();
 });
 
 onUnmounted(() => {

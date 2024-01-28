@@ -1,6 +1,6 @@
 import {useState} from "nuxt/app";
-import type {PlayerData} from "~/types/CustomTypes";
-import {STORE_PLAYERS_LOCATION, STORE_GEOLOCATION_WATCHER} from "../constants";
+import type {PlayerData, PlayerCoordinates} from "~/types/CustomTypes";
+import { STORE_GEOLOCATION_WATCHER, STORE_CURRENT_PLAYER} from "../constants";
 
 export function useInitializePlayerGeolocationWatcher(playerName: string): void {
     // TODO: verify if this name is not already taken
@@ -10,17 +10,14 @@ export function useInitializePlayerGeolocationWatcher(playerName: string): void 
     }
     if ('geolocation' in navigator) {
         useState(STORE_GEOLOCATION_WATCHER).value = navigator.geolocation.watchPosition( position => {
-                useState<PlayerData[]>(STORE_PLAYERS_LOCATION).value.push({
-                    name: playerName,
-                    location: {
-                        latitude: position.coords.latitude,
-                        longitude: position.coords.longitude,
-                        accuracy: position.coords.accuracy
-                    }
-                } as PlayerData)
-            },
-            function() {},
-            geolocationOptions);
+            useState<PlayerData>(STORE_CURRENT_PLAYER).value.location = {
+                latitude: position.coords.latitude,
+                longitude: position.coords.longitude,
+                accuracy: position.coords.accuracy
+                }
+        },
+        function() {},
+        geolocationOptions);
     } else {
         console.log('Geolokace není podporována.')
     }
