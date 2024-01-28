@@ -18,8 +18,12 @@ export const useRequestWakeLockScreen = async (): Promise<void> => {
 export const useReleaseWakeLockScreen = async (): Promise<void> => {
     const wakeLockScreen = useState(STORE_WAKE_LOCK);
     try {
-        await wakeLockScreen.value?.release();
-        wakeLockScreen.value = null;
+        if (wakeLockScreen.value) {
+            await wakeLockScreen.value.release();
+            wakeLockScreen.value = null;
+        } else {
+            console.warn('Trying to release null wake lock.');
+        }
     } catch (err: any) {
         console.error(`${err.name}, ${err.message}`);
     }
