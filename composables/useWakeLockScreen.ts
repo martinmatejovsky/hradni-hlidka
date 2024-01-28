@@ -1,7 +1,7 @@
 import {useState} from "nuxt/app";
 import {STORE_WAKE_LOCK} from "../constants";
 
-const requestWakeLockScreen = async (): Promise<void> => {
+export const useRequestWakeLockScreen = async (): Promise<void> => {
     const wakeLockScreen = useState(STORE_WAKE_LOCK);
     if(('wakeLock' in navigator) && !wakeLockScreen.value) {
         const wakeLockScreen = useWakeLock();
@@ -14,7 +14,8 @@ const requestWakeLockScreen = async (): Promise<void> => {
         }
     }
 };
-const releaseWakeLockScreen = async (): Promise<void> => {
+
+export const useReleaseWakeLockScreen = async (): Promise<void> => {
     try {
         await wakeLockScreen.value?.release();
         wakeLockScreen.value = null;
@@ -22,5 +23,3 @@ const releaseWakeLockScreen = async (): Promise<void> => {
         console.error(`${err.name}, ${err.message}`);
     }
 };
-
-export { requestWakeLockScreen, releaseWakeLockScreen };

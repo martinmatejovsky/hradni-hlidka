@@ -2,7 +2,7 @@ import {useState} from "nuxt/app";
 import type {PlayerData} from "~/types/CustomTypes";
 import {STORE_PLAYERS_LOCATION, STORE_GEOLOCATION_WATCHER} from "../constants";
 
-function useInitializePlayerGeolocationWatcher(playerName: string): void {
+export function useInitializePlayerGeolocationWatcher(playerName: string): void {
     // TODO: verify if this name is not already taken
     // or preset some fixed characters/names
     const geolocationOptions = {
@@ -24,8 +24,4 @@ function useInitializePlayerGeolocationWatcher(playerName: string): void {
     } else {
         console.log('Geolokace není podporována.')
     }
-}
-
-export {
-    useInitializePlayerGeolocationWatcher,
 }

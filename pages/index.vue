@@ -65,9 +65,9 @@ const accuracyClass = computed(() => {
 
 // METHODS
 const startAttack = () => {
-  requestWakeLockScreen();
+  useRequestWakeLockScreen();
   storedGameState.value = 'running';
-  updateThreatLevels();
+  useUpdateThreatLevels();
 };
 const restartAttack = () => {
   storedAttackThreat.value = useClearGameAreas();
@@ -100,6 +100,6 @@ onUnmounted(() => {
   if (storedGeolocationWatcher.value) {
     navigator.geolocation.clearWatch(storedGeolocationWatcher.value);
   }
-  releaseWakeLockScreen();
+  useReleaseWakeLockScreen();
 });
 </script>
