@@ -1,38 +1,40 @@
 <template>
-  <h2>Základní výpočet, jestli je uživatel v herním polygonu</h2>
   <div v-if="!storedGeolocationWatcher">
     Zařízení nerozpoznává polohu.
   </div>
   <div v-else>
-    <p>Lat, lon:</p>
-    {{ currentPlayer?.location.latitude }} {{ currentPlayer?.location.longitude }}
-    <br>
-    Hrajete jako {{ currentPlayer?.name }}
+    <p>Hrajete jako {{ currentPlayer?.name }}</p>
+    <p>Souřadnice: {{ currentPlayer?.location.latitude }} {{ currentPlayer?.location.longitude }}</p>
     <p>Přesnost: <span :class="[accuracyClass, 'font-weight-bold']">{{ playerAccuracy }}</span> m</p>
-    <p>Je uvnitř?</p>
-    <p class="text-h3 mb-6 text-indigo-lighten-4">{{ nameOfIntersectedArea || '--'}}</p>
+    <p class="mb-4">Jsem uvnitř? <span class="text-h4 text-indigo-lighten-4">{{ nameOfIntersectedArea || '--'}}</span></p>
 
-    <v-btn v-if="storedGameState === 'ready'" @click="startAttack" rounded="xs" class="mb-6">Zahájit útok</v-btn>
+    <v-divider class="mb-4"></v-divider>
+
+    <v-btn v-if="storedGameState === 'ready'" @click="startAttack" rounded="xs" class="mb-3">Zahájit útok</v-btn>
     <div v-else-if="storedGameState === 'lost'">
-      <h3 class="text-h3 mb-6 text-red">Prohráli jste.</h3>
-      <v-btn @click="restartGame" rounded="xs" class="mb-6">Znovu na ně!</v-btn>
+      <h4 class="text-h4 mb-4 text-red">Prohráli jste.</h4>
+      <v-btn @click="restartAttack" rounded="xs" class="mb-6">Znovu na ně!</v-btn>
     </div>
 
-    <h2>Postup útoku</h2>
-    <p v-if="storedAreaAttackStat.length === 0">Žádná data o útoku.</p>
-    <div v-else>
-      <div v-for="attack in storedAreaAttackStat" :key="attack.areaName">
-        <h3>{{ attack.areaName }}, strážce: {{ attack.guardians[0]?.name || '--' }} Útočníků: {{ attack.attackersAmount }}</h3>
-        <v-progress-linear
-            v-model="attack.threatLevel"
-            bg-color="blue-lighten-5"
-            :color="attack.conquered ? 'error' : 'amber-lighten-2'"
-            height="25"
-        >
-          <template v-slot:default="{ value }">
-            <strong>{{ Math.ceil(value) }} %</strong>
-          </template>
-        </v-progress-linear>
+    <div v-else-if="storedGameState === 'running'">
+      <h3 class="mb-3">Postup útoku</h3>
+      <p v-if="storedAreaAttackStat.length === 0">Žádná data o útoku.</p>
+      <div v-else>
+        <div v-for="attack in storedAreaAttackStat" class="mb-3" :key="attack.areaName">
+          <h4 class="text-amber">{{ attack.areaName }}</h4>
+          <p>strážce: {{ attack.guardians[0]?.name || '--' }}</p>
+          <p>Shromažněni: (?), Útočníků: {{ attack.attackersAmount }}</p>
+          <v-progress-linear
+              v-model="attack.threatLevel"
+              bg-color="lime-darken-4"
+              :color="attack.conquered ? 'error' : 'orange-darken-4'"
+              height="25"
+          >
+            <template v-slot:default="{ value }">
+              <strong>{{ Math.ceil(value) }} %</strong>
+            </template>
+          </v-progress-linear>
+        </div>
       </div>
     </div>
   </div>
@@ -72,7 +74,7 @@ const startAttack = () => {
   storedGameState.value = 'running';
   useRunAttack();
 };
-const restartGame = () => {
+const restartAttack = () => {
   storedAreaAttackStat.value = useClearGameAreas();
   storedGameState.value = 'ready';
   updateAreasOfCurrentPlayer();
