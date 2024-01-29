@@ -15,7 +15,7 @@
     <v-btn v-if="storedGameState === 'ready'" @click="startAttack" rounded="xs" class="mb-6">Zahájit útok</v-btn>
     <div v-else-if="storedGameState === 'lost'">
       <h3 class="text-h3 mb-6 text-red">Prohráli jste.</h3>
-      <v-btn @click="restartAttack" rounded="xs" class="mb-6">Znovu na ně!</v-btn>
+      <v-btn @click="restartGame" rounded="xs" class="mb-6">Znovu na ně!</v-btn>
     </div>
 
     <h2>Postup útoku</h2>
@@ -70,9 +70,9 @@ const accuracyClass = computed(() => {
 const startAttack = () => {
   useRequestWakeLockScreen();
   storedGameState.value = 'running';
-  useUpdateThreatLevels();
+  useRunAttack();
 };
-const restartAttack = () => {
+const restartGame = () => {
   storedAreaAttackStat.value = useClearGameAreas();
   storedGameState.value = 'ready';
   updateAreasOfCurrentPlayer();

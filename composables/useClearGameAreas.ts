@@ -1,4 +1,4 @@
-import type {AreaAttackStat, GamePolygons, PlayerData} from "~/types/CustomTypes";
+import type {AreaAttackStat, GamePolygons, Invader, PlayerData} from "~/types/CustomTypes";
 import {useState} from "nuxt/app";
 import {STORE_GAME_POLYGONS} from "~/constants";
 
@@ -11,6 +11,7 @@ export const useClearGameAreas = (): AreaAttackStat[] => {
             attackersAmount: 0,
             conquered: false,
             guardians: [] as PlayerData[],
+            assembledInvaders: [] as Invader[],
         })
     })
     return threat;
