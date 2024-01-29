@@ -1,6 +1,6 @@
 import type {AreaAttackStat, Invader, InvaderType} from "~/types/CustomTypes";
 import {useState} from "nuxt/app";
-import {STORE_AREA_ATTACK_STAT} from "~/constants";
+import {ATTACK_TEMPO, STORE_AREA_ATTACK_STAT, STORE_GAME_STATE} from "~/constants";
 
 export const useRunAttack = () => {
     let areas: AreaAttackStat[] = useState<AreaAttackStat[]>(STORE_AREA_ATTACK_STAT).value
@@ -19,7 +19,15 @@ export const useRunAttack = () => {
         }
     }
 
-    // 2. calculate damage done by guardians and remove attackers from ladders
-    useUpdateThreatLevels();
-    // 3. start releasing attackers from waiting list to ladders
+    const intervalId = setInterval((): void => {
+        // 2. calculate damage done by guardians and remove attackers from ladders
+
+        // 3. move attackers up the ladder
+        useMoveInvadersOnLadder();
+    }, ATTACK_TEMPO);
+
+    // 4. evaluate if attackers reached the top of the ladder
+    if (useState(STORE_GAME_STATE).value === "lost") {
+        clearInterval(intervalId);
+    }
 }
