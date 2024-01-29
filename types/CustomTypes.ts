@@ -14,6 +14,7 @@ export type AreaAttackStat = {
     conquered: boolean,
     guardians: PlayerData[],
     assembledInvaders: Invader[],
+    assaultLadder: (Invader | null)[],
 }
 export type GameState = "ready" | "running" | "won" | "lost"
 export type GamePolygons = {

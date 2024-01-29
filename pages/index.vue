@@ -23,7 +23,8 @@
         <div v-for="attackedArea in storedAreaAttackStat" class="mb-3" :key="attackedArea.areaName">
           <h4 class="text-amber">{{ attackedArea.areaName }}</h4>
           <p>strážce: {{ attackedArea.guardians[0]?.name || '--' }}</p>
-          <p>Shromažněni: {{ attackedArea.assembledInvaders.length }}, Útočníků: {{ attackedArea.attackersAmount }}</p>
+          <p>Shromážděni: {{ attackedArea.assembledInvaders.length }}</p>
+          <p>Žebřik: {{ attackedArea.assaultLadder }}</p>
           <v-progress-linear
               v-model="attackedArea.threatLevel"
               bg-color="lime-darken-4"

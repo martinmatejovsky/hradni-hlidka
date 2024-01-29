@@ -6,3 +6,7 @@ export const STORE_GAME_STATE = 'gameState';
 export const STORE_WAKE_LOCK = 'wakeLock';
 export const STORE_CURRENT_PLAYER = 'currentPlayer';
 export const STORE_GAME_POLYGONS = 'gamePolygons';
+
+// GAME MECHANISM
+export const ATTACK_TEMPO = 2000;
+export const LADDER_POSITIONS = 10;
