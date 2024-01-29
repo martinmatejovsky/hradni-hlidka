@@ -10,7 +10,7 @@
 
     <v-divider class="mb-4"></v-divider>
 
-    <v-btn v-if="storedGameState === 'ready'" @click="startAttack" rounded="xs" class="mb-3">Zahájit útok</v-btn>
+    <v-btn v-if="storedGameState === 'ready'" @click="startAttack" rounded="xs" class="mt-3 mb-3">Zahájit útok</v-btn>
     <div v-else-if="storedGameState === 'lost'">
       <h4 class="text-h4 mb-4 text-red">Prohráli jste.</h4>
       <v-btn @click="restartAttack" rounded="xs" class="mb-6">Znovu na ně!</v-btn>
@@ -20,14 +20,14 @@
       <h3 class="mb-3">Postup útoku</h3>
       <p v-if="storedAreaAttackStat.length === 0">Žádná data o útoku.</p>
       <div v-else>
-        <div v-for="attack in storedAreaAttackStat" class="mb-3" :key="attack.areaName">
-          <h4 class="text-amber">{{ attack.areaName }}</h4>
-          <p>strážce: {{ attack.guardians[0]?.name || '--' }}</p>
-          <p>Shromažněni: (?), Útočníků: {{ attack.attackersAmount }}</p>
+        <div v-for="attackedArea in storedAreaAttackStat" class="mb-3" :key="attackedArea.areaName">
+          <h4 class="text-amber">{{ attackedArea.areaName }}</h4>
+          <p>strážce: {{ attackedArea.guardians[0]?.name || '--' }}</p>
+          <p>Shromažněni: {{ attackedArea.assembledInvaders.length }}, Útočníků: {{ attackedArea.attackersAmount }}</p>
           <v-progress-linear
-              v-model="attack.threatLevel"
+              v-model="attackedArea.threatLevel"
               bg-color="lime-darken-4"
-              :color="attack.conquered ? 'error' : 'orange-darken-4'"
+              :color="attackedArea.conquered ? 'error' : 'orange-darken-4'"
               height="25"
           >
             <template v-slot:default="{ value }">
