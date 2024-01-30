@@ -24,7 +24,7 @@
           <h4 class="text-amber">{{ attackedArea.areaName }}</h4>
           <p>strážce: {{ attackedArea.guardians[0]?.name || '--' }}</p>
           <p>Shromáždění útočníci:
-            <v-icon v-for="(invader, index) in attackedArea.assembledInvaders" :key="index" icon="mdi-sword"></v-icon>
+            <v-icon v-for="n in attackedArea.assembledInvaders" :key="n" icon="mdi-sword"></v-icon>
           </p>
           <p>Žebřik <v-icon icon="mdi-arrow-right-bold-outline"></v-icon></p>
           <ClimbingLadder :climbingInvaders="attackedArea.assaultLadder" />
@@ -38,9 +38,11 @@
 // IMPORTS
 import {onMounted, onUnmounted, computed, watch} from 'vue';
 import type {PlayerData, AreaAttackStat} from "~/types/CustomTypes";
+import * as CONST from "~/constants";
 
 // CONSTANTS
 const testerPlayerName = 'TestBeolf';
+const intervalRunAttack = ref<NodeJS.Timeout | null>(null);
 
 // STATE INITIAL VALUES
 const storedGamePolygon = useStoredGamePolygons();
@@ -66,7 +68,7 @@ const accuracyClass = computed(() => {
 const startAttack = () => {
   useRequestWakeLockScreen();
   storedGameState.value = 'running';
-  useRunAttack();
+  intervalRunAttack.value = useRunAttack();
 };
 const restartAttack = () => {
   storedAreaAttackStat.value = useClearGameAreas();
@@ -92,6 +94,14 @@ const updateAreasOfCurrentPlayer = ():void => {
 watch(nameOfIntersectedArea, (): void => {
   updateAreasOfCurrentPlayer()
 });
+watch(useState(CONST.STORE_GAME_STATE), (newValue): void => {
+  if (newValue === 'lost') {
+    if (intervalRunAttack.value !== null) {
+      clearInterval(intervalRunAttack.value);
+      intervalRunAttack.value = null;
+    }
+  }
+})
 
 // LIFECYCLE HOOKS
 onMounted(() => {
@@ -102,6 +112,9 @@ onMounted(() => {
 onUnmounted(() => {
   if (storedGeolocationWatcher.value) {
     navigator.geolocation.clearWatch(storedGeolocationWatcher.value);
+  }
+  if (intervalRunAttack.value !== null) {
+    clearInterval(intervalRunAttack.value);
   }
   useReleaseWakeLockScreen();
 });

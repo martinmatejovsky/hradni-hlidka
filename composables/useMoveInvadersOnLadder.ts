@@ -1,23 +1,36 @@
-import { useState } from "nuxt/app";
-import type { AreaAttackStat, Invader } from "~/types/CustomTypes";
-import { LADDER_POSITIONS, STORE_AREA_ATTACK_STAT, STORE_GAME_STATE } from "~/constants";
+import {useState} from "nuxt/app";
+import type {AreaAttackStat} from "~/types/CustomTypes";
+import {ATTACK_TEMPO, LADDER_POSITIONS, STORE_AREA_ATTACK_STAT, STORE_GAME_STATE} from "~/constants";
 
-export const useMoveInvadersOnLadder = () => {
+const delayBetweenIterations = Math.floor(ATTACK_TEMPO / (LADDER_POSITIONS * 2));
+
+export const useMoveInvadersOnLadder = (): void => {
     let areas: AreaAttackStat[] = useState<AreaAttackStat[]>(STORE_AREA_ATTACK_STAT).value;
 
-    // interval for updating threat levels
     areas.forEach((area: AreaAttackStat): void => {
-        let attackerToClimb: Invader | null = area.assembledInvaders.pop() || null;
+        for (let i = LADDER_POSITIONS - 1; i >= 0; i--) {
+            if (useState(STORE_GAME_STATE).value !== 'running') {
+                return;
+            }
+             // Adjust the delay based on the iteration index
+            setTimeout(() => {
+                if (i > 0) {
+                    area.assaultLadder[i] = area.assaultLadder[i - 1];
+                    area.assaultLadder[i - 1] = null;
+                }
 
-        for (let i = LADDER_POSITIONS - 1; i > 0; i--) {
-            area.assaultLadder[i] = area.assaultLadder[i - 1];
-        }
+                // last iteration of the inner loop in ladder
+                else {
+                    // After the last iteration, update the first position in assaultLadder
+                    area.assaultLadder[0] = area.assembledInvaders.pop() || null;
 
-        area.assaultLadder[0] = attackerToClimb;
-
-        if (area.assaultLadder[LADDER_POSITIONS - 1] !== null) {
-            area.conquered = true;
-            useState(STORE_GAME_STATE).value = "lost";
+                    // TODO: really check it here? It offers nice small delay when an invader reaches top, but the delay should be gained by other mean
+                    if (area.assaultLadder[LADDER_POSITIONS - 1] !== null) {
+                        area.conquered = true;
+                        useState(STORE_GAME_STATE).value = 'lost';
+                    }
+                }
+            }, (LADDER_POSITIONS - i) * delayBetweenIterations);
         }
     });
 };

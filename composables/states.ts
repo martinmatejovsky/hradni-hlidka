@@ -6,7 +6,7 @@ import {gameAreasLoket as mockGameArea} from "~/data/gameAreas";
 // TODO - when initializing from server use this tutorial on
 //  https://nuxt.com/docs/getting-started/state-management
 
-// TODO: useStoredPlayersLocation should be imported from server, which is the only place to know locatons of all players
+// TODO: useStoredPlayersLocation should be imported from server, which is the only place to know locations of all players
 export const useStoredPlayersLocation = () => useState<PlayerData[]>(CONST.STORE_PLAYERS_LOCATION, (): PlayerData[] => [])
 export const useStoredGeolocationWatcher = () => useState<number | null>(CONST.STORE_GEOLOCATION_WATCHER, (): number | null => null)
 export const useStoredAreaAttackStat = () => useState<AreaAttackStat[]>(CONST.STORE_AREA_ATTACK_STAT, useClearGameAreas)

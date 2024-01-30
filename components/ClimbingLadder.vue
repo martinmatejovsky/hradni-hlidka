@@ -12,7 +12,9 @@ defineProps({
 <template>
 <div class="climbing-ladder">
   <div v-for="(invader, index) in climbingInvaders" :key="index" class="climbing-ladder-step">
-    <v-icon v-if="invader !== null" icon="mdi-sword" class="climbing-ladder-invader-icon"></v-icon>
+    <v-scroll-x-transition>
+      <v-icon v-if="invader !== null" icon="mdi-sword" class="climbing-ladder-invader-icon"></v-icon>
+    </v-scroll-x-transition>
   </div>
 </div>
 </template>
