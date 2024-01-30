@@ -11,8 +11,10 @@
     <v-divider class="mb-4"></v-divider>
 
     <v-btn v-if="storedGameState === 'ready'" @click="startAttack" rounded="xs" class="mt-3 mb-3">Zahájit útok</v-btn>
-    <div v-else-if="storedGameState === 'lost'">
-      <h4 class="text-h4 mb-4 text-red">Prohráli jste</h4>
+    <div v-else-if="storedGameState === 'lost' || storedGameState === 'won'">
+      <h4 class="text-h4 mb-4" :class="[storedGameState === 'won' ? 'text-green' : 'text-red']">
+        {{ storedGameState === 'won' ? 'Vítězství' : 'Prohráli jste' }}
+      </h4>
       <v-btn @click="restartAttack" rounded="xs" class="mb-6">Znovu na ně!</v-btn>
     </div>
 
@@ -95,7 +97,7 @@ watch(nameOfIntersectedArea, (): void => {
   updateAreasOfCurrentPlayer()
 });
 watch(useState(CONST.STORE_GAME_STATE), (newValue): void => {
-  if (newValue === 'lost') {
+  if (newValue === 'lost' || newValue === 'won') {
     if (intervalRunAttack.value !== null) {
       clearInterval(intervalRunAttack.value);
       intervalRunAttack.value = null;

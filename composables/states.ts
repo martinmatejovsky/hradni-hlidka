@@ -1,7 +1,7 @@
 import {useState} from "nuxt/app";
 import type {PlayerData, AreaAttackStat, GameState, GamePolygons} from "~/types/CustomTypes";
 import * as CONST from "../constants";
-import {gameAreasLoket as mockGameArea} from "~/data/gameAreas";
+import {gameAreasCzechia as mockGameArea} from "~/data/gameAreas";
 
 // TODO - when initializing from server use this tutorial on
 //  https://nuxt.com/docs/getting-started/state-management
