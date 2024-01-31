@@ -1,14 +1,14 @@
 import type {PlayerCoordinates} from "~/types/CustomTypes";
 import {useState} from "nuxt/app";
-import type {GamePolygons} from "~/types/CustomTypes";
-import {STORE_GAME_POLYGONS} from "~/constants";
+import type {BattleZone} from "~/types/CustomTypes";
+import {STORE_BATTLE_ZONE} from "~/constants";
 
 export function useIntersectedAreaName(playerLocationValue: PlayerCoordinates | undefined): string {
     if (!playerLocationValue) {
         return 'Pozice hráče není k dispozici';
     }
 
-    const foundAreas = useState<GamePolygons[]>(STORE_GAME_POLYGONS).value.filter(gameArea => {
+    const foundAreas = useState<BattleZone>(STORE_BATTLE_ZONE).value.polygons.filter(gameArea => {
         return useIsPositionInsidePolygon(playerLocationValue, gameArea.areaCornerCoordinates);
     });
 

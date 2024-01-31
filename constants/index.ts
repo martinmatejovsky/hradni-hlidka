@@ -5,7 +5,7 @@ export const STORE_GEOLOCATION_WATCHER = 'geolocationWatcher';
 export const STORE_GAME_STATE = 'gameState';
 export const STORE_WAKE_LOCK = 'wakeLock';
 export const STORE_CURRENT_PLAYER = 'currentPlayer';
-export const STORE_GAME_POLYGONS = 'gamePolygons';
+export const STORE_BATTLE_ZONE = 'battleZone';
 
 // GAME MECHANISM
 export const ATTACK_TEMPO = 4000;

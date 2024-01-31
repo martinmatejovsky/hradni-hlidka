@@ -9,8 +9,8 @@ export const useRunAttack = () => {
     // to let players react and prepare
     for (let i = 0; i < areas.length; i++) {
         if (areas[i].assembledInvaders.length === 0) {
-            const randomAttackersAmount = Math.floor(Math.random() * 4) + 1;
-            for (let j = 0; j < randomAttackersAmount; j++) {
+            const randomInvadersAmount = Math.floor(Math.random() * 4) + 1;
+            for (let j = 0; j < randomInvadersAmount; j++) {
                 areas[i].assembledInvaders.push({
                     type: "normal" as InvaderType,
                     health: 2,

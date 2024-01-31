@@ -1,7 +1,7 @@
 import {useState} from "nuxt/app";
-import type {PlayerData, AreaAttackStat, GameState, GamePolygons} from "~/types/CustomTypes";
+import type {PlayerData, AreaAttackStat, GameState, BattleZone} from "~/types/CustomTypes";
 import * as CONST from "../constants";
-import {gameAreasLoket as mockGameArea} from "~/data/gameAreas";
+import {BattleZonesAll as mockGameArea} from "~/data/battleZonesAll";
 
 // TODO - when initializing from server use this tutorial on
 //  https://nuxt.com/docs/getting-started/state-management
@@ -22,4 +22,4 @@ export const useStoredCurrentPlayer = () => useState<PlayerData>(CONST.STORE_CUR
         }
     }
 })
-export const useStoredGamePolygons = () => useState<GamePolygons[]>(CONST.STORE_GAME_POLYGONS, (): GamePolygons[] => mockGameArea)
+export const useStoredGamePolygons = () => useState<BattleZone>(CONST.STORE_BATTLE_ZONE, (): BattleZone => mockGameArea[0])
