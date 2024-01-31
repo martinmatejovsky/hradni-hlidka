@@ -24,7 +24,7 @@
       <div v-else>
         <div v-for="attackedArea in storedAreaAttackStat" class="mb-3" :key="attackedArea.areaName">
           <h4 class="text-amber">{{ attackedArea.areaName }}</h4>
-          <p>strážce: {{ attackedArea.guardians[0]?.name || '--' }}</p>
+          <p>strážce: <span class="text-green">{{ attackedArea.guardians[0]?.name || '--' }}</span></p>
           <p>Shromáždění útočníci:
             <v-icon v-for="n in attackedArea.assembledInvaders" :key="n" icon="mdi-sword"></v-icon>
           </p>
@@ -102,6 +102,7 @@ watch(useState(CONST.STORE_GAME_STATE), (newValue): void => {
       clearInterval(intervalRunAttack.value);
       intervalRunAttack.value = null;
     }
+    setTimeout(useReleaseWakeLockScreen, 5000);
   }
 })
 
