@@ -23,3 +23,5 @@ export const useStoredCurrentPlayer = () => useState<PlayerData>(CONST.STORE_CUR
     }
 })
 export const useStoredGamePolygons = () => useState<BattleZone>(CONST.STORE_BATTLE_ZONE, (): BattleZone => mockGameArea[0])
+export const useApiBattleZones = (initialData: BattleZone[]) => useState<BattleZone[]>(CONST.STORE_BATTLE_ZONES_API, () => initialData)
+export const useStoredBattleZone = (zone: BattleZone) => useState<BattleZone>(CONST.STORE_BATTLE_ZONE_API, () => zone)

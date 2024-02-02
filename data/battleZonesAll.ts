@@ -1,6 +1,7 @@
 import type {BattleZone} from "~/types/CustomTypes";
 
 export const BattleZonesAll: BattleZone[] = [{
+    key: 'loketSportovni',
     name: 'Loket Sportovní',
     polygons: [
         {
@@ -24,6 +25,7 @@ export const BattleZonesAll: BattleZone[] = [{
     ]},
     {
     name: 'Česko',
+    key: 'cesko',
     polygons: [
         {
             areaName: 'Česko',

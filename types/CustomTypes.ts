@@ -17,6 +17,7 @@ export type AreaAttackStat = {
 export type GameState = "ready" | "running" | "won" | "lost"
 export type BattleZone = {
     name: string,
+    key: string,
     polygons: {
             areaName: string,
             areaCornerCoordinates: Coordinates[],
