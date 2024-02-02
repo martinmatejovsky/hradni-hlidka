@@ -14,7 +14,7 @@ export type AreaAttackStat = {
     assembledInvaders: Invader[],
     assaultLadder: (Invader | null)[],
 }
-export type GameState = "ready" | "running" | "won" | "lost"
+export type GameState = "setting" | "ready" | "running" | "won" | "lost"
 export type BattleZone = {
     name: string,
     key: string,

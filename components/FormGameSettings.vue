@@ -18,7 +18,7 @@
                   :rules="selectRules"
               ></v-select>
 
-              <v-btn type="submit" class="mb-2" :block="true" :disabled="!isFormValid" rounded="xs">Spustit bitvu</v-btn>
+              <v-btn type="submit" class="mb-2" :block="true" :disabled="!isFormValid" rounded="xs">Potvrdit nastavení</v-btn>
             </v-form>
           </v-col>
         </v-row>
@@ -29,7 +29,7 @@
 
 <script setup lang="ts">
 import {useApiBattleZones, useStoredBattleZone} from "~/composables/states";
-import type {BattleZone} from "~/types/CustomTypes";
+import type {BattleZone, GameState} from "~/types/CustomTypes";
 import {useState} from "nuxt/app";
 import * as CONST from "~/constants";
 
@@ -59,6 +59,7 @@ const submitForm = () => {
   const selectedBattleZone = battleZones.value.find(zone => zone.name === selectedLocationKey.value)
   if (selectedBattleZone) {
     useStoredBattleZone(selectedBattleZone);
+    useState<GameState>(CONST.STORE_GAME_STATE).value = 'ready';
   } else {
     console.error('Selected battle zone not found')
   }

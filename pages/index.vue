@@ -3,22 +3,17 @@
     Zařízení nerozpoznává polohu.
   </div>
   <div v-else>
+    <form-game-settings v-if="storedGameState === 'setting'"/>
     <p>Hrajete jako {{ currentPlayer?.name }}</p>
     <p>Souřadnice: {{ currentPlayer?.location.latitude }} {{ currentPlayer?.location.longitude }}</p>
     <p>Přesnost: <span :class="[accuracyClass, 'font-weight-bold']">{{ playerAccuracy }}</span> m</p>
-    <p class="mb-4">Jsem uvnitř? <span class="text-h4 text-indigo-lighten-4">{{ nameOfIntersectedArea || '--'}}</span></p>
-
-    <v-divider class="mb-4"></v-divider>
 
     <v-btn v-if="storedGameState === 'ready'" @click="startAttack" rounded="xs" class="mt-3 mb-3">Zahájit útok</v-btn>
-    <div v-else-if="storedGameState === 'lost' || storedGameState === 'won'">
-      <h4 class="text-h4 mb-4" :class="[storedGameState === 'won' ? 'text-green' : 'text-red']">
-        {{ storedGameState === 'won' ? 'Vítězství' : 'Prohráli jste' }}
-      </h4>
-      <v-btn @click="restartAttack" rounded="xs" class="mb-6">Znovu na ně!</v-btn>
-    </div>
 
-    <div v-else-if="storedGameState === 'running'">
+    <div v-if="storedGameState === 'running'">
+      <v-divider class="mb-4"></v-divider>
+
+      <p class="mb-4">Jsem uvnitř? <span class="text-h4 text-indigo-lighten-4">{{ nameOfIntersectedArea || '--'}}</span></p>
       <h3 class="mb-3">Postup útoku</h3>
       <p v-if="storedAreaAttackStat.length === 0">Žádná data o útoku.</p>
       <div v-else>
@@ -33,21 +28,29 @@
         </div>
       </div>
     </div>
+
+    <div v-else-if="storedGameState === 'lost' || storedGameState === 'won'">
+      <h4 class="text-h4 mb-4" :class="[storedGameState === 'won' ? 'text-green' : 'text-red']">
+        {{ storedGameState === 'won' ? 'Vítězství' : 'Prohráli jste' }}
+      </h4>
+      <v-btn @click="restartAttack" rounded="xs" class="mb-6">Znovu na ně!</v-btn>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 // IMPORTS
 import {onMounted, onUnmounted, computed, watch} from 'vue';
-import type {PlayerData, AreaAttackStat} from "~/types/CustomTypes";
+import type {PlayerData, AreaAttackStat, BattleZone} from "~/types/CustomTypes";
 import * as CONST from "~/constants";
+import {useState} from "nuxt/app";
 
 // CONSTANTS
 const testerPlayerName = 'TestBeolf';
 const intervalRunAttack = ref<NodeJS.Timeout | null>(null);
 
 // STATE INITIAL VALUES
-const storedGamePolygon = useStoredGamePolygons();
+const storedGamePolygon = useStoredGamePolygons(); // TODO: do I need it?
 const storedGeolocationWatcher = useStoredGeolocationWatcher();
 const storedAreaAttackStat = useStoredAreaAttackStat();
 const storedGameState = useGameState();
