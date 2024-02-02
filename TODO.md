@@ -21,8 +21,18 @@ Bude vypadat přirozeněji, pokud budou útočníci nastupovat na každý žebř
 ve všech místech najednou. Stejně tak by vypadalo přirozeněji, pokud shazování útočníků bude
 probíhat na každém polygonu v trošku jiný moment.
 
-* * *  
+## Počítadlo, kolik zranění nebo zabitých útočníků uživatel dostal
+Bude to asi složité v tom momentu, kdy bude na obraně víde obránců, než kolik útočníků vůbec
+může dostat zranění a bude se muset rozhodnout, kteří z obránců vystřelili "do vzduchu". 
 
+## Platba
+co takhle nechat na lidech, ať prostě pošlou, kolik si myslí, že jim za to stálo?
+
+## přihlášení
+Zvolený kapitán otevře aplikaci, zvolí, že jde na to. Aplikace mu vygeneruje QR kód a případně
+jiné prvky, to si ostatní hráči naskenují (bude to nějaká URL s jedinečným hashem právě pro tu
+jednu partu). Ten samý kapitán, až všichni nahlásí, že jsou v aplikaci také, hru spustí. 
+* * *
 * * *
 
 # VYŘEŠENO
