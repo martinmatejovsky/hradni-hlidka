@@ -15,16 +15,21 @@
 
       <p class="mb-4">Jsem uvnitř? <span class="text-h4 text-indigo-lighten-4">{{ nameOfIntersectedArea || '--'}}</span></p>
       <h3 class="mb-3">Postup útoku</h3>
-      <p v-if="storedAreaAttackStat.length === 0">Žádná data o útoku.</p>
+      <p v-if="!battleZone">Žádná data o útoku.</p>
       <div v-else>
-        <div v-for="attackedArea in storedAreaAttackStat" class="mb-3" :key="attackedArea.areaName">
-          <h4 class="text-amber">{{ attackedArea.areaName }}</h4>
-          <p>strážce: <span class="text-green">{{ attackedArea.guardians[0]?.name || '--' }}</span></p>
+        <div v-for="{ areaName, guardians, assembledInvaders, assaultLadder } in battleZone.polygons" :key="areaName" class="mb-3">
+        <h4 class="text-amber">{{ areaName }}</h4>
+          <p>strážce:
+            <template v-if="!guardians.length">--</template>
+            <template v-else>
+              <span v-for="guardian in guardians" :key="guardian.name"  class="text-green">{{ guardian.name || '--' }}</span>
+            </template>
+          </p>
           <p>Shromáždění útočníci:
-            <v-icon v-for="n in attackedArea.assembledInvaders" :key="n" icon="mdi-sword"></v-icon>
+            <v-icon v-for="n in assembledInvaders" :key="n" icon="mdi-sword"></v-icon>
           </p>
           <p>Žebřik <v-icon icon="mdi-arrow-right-bold-outline"></v-icon></p>
-          <ClimbingLadder :climbingInvaders="attackedArea.assaultLadder" />
+          <ClimbingLadder :climbingInvaders="assaultLadder" />
         </div>
       </div>
     </div>
@@ -41,7 +46,7 @@
 <script setup lang="ts">
 // IMPORTS
 import {onMounted, onUnmounted, computed, watch} from 'vue';
-import type {PlayerData, AreaAttackStat, BattleZone} from "~/types/CustomTypes";
+import type {PlayerData, BattleZone, BattleZonePolygon} from "~/types/CustomTypes";
 import * as CONST from "~/constants";
 import {useState} from "nuxt/app";
 
@@ -50,9 +55,8 @@ const testerPlayerName = 'TestBeolf';
 const intervalRunAttack = ref<NodeJS.Timeout | null>(null);
 
 // STATE INITIAL VALUES
-const storedGamePolygon = useStoredGamePolygons(); // TODO: do I need it?
 const storedGeolocationWatcher = useStoredGeolocationWatcher();
-const storedAreaAttackStat = useStoredAreaAttackStat();
+const battleZone = useState<BattleZone>(CONST.STORE_BATTLE_ZONE_API);
 const storedGameState = useGameState();
 const currentPlayer = useStoredCurrentPlayer();
 
@@ -76,19 +80,19 @@ const startAttack = () => {
   intervalRunAttack.value = useRunAttack();
 };
 const restartAttack = () => {
-  storedAreaAttackStat.value = useClearGameAreas();
+  usePrepareClearBattleZone()
   storedGameState.value = 'ready';
-  updateAreasOfCurrentPlayer();
+  updateAreasOfCurrentPlayer()
 }
 const updateAreasOfCurrentPlayer = ():void => {
   if (nameOfIntersectedArea.value.length > 0) {
-    storedAreaAttackStat.value.forEach((area: AreaAttackStat) => {
+    battleZone.value.polygons.forEach((area: BattleZonePolygon) => {
       if (area.areaName === nameOfIntersectedArea.value) {
         area.guardians.push(currentPlayer.value);
       }
     })
   } else if (nameOfIntersectedArea.value === '') {
-    storedAreaAttackStat.value.forEach((area: AreaAttackStat) => {
+    battleZone.value.polygons.forEach((area: BattleZonePolygon) => {
       const index = area.guardians.findIndex((guardian: PlayerData) => guardian.name === currentPlayer.value.name);
       area.guardians.splice(index, 1);
     })
@@ -97,7 +101,9 @@ const updateAreasOfCurrentPlayer = ():void => {
 
 // WATCHERS
 watch(nameOfIntersectedArea, (): void => {
-  updateAreasOfCurrentPlayer()
+  if (battleZone.value) {
+    updateAreasOfCurrentPlayer()
+  }
 });
 watch(useState(CONST.STORE_GAME_STATE), (newValue): void => {
   if (newValue === 'lost' || newValue === 'won') {

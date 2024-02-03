@@ -28,29 +28,30 @@
 </template>
 
 <script setup lang="ts">
-import {useApiBattleZones, useStoredBattleZone} from "~/composables/states";
-import type {BattleZone, GameState} from "~/types/CustomTypes";
+import {useStoredGameLocations, useStoredBattleZone} from "~/composables/states";
+import type {GameLocation, GameState} from "~/types/CustomTypes";
 import {useState} from "nuxt/app";
 import * as CONST from "~/constants";
+import type {ComputedRef} from "vue";
 
 // DATA
 const isFormValid = computed(() => selectedLocationKey.value !== null)
 const selectedLocationKey = ref<string | null>(null)
-const battleZones = useState<BattleZone[]>(CONST.STORE_BATTLE_ZONES_API);
+const battleZones = useState<GameLocation[]>(CONST.STORE_GAME_LOCATIONS);
 const selectRules = [
   (value: string | null) => !!value || 'Vyberte prosím hodnotu'
 ];
 const dataLoading = ref<boolean>(false);
 
 // COMPUTED
-const locationOptions = computed(() => battleZones.value.map(zone => zone.name))
+const locationOptions: ComputedRef<string[]> = computed(() => battleZones.value.map(zone => zone.name))
+
 // METHODS
 const fetchBattleZones = async () => {
   dataLoading.value = true;
   await $fetch('/api/battle-zones')
       .then(response => {
-        console.log(response)
-        useApiBattleZones(response);
+        useStoredGameLocations(response);
       })
       .catch(error => console.error(error))
       .finally(() => dataLoading.value = false);
