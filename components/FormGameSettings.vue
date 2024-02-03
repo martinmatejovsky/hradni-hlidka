@@ -2,7 +2,7 @@
   <div class="my-4">
     <v-container>
       <div v-if="dataLoading">
-        <v-icon icon="hh-icon-loading mdi-loading"></v-icon>
+        <v-icon icon="mdi-loading" class="hh-icon-loading"></v-icon>
         loading data from server...
       </div>
       <div v-else>
