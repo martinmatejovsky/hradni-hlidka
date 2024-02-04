@@ -41,6 +41,6 @@ export type Invader = {
 }
 export type GameInstance = {
     id: string,
-    battleZone: BattleZone,
+    gameLocation: GameLocation,
     players: PlayerData[],
 }

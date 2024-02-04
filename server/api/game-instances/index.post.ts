@@ -1,25 +1,25 @@
-import {GameInstance, PlayerData, BattleZone} from "~/types/CustomTypes";
+import {GameInstance, PlayerData, GameLocation} from "~/types/CustomTypes";
 import { writeFile } from 'fs/promises';
 
 export default defineEventHandler(async (event) => {
     const body = await readBody(event)
 
-    if (!body.hostingPlayer || !body.selectedBattleZone) {
+    if (!body.hostingPlayer || !body.gameLocation) {
         return {
             status: 400, // 400 Bad Request
-            body: { error: 'Missing required property' },
+            body: { error: 'Missing required property in request body' },
         };
     }
 
     const newGameInstance: GameInstance = {
         id: Date.now().toString(),
-        battleZone: body.selectedBattleZone as BattleZone,
+        gameLocation: body.gameLocation as GameLocation,
         players: new Array(body.hostingPlayer as PlayerData),
     }
 
     const dataDirectory = 'server/game-instances/';
-    const instanceFileName = `${newGameInstance.id}.json`;
-    const instanceFilePath = `${dataDirectory}${instanceFileName}`;
+    const instanceFileName: string = `${newGameInstance.id}.json`;
+    const instanceFilePath: string = `${dataDirectory}${instanceFileName}`;
 
     try {
         await writeFile(instanceFilePath, JSON.stringify(newGameInstance, null, 2), 'utf-8');

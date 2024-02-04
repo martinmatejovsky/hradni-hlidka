@@ -15,10 +15,9 @@
                   class="mb-2"
                   label="Vyberte bitevní pole"
                   required
-                  :rules="selectRules"
               ></v-select>
-
-              <v-btn type="submit" class="mb-2" :block="true" :disabled="!isFormValid" rounded="xs">Potvrdit nastavení</v-btn>
+              <v-text-field :clearable="true" v-model="selectedPlayerName" required label="Label"></v-text-field>
+              <v-btn type="submit" class="mb-2" :block="true" :disabled="!isFormValid" rounded="xs">Založit novou bitvu</v-btn>
             </v-form>
           </v-col>
         </v-row>
@@ -35,19 +34,19 @@ import * as CONST from "~/constants";
 import type {ComputedRef} from "vue";
 
 // DATA
-const isFormValid = computed(() => selectedLocationKey.value !== null)
+const isFormValid = computed(() => {
+  return selectedLocationKey.value !== null && selectedPlayerName.value
+})
 const selectedLocationKey = ref<string | null>(null)
-const battleZones = useState<GameLocation[]>(CONST.STORE_GAME_LOCATIONS);
-const selectRules = [
-  (value: string | null) => !!value || 'Vyberte prosím hodnotu'
-];
+const selectedPlayerName = ref<string | null>('Test Beolf')
+const gameLocations = useState<GameLocation[]>(CONST.STORE_GAME_LOCATIONS);
 const dataLoading = ref<boolean>(false);
 
 // COMPUTED
-const locationOptions: ComputedRef<string[]> = computed(() => battleZones.value.map(zone => zone.name))
+const locationOptions: ComputedRef<string[]> = computed(() => gameLocations.value.map(zone => zone.name))
 
 // METHODS
-const fetchBattleZones = async () => {
+const fetchGameLocations = async () => {
   dataLoading.value = true;
   await $fetch('/api/battle-zones')
       .then(response => {
@@ -56,10 +55,25 @@ const fetchBattleZones = async () => {
       .catch(error => console.error(error))
       .finally(() => dataLoading.value = false);
 }
-const submitForm = () => {
-  const selectedBattleZone = battleZones.value.find(zone => zone.name === selectedLocationKey.value)
-  if (selectedBattleZone) {
-    useStoredBattleZone(selectedBattleZone);
+const submitForm = async () => {
+  const selectedGameLocation = gameLocations.value.find(zone => zone.name === selectedLocationKey.value)
+  if (selectedGameLocation) {
+    console.log('Selected game location:', selectedGameLocation);
+    try {
+      await $fetch('/api/game-instances', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          gameLocation: selectedGameLocation,
+          hostingPlayer: selectedPlayerName.value
+        })
+      })
+    } catch (error) {
+      console.error(error)
+    }
+    useStoredBattleZone(selectedGameLocation);
     useState<GameState>(CONST.STORE_GAME_STATE).value = 'ready';
   } else {
     console.error('Selected battle zone not found')
@@ -68,7 +82,7 @@ const submitForm = () => {
 
 // LIFE CYCLE HOOKS
 onBeforeMount(() => {
-  fetchBattleZones();
+  fetchGameLocations();
 });
 </script>
 
