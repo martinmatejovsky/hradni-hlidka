@@ -39,3 +39,8 @@ export type Invader = {
     type: InvaderType,
     health: number,
 }
+export type GameInstance = {
+    id: string,
+    battleZone: BattleZone,
+    players: PlayerData[],
+}
