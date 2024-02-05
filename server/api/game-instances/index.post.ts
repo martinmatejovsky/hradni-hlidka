@@ -1,4 +1,4 @@
-import {GameInstance, PlayerData, GameLocation, BattleZone} from "~/types/CustomTypes";
+import {GameInstance, PlayerData} from "~/types/CustomTypes";
 import { writeFile } from 'fs/promises';
 import { usePrepareClearBattleZone } from '~/composables/usePrepareClearBattleZone'
 export default defineEventHandler(async (event) => {
@@ -13,7 +13,7 @@ export default defineEventHandler(async (event) => {
 
     const newGameInstance: GameInstance = {
         id: body.gameLocation.key + Date.now().toString(),
-        gameState: 'setting',
+        gameState: 'ready',
         gameLocation: body.gameLocation ,
         battleZones: usePrepareClearBattleZone(body.gameLocation),
         players: new Array(body.hostingPlayer as PlayerData),

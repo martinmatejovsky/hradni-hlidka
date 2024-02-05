@@ -27,9 +27,9 @@
 </template>
 
 <script setup lang="ts">
-import type {GameLocation, GameState, PlayerData} from "~/types/CustomTypes";
+import type {GameLocation, PlayerData} from "~/types/CustomTypes";
 import {useState} from "nuxt/app";
-import {STORE_GAME_LOCATIONS, STORE_GAME_STATE, STORE_CURRENT_PLAYER} from "~/constants";
+import {STORE_GAME_LOCATIONS, STORE_CURRENT_PLAYER} from "~/constants";
 import type {ComputedRef} from "vue";
 
 // DATA
@@ -55,6 +55,7 @@ const fetchGameLocations = async () => {
       .finally(() => dataLoading.value = false);
 }
 const submitForm = async () => {
+  dataLoading.value = true;
   const selectedGameLocation = gameLocations.value.find(location => location.locationName === selectedLocationKey.value)
   if (selectedGameLocation && selectedPlayerName.value) {
     let newPlayer: PlayerData = useState<PlayerData>(STORE_CURRENT_PLAYER).value;
@@ -74,16 +75,15 @@ const submitForm = async () => {
         console.error(response.body.error);
       } else {
         useStoredGameInstance(response.body);
-        useStoredBattleZone(response.body.battleZones);
-
-        // TODO: maybe I do not need to store game state separately and I could use only what I find in the game instance?
-        useState<GameState>(STORE_GAME_STATE).value = response.body.gameState;
+        navigateTo('/battle')
       }
     }).catch(error => console.error(error))
 
   } else {
     console.error('Selected battle zone not found')
   }
+
+  dataLoading.value = true;
 }
 
 // LIFE CYCLE HOOKS
