@@ -1,9 +1,9 @@
-import type {BattleZone, BattleZonePolygon, Invader, InvaderType} from "~/types/CustomTypes";
+import type {BattleZone, Invader, InvaderType} from "~/types/CustomTypes";
 import {useState} from "nuxt/app";
-import {ATTACK_TEMPO, STORE_BATTLE_ZONE_API, STORE_GAME_STATE} from "~/constants";
+import {ATTACK_TEMPO, STORE_BATTLE_ZONES, STORE_GAME_STATE} from "~/constants";
 
 export const useRunAttack = () => {
-    let areas: BattleZonePolygon[] = useState<BattleZone>(STORE_BATTLE_ZONE_API).value.polygons;
+    let areas: BattleZone[] = useState<BattleZone[]>(STORE_BATTLE_ZONES).value;
 
     // 1. put attackers into waiting list, if it is empty. They should stay there for a moment
     // to let players react and prepare
@@ -21,7 +21,7 @@ export const useRunAttack = () => {
 
     return setInterval(() => {
         // 2. evaluate winning conditions - no attacker left or in assembly area
-        if (areas.every((area: BattleZonePolygon): boolean => area.assembledInvaders.length === 0
+        if (areas.every((area: BattleZone): boolean => area.assembledInvaders.length === 0
             && area.assaultLadder.every(invader => invader === null)
         )) {
             useState(STORE_GAME_STATE).value = 'won';

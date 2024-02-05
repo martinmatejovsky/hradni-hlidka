@@ -1,13 +1,13 @@
 import {useState} from "nuxt/app";
-import type {BattleZone, BattleZonePolygon} from "~/types/CustomTypes";
-import {ATTACK_TEMPO, LADDER_POSITIONS, STORE_BATTLE_ZONE_API, STORE_GAME_STATE} from "~/constants";
+import type {BattleZone} from "~/types/CustomTypes";
+import {ATTACK_TEMPO, LADDER_POSITIONS, STORE_BATTLE_ZONES, STORE_GAME_STATE} from "~/constants";
 
 const delayBetweenIterations = Math.floor(ATTACK_TEMPO / (LADDER_POSITIONS * 2));
 
 export const useMoveInvadersOnLadder = (): void => {
-    let areas: BattleZonePolygon[] = useState<BattleZone>(STORE_BATTLE_ZONE_API).value.polygons;
+    let areas: BattleZone[] = useState<BattleZone[]>(STORE_BATTLE_ZONES).value;
 
-    areas.forEach((area: BattleZonePolygon): void => {
+    areas.forEach((area: BattleZone): void => {
         for (let i = LADDER_POSITIONS - 1; i >= 0; i--) {
             if (useState(STORE_GAME_STATE).value !== 'running') {
                 return;

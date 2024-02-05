@@ -27,10 +27,9 @@
 </template>
 
 <script setup lang="ts">
-import {useStoredGameLocations, useStoredBattleZone} from "~/composables/states";
-import type {GameLocation, GameState} from "~/types/CustomTypes";
+import type {GameLocation, GameState, PlayerData} from "~/types/CustomTypes";
 import {useState} from "nuxt/app";
-import * as CONST from "~/constants";
+import {STORE_GAME_LOCATIONS, STORE_GAME_STATE, STORE_CURRENT_PLAYER} from "~/constants";
 import type {ComputedRef} from "vue";
 
 // DATA
@@ -39,16 +38,16 @@ const isFormValid = computed(() => {
 })
 const selectedLocationKey = ref<string | null>(null)
 const selectedPlayerName = ref<string | null>('Test Beolf')
-const gameLocations = useState<GameLocation[]>(CONST.STORE_GAME_LOCATIONS);
+const gameLocations = useState<GameLocation[]>(STORE_GAME_LOCATIONS);
 const dataLoading = ref<boolean>(false);
 
 // COMPUTED
-const locationOptions: ComputedRef<string[]> = computed(() => gameLocations.value.map(zone => zone.name))
+const locationOptions: ComputedRef<string[]> = computed(() => gameLocations.value.map(location => location.locationName))
 
 // METHODS
 const fetchGameLocations = async () => {
   dataLoading.value = true;
-  await $fetch('/api/battle-zones')
+  await $fetch('/api/game-locations')
       .then(response => {
         useStoredGameLocations(response);
       })
@@ -56,25 +55,32 @@ const fetchGameLocations = async () => {
       .finally(() => dataLoading.value = false);
 }
 const submitForm = async () => {
-  const selectedGameLocation = gameLocations.value.find(zone => zone.name === selectedLocationKey.value)
-  if (selectedGameLocation) {
-    console.log('Selected game location:', selectedGameLocation);
-    try {
-      await $fetch('/api/game-instances', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          gameLocation: selectedGameLocation,
-          hostingPlayer: selectedPlayerName.value
-        })
+  const selectedGameLocation = gameLocations.value.find(location => location.locationName === selectedLocationKey.value)
+  if (selectedGameLocation && selectedPlayerName.value) {
+    let newPlayer: PlayerData = useState<PlayerData>(STORE_CURRENT_PLAYER).value;
+    newPlayer.name = selectedPlayerName.value;
+
+    await $fetch('/api/game-instances', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        gameLocation: selectedGameLocation,
+        hostingPlayer: newPlayer
       })
-    } catch (error) {
-      console.error(error)
-    }
-    useStoredBattleZone(selectedGameLocation);
-    useState<GameState>(CONST.STORE_GAME_STATE).value = 'ready';
+    }).then(response => {
+      if ('error' in response.body) {
+        console.error(response.body.error);
+      } else {
+        useStoredGameInstance(response.body);
+        useStoredBattleZone(response.body.battleZones);
+
+        // TODO: maybe I do not need to store game state separately and I could use only what I find in the game instance?
+        useState<GameState>(STORE_GAME_STATE).value = response.body.gameState;
+      }
+    }).catch(error => console.error(error))
+
   } else {
     console.error('Selected battle zone not found')
   }

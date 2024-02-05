@@ -1,5 +1,5 @@
 import {useState} from "nuxt/app";
-import type {PlayerData, GameLocation, GameState, BattleZone} from "~/types/CustomTypes";
+import type {PlayerData, GameLocation, GameState, BattleZone, GameInstance} from "~/types/CustomTypes";
 import * as CONST from "../constants";
 
 // TODO - when initializing from server use this tutorial on
@@ -13,6 +13,7 @@ export const useWakeLock = () => useState<WakeLockSentinel | null>(CONST.STORE_W
 export const useStoredCurrentPlayer = () => useState<PlayerData>(CONST.STORE_CURRENT_PLAYER, (): PlayerData => {
     return {
         name: '',
+        key: String(Math.floor(100000 + Math.random() * 900000)),
         location: {
             latitude: null,
             longitude: null,
@@ -21,4 +22,7 @@ export const useStoredCurrentPlayer = () => useState<PlayerData>(CONST.STORE_CUR
     }
 })
 export const useStoredGameLocations = (initialData: GameLocation[]) => useState<GameLocation[]>(CONST.STORE_GAME_LOCATIONS, () => initialData)
-export const useStoredBattleZone = (zone: GameLocation) => useState<BattleZone>(CONST.STORE_BATTLE_ZONE_API, () => usePrepareClearBattleZone(zone))
+export const useStoredGameInstance = (game: GameInstance) => useState<GameInstance>(CONST.STORE_GAME_INSTANCE, () => game)
+// TODO: do not store Battle Zones separately in CONST.STORE_BATTLE_ZONES, but create getter from GameInstance. This way whenever
+// is GameInstance updated, BattleZones will be updated as well and also positions of other players and so on.
+export const useStoredBattleZone = (zone: BattleZone[]) => useState<BattleZone[]>(CONST.STORE_BATTLE_ZONES, () => zone)

@@ -1,9 +1,9 @@
-import type {BattleZone, BattleZonePolygon} from "~/types/CustomTypes";
+import type {BattleZone} from "~/types/CustomTypes";
 import {useState} from "nuxt/app";
-import {STORE_BATTLE_ZONE_API} from "~/constants";
+import {STORE_BATTLE_ZONES} from "~/constants";
 
 export const useWipeLadderInvaders = (): void => {
-    let zones: BattleZonePolygon[] = useState<BattleZone>(STORE_BATTLE_ZONE_API).value.polygons
+    let zones: BattleZone[] = useState<BattleZone[]>(STORE_BATTLE_ZONES).value
 
     zones.forEach((zone): void => {
         let defendersStrength = zone.guardians.length;

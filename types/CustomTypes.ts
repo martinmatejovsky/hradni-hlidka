@@ -5,42 +5,40 @@ export type Coordinates = {
 export type PlayerCoordinates = Coordinates & {accuracy: number | null}
 export type PlayerData = {
     name: string,
+    key: string,
     location: PlayerCoordinates,
 }
 export type GameState = "setting" | "ready" | "running" | "won" | "lost"
-
-interface BasePolygon {
-    areaName: string;
-    areaCornerCoordinates: Coordinates[];
+type PolygonType = "battleZone" | "smithy" | "barracks"
+export interface BasePolygon {
+    polygonName: string,
+    key: string,
+    polygonType: PolygonType,
+    cornerCoordinates: Coordinates[],
 }
-
-export interface BattleZonePolygon extends BasePolygon {
-    conquered: boolean;
-    guardians: PlayerData[];
-    assembledInvaders: Invader[];
-    assaultLadder: (Invader | null)[];
+export interface GameLocation {
+    locationName: string,
+    key: string,
+    polygons: BasePolygon[],
 }
-
-type GameLocationBase = {
-    name: string;
-    key: string;
-    polygons: BasePolygon[];
-};
-
-export type GameLocation = GameLocationBase & {
-    polygons: BasePolygon[];
-};
-
-export type BattleZone = GameLocationBase & {
-    polygons: BattleZonePolygon[];
-};
+export interface BattleZone {
+    zoneName: string,
+    key: string,
+    cornerCoordinates: Coordinates[],
+    conquered: boolean,
+    guardians: PlayerData[],
+    assembledInvaders: Invader[],
+    assaultLadder: (Invader | null)[],
+}
+export interface GameInstance {
+    id: string,
+    gameState: GameState,
+    gameLocation: GameLocation,
+    battleZones: BattleZone[],
+    players: PlayerData[],
+}
 export type InvaderType = "normal"
 export type Invader = {
     type: InvaderType,
     health: number,
-}
-export type GameInstance = {
-    id: string,
-    gameLocation: GameLocation,
-    players: PlayerData[],
 }

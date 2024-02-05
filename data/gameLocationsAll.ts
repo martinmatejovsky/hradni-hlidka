@@ -1,12 +1,14 @@
-import type {BattleZone} from "~/types/CustomTypes";
+import type {GameLocation} from "~/types/CustomTypes";
 
-export const BattleZonesAll: BattleZone[] = [{
+export const GameLocationsAll: GameLocation[] = [{
+    locationName: 'Loket Sportovní',
     key: 'loketSportovni',
-    name: 'Loket Sportovní',
     polygons: [
         {
-            areaName: 'Panelák',
-            areaCornerCoordinates: [
+            polygonName: 'Panelák',
+            key: 'panelak',
+            polygonType: "battleZone",
+            cornerCoordinates: [
                 {latitude: 50.1918117, longitude: 12.7414242},
                 {latitude: 50.1904517, longitude: 12.7405606},
                 {latitude: 50.1906658, longitude: 12.7436183},
@@ -14,8 +16,10 @@ export const BattleZonesAll: BattleZone[] = [{
             ],
         },
         {
-            areaName: 'Baráček',
-            areaCornerCoordinates: [
+            polygonName: 'Baráček',
+            key: 'baracek',
+            polygonType: "battleZone",
+            cornerCoordinates: [
                 {latitude: 50.1910781, longitude: 12.7442539},
                 {latitude: 50.1906900, longitude: 12.7439081},
                 {latitude: 50.1905286, longitude: 12.7444658},
@@ -24,12 +28,14 @@ export const BattleZonesAll: BattleZone[] = [{
         },
     ]},
     {
-    name: 'Česko',
+    locationName: 'Česko',
     key: 'cesko',
     polygons: [
         {
-            areaName: 'Česko',
-            areaCornerCoordinates: [
+            polygonName: 'Česko',
+            key: 'cesko',
+            polygonType: "battleZone",
+            cornerCoordinates: [
                 {latitude: 51.0842650, longitude: 11.8788950},
                 {latitude: 48.6634603, longitude: 11.7910044},
                 {latitude: 48.3614256, longitude: 17.6686900},

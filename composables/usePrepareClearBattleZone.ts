@@ -1,22 +1,22 @@
-import {BattleZone, BattleZonePolygon, BasePolygon, GameLocation} from '~/types/customTypes';
-import {LADDER_POSITIONS, STORE_BATTLE_ZONE_API} from "~/constants";
-import type {Invader, PlayerData} from "~/types/CustomTypes";
+import type {BattleZone, GameLocation, Invader, PlayerData, BasePolygon} from '~/types/customTypes';
+import {LADDER_POSITIONS} from "~/constants";
 
-export const usePrepareClearBattleZone = (zone: GameLocation | null = null): BattleZone => {
-    let emptyZone: any;
+export const usePrepareClearBattleZone = (zone: GameLocation): BattleZone[] => {
+    let emptyZone: BattleZone[] = [];
 
-    if (zone) {
-        emptyZone = {...zone} as BattleZone;
-    } else {
-        emptyZone = useState<BattleZone>(STORE_BATTLE_ZONE_API).value;
-    }
-
-    emptyZone.polygons.forEach((polygon: BattleZonePolygon) => {
-        polygon.conquered = false;
-        polygon.guardians = [] as PlayerData[];
-        polygon.assembledInvaders = [] as Invader[];
-        polygon.assaultLadder = new Array(LADDER_POSITIONS).fill(null) as Invader[];
-    });
+    zone.polygons.forEach((polygon: BasePolygon): void => {
+        if (polygon.polygonType === 'battleZone') {
+            emptyZone.push({
+                zoneName: polygon.polygonName,
+                key: polygon.key,
+                cornerCoordinates: polygon.cornerCoordinates,
+                conquered: false,
+                guardians: [] as PlayerData[],
+                assembledInvaders: [] as Invader[],
+                assaultLadder: new Array(LADDER_POSITIONS).fill(null) as Invader[],
+            })
+        }
+    })
 
     return emptyZone;
 };

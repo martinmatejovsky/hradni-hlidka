@@ -13,12 +13,12 @@
     <div v-if="storedGameState === 'running'">
       <v-divider class="mb-4"></v-divider>
 
-      <p class="mb-4">Jsem uvnitř? <span class="text-h4 text-indigo-lighten-4">{{ nameOfIntersectedArea || '--'}}</span></p>
+      <p class="mb-4">Jsem uvnitř? <span class="text-h4 text-indigo-lighten-4">{{ nameOfIntersectedArea }}</span></p>
       <h3 class="mb-3">Postup útoku</h3>
-      <p v-if="!battleZone">Žádná data o útoku.</p>
+      <p v-if="!battleZones">Žádná data o útoku.</p>
       <div v-else>
-        <div v-for="{ areaName, guardians, assembledInvaders, assaultLadder } in battleZone.polygons" :key="areaName" class="mb-3">
-        <h4 class="text-amber">{{ areaName }}</h4>
+        <div v-for="{ key, zoneName, guardians, assembledInvaders, assaultLadder } in battleZones" :key="key" class="mb-3">
+        <h4 class="text-amber">{{ zoneName }}</h4>
           <p>strážce:
             <template v-if="!guardians.length">--</template>
             <template v-else>
@@ -46,22 +46,29 @@
 <script setup lang="ts">
 // IMPORTS
 import {onMounted, onUnmounted, computed, watch} from 'vue';
-import type {PlayerData, BattleZone, BattleZonePolygon} from "~/types/CustomTypes";
+import type {PlayerData, BattleZone} from "~/types/CustomTypes";
 import * as CONST from "~/constants";
 import {useState} from "nuxt/app";
 
 // CONSTANTS
-const testerPlayerName = 'TestBeolf';
+const testerPlayerName = '';
 const intervalRunAttack = ref<NodeJS.Timeout | null>(null);
 
 // STATE INITIAL VALUES
 const storedGeolocationWatcher = useStoredGeolocationWatcher();
-const battleZone = useState<BattleZone>(CONST.STORE_BATTLE_ZONE_API);
+const battleZones: BattleZone[] = useState<BattleZone[]>(CONST.STORE_BATTLE_ZONES).value;
 const storedGameState = useGameState();
 const currentPlayer = useStoredCurrentPlayer();
 
 // DATA
-const nameOfIntersectedArea = computed(() => useIntersectedAreaName(currentPlayer.value?.location));
+const keyOfIntersectedArea = computed(() => useIntersectedAreaKey(currentPlayer.value?.location));
+const nameOfIntersectedArea = computed(() => {
+  if (keyOfIntersectedArea.value.length > 0) {
+    return battleZones.find((zone: BattleZone) => zone.key === keyOfIntersectedArea.value);
+  } else {
+    return '--';
+  }
+});
 const playerAccuracy = computed(() => Math.round(currentPlayer.value?.location.accuracy || 0));
 const accuracyClass = computed(() => {
   if (playerAccuracy.value < 7) {
@@ -79,20 +86,18 @@ const startAttack = () => {
   storedGameState.value = 'running';
   intervalRunAttack.value = useRunAttack();
 };
-const restartAttack = () => {
-  usePrepareClearBattleZone()
-  storedGameState.value = 'ready';
-  updateAreasOfCurrentPlayer()
+const restartAttack = (): void => {
+  // TODO: send request to server to clear game stats, set game state to "setting" and allow connection for others, etc.
 }
 const updateAreasOfCurrentPlayer = ():void => {
-  if (nameOfIntersectedArea.value.length > 0) {
-    battleZone.value.polygons.forEach((area: BattleZonePolygon) => {
-      if (area.areaName === nameOfIntersectedArea.value) {
-        area.guardians.push(currentPlayer.value);
+  if (keyOfIntersectedArea.value.length > 0) {
+    battleZones.forEach((zone: BattleZone) => {
+      if (zone.key === keyOfIntersectedArea.value) {
+        zone.guardians.push(currentPlayer.value);
       }
     })
-  } else if (nameOfIntersectedArea.value === '') {
-    battleZone.value.polygons.forEach((area: BattleZonePolygon) => {
+  } else if (keyOfIntersectedArea.value === '') {
+    battleZones.forEach((area: BattleZone) => {
       const index = area.guardians.findIndex((guardian: PlayerData) => guardian.name === currentPlayer.value.name);
       area.guardians.splice(index, 1);
     })
@@ -100,8 +105,8 @@ const updateAreasOfCurrentPlayer = ():void => {
 }
 
 // WATCHERS
-watch(nameOfIntersectedArea, (): void => {
-  if (battleZone.value) {
+watch(keyOfIntersectedArea, (): void => {
+  if (battleZones) {
     updateAreasOfCurrentPlayer()
   }
 });

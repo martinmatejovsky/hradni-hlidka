@@ -1,8 +1,8 @@
-import {BattleZonesAll} from "~/data/battleZonesAll";
+import {GameLocationsAll} from "~/data/gameLocationsAll";
 
 export default defineEventHandler((event) => {
     const requestedZone: string =  getRouterParams(event).zone
-    const foundZone = BattleZonesAll.find(zone => zone.key === requestedZone)
+    const foundZone = GameLocationsAll.find(zone => zone.key === requestedZone)
     if (!foundZone) {
         return {
             status: 204,
