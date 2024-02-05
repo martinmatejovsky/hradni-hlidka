@@ -6,6 +6,13 @@ dobrá, kromě Opera mini.
 
 ## načítací kolečko, zatímco se startuje navigator.geolocation 
 
+## na serveru neukládat do souborů
+myslím, že pro práci serveru by bylo rychlejší něco jiného, než otevírat soubor, číst z něj,
+zapsat do něj a uložit soubor. Co kdyby při založení Game Instance se vytvoří .ts soubor 
+s kompletními funkcemi nutnými pro běh hry? Dělal by se jako instance nějaké classy.
+Jeho jméno by bylo podle ID Game Instaance a dalo by se proto k němu přistupovat přímým
+API dotazem na URL /game-instance/ID. 
+
 ## Přenačíst inicializaci geolocation po zapnutí GPS v mobilu
 ideálně kdyby stránka sama od sebe poznala, že se GPS zapnulo, a znova inicializovala 
 navigator.geolocation.watchPosition().
