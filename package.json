@@ -21,6 +21,7 @@
   },
   "dependencies": {
     "@mdi/font": "^7.4.47",
+    "mariadb": "^3.2.3",
     "prettier": "^3.2.5"
   }
 }
