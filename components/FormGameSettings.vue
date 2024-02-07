@@ -1,6 +1,9 @@
 <template>
   <div class="my-4">
     <v-container>
+      <div v-if="componentError">
+        <v-alert type="error" class="mb-4" dismissible>{{ componentError }}</v-alert>
+      </div>
       <div v-if="dataLoading">
         <v-icon icon="mdi-loading" class="hh-icon-loading"></v-icon>
         loading data from server...
@@ -32,6 +35,8 @@ import {useState} from "nuxt/app";
 import {STORE_GAME_LOCATIONS, STORE_CURRENT_PLAYER} from "~/constants";
 import type {ComputedRef} from "vue";
 
+const serverErrorMessage = 'Nepodařilo se načíst seznam bitevních míst';
+
 // DATA
 const isFormValid = computed(() => {
   return selectedLocationKey.value !== null && selectedPlayerName.value
@@ -40,6 +45,7 @@ const selectedLocationKey = ref<string | null>(null)
 const selectedPlayerName = ref<string | null>('Test Beolf')
 const gameLocations = useState<GameLocation[]>(STORE_GAME_LOCATIONS);
 const dataLoading = ref<boolean>(false);
+const componentError = ref<string | null>(null);
 
 // COMPUTED
 const locationOptions: ComputedRef<string[]> = computed(() => gameLocations.value.map(location => location.locationName))
@@ -51,11 +57,16 @@ const fetchGameLocations = async () => {
       .then(response => {
         useStoredGameLocations(response);
       })
-      .catch(error => console.error(error))
+      .catch(error => {
+        console.error(error)
+        componentError.value = 'Nepodařilo se načíst seznam bitevních míst'
+      })
       .finally(() => dataLoading.value = false);
 }
 const submitForm = async () => {
   dataLoading.value = true;
+  componentError.value = null;
+
   const selectedGameLocation = gameLocations.value.find(location => location.locationName === selectedLocationKey.value)
   if (selectedGameLocation && selectedPlayerName.value) {
     let newPlayer: PlayerData = useState<PlayerData>(STORE_CURRENT_PLAYER).value;
@@ -72,18 +83,22 @@ const submitForm = async () => {
       })
     }).then(response => {
       if ('error' in response.body) {
+        componentError.value = serverErrorMessage
         console.error(response.body.error);
       } else {
         useStoredGameInstance(response.body);
-        navigateTo('/battle')
+        console.log('OK very much')
+        // navigateTo('/battle')
       }
-    }).catch(error => console.error(error))
-
+    }).catch(error => {
+      componentError.value = serverErrorMessage
+      console.error(error)
+    })
   } else {
-    console.error('Selected battle zone not found')
+    componentError.value = serverErrorMessage
   }
 
-  dataLoading.value = true;
+  dataLoading.value = false;
 }
 
 // LIFE CYCLE HOOKS
