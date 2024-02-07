@@ -17,6 +17,7 @@ Start the development server on `http://localhost:3000`:
 
 Serverless service running on https://app.netlify.com/
 
+Database running on supabase.com, password is my strongest I currently use
 ```bash
 # npm
 npm run dev
