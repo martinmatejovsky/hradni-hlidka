@@ -35,7 +35,7 @@ import {useState} from "nuxt/app";
 import {STORE_GAME_LOCATIONS, STORE_CURRENT_PLAYER} from "~/constants";
 import type {ComputedRef} from "vue";
 
-const serverErrorMessage = 'Nepodařilo se načíst seznam bitevních míst';
+const templateServerErrorMessage = 'Nepodařilo se spojit se serverem';
 
 // DATA
 const isFormValid = computed(() => {
@@ -83,19 +83,18 @@ const submitForm = async () => {
       })
     }).then(response => {
       if ('error' in response.body) {
-        componentError.value = serverErrorMessage
+        componentError.value = templateServerErrorMessage
         console.error(response.body.error);
       } else {
-        useStoredGameInstance(response.body);
-        console.log('OK very much')
-        // navigateTo('/battle')
+        useStoredGameInstance(response.body.gameInstance);
+        navigateTo('/battle')
       }
     }).catch(error => {
-      componentError.value = serverErrorMessage
+      componentError.value = templateServerErrorMessage
       console.error(error)
     })
   } else {
-    componentError.value = serverErrorMessage
+    componentError.value = templateServerErrorMessage
   }
 
   dataLoading.value = false;
