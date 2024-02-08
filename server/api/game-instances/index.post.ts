@@ -1,7 +1,9 @@
 import {GameInstance, PlayerData} from "~/types/CustomTypes";
-import { writeFile } from 'fs/promises';
 import { usePrepareClearBattleZone } from '~/composables/usePrepareClearBattleZone'
+import { createClient } from '@supabase/supabase-js';
+
 export default defineEventHandler(async (event) => {
+    const runtimeConfig = useRuntimeConfig()
     const body = await readBody(event)
 
     if (!body.hostingPlayer || !body.gameLocation) {
@@ -19,24 +21,30 @@ export default defineEventHandler(async (event) => {
         players: new Array(body.hostingPlayer as PlayerData),
     }
 
-    const dataDirectory = 'server/game-instances/';
-    const instanceFileName: string = `${newGameInstance.id}.json`;
-    const instanceFilePath: string = `${dataDirectory}${instanceFileName}`;
-
     try {
-        await writeFile(instanceFilePath, JSON.stringify(newGameInstance, null, 2), 'utf-8');
+        const supabase = createClient(runtimeConfig.public.dbHost, runtimeConfig.public.dbKey);
 
+        // Insert a row
+        const { data, error } = await supabase
+            .from('game_instances')
+            .insert([newGameInstance])
+            .select();
+
+        if (error) {
+            return {
+                status: 500,
+                body: { error: error.message },
+            };
+        }
         return {
-            status: 201, // 201 Created
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: newGameInstance,
+            status: 201,
+            body: { gameInstance: data[0] as GameInstance },
         };
     } catch (error) {
+        console.error('Error:', error);
         return {
-            status: 500, // 500 Internal Server Error
-            body: { error: 'Error writing game instance to server file ' + instanceFilePath },
+            status: 500,
+            body: { error: 'Error while accessing database' },
         };
     }
 });

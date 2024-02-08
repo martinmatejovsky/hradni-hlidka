@@ -6,6 +6,12 @@ export default defineNuxtConfig({
   build: {
     transpile: ['vuetify'],
   },
+  runtimeConfig: {
+    public: {
+      dbHost: process.env.NUXT_DB_HOST,
+      dbKey: process.env.NUXT_DB_KEY,
+    }
+  },
   modules: [
     async (options, nuxt) => {
       nuxt.hooks.hook('vite:extendConfig', config => config.plugins.push(
