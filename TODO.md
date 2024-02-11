@@ -1,5 +1,13 @@
 # TODO
 
+## Real time data upload
+doporučil mi ChatGPT:
+For real-time communication between the server and clients, consider using WebSocket protocol.
+Libraries like Socket.IO can simplify WebSocket implementation and provide fallback mechanisms
+for environments where WebSocket is not supported. Alternatively, you can utilize server-sent
+events (SSE) for server-to-client communication. SSE allows the server to push updates to
+clients over HTTP.
+
 ## Zhasínání displeje při nečinnosti
 Vypadá to, že Firefox to hodlá podporovat až ve verzi 125, která ještě není. Jinak je podpora
 dobrá, kromě Opera mini.
