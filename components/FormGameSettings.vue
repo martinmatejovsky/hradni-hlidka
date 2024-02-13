@@ -34,7 +34,9 @@ import type {GameLocation, PlayerData} from "~/types/CustomTypes";
 import {useState} from "nuxt/app";
 import {STORE_GAME_LOCATIONS, STORE_CURRENT_PLAYER} from "~/constants";
 import type {ComputedRef} from "vue";
+import { useRouter } from 'vue-router';
 
+const router = useRouter();
 const templateServerErrorMessage = 'Nepodařilo se spojit se serverem';
 
 // DATA
@@ -63,39 +65,41 @@ const fetchGameLocations = async () => {
       })
       .finally(() => dataLoading.value = false);
 }
-const submitForm = async () => {
+const submitForm = () => {
   dataLoading.value = true;
   componentError.value = null;
 
-  const selectedGameLocation = gameLocations.value.find(location => location.locationName === selectedLocationKey.value)
-  if (selectedGameLocation && selectedPlayerName.value) {
-    let newPlayer: PlayerData = useState<PlayerData>(STORE_CURRENT_PLAYER).value;
-    newPlayer.name = selectedPlayerName.value;
+  router.push('/game')
 
-    await $fetch('/api/game-instances', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        gameLocation: selectedGameLocation,
-        hostingPlayer: newPlayer
-      })
-    }).then(response => {
-      if ('error' in response.body) {
-        componentError.value = templateServerErrorMessage
-        console.error(response.body.error);
-      } else {
-        useStoredGameInstance(response.body.gameInstance);
-        navigateTo('/game/' + response.body.gameInstance.id)
-      }
-    }).catch(error => {
-      componentError.value = templateServerErrorMessage
-      console.error(error)
-    })
-  } else {
-    componentError.value = templateServerErrorMessage
-  }
+  // const selectedGameLocation = gameLocations.value.find(location => location.locationName === selectedLocationKey.value)
+  // if (selectedGameLocation && selectedPlayerName.value) {
+  //   let newPlayer: PlayerData = useState<PlayerData>(STORE_CURRENT_PLAYER).value;
+  //   newPlayer.name = selectedPlayerName.value;
+  //
+  //   await $fetch('/api/game-instances', {
+  //     method: 'POST',
+  //     headers: {
+  //       'Content-Type': 'application/json'
+  //     },
+  //     body: JSON.stringify({
+  //       gameLocation: selectedGameLocation,
+  //       hostingPlayer: newPlayer
+  //     })
+  //   }).then(response => {
+  //     if ('error' in response.body) {
+  //       componentError.value = templateServerErrorMessage
+  //       console.error(response.body.error);
+  //     } else {
+  //       useStoredGameInstance(response.body.gameInstance);
+  //       navigateTo('/game/' + response.body.gameInstance.id)
+  //     }
+  //   }).catch(error => {
+  //     componentError.value = templateServerErrorMessage
+  //     console.error(error)
+  //   })
+  // } else {
+  //   componentError.value = templateServerErrorMessage
+  // }
 
   dataLoading.value = false;
 }
