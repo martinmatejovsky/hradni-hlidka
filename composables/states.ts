@@ -1,5 +1,5 @@
 import {useState} from "nuxt/app";
-import type {PlayerData, GameLocation, GameInstance} from "~/types/CustomTypes";
+import type {PlayerData, GameInstance} from "~/types/CustomTypes";
 import * as CONST from "../constants";
 
 // TODO - when initializing from server use this tutorial on
