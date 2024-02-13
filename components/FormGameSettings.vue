@@ -87,7 +87,7 @@ const submitForm = async () => {
         console.error(response.body.error);
       } else {
         useStoredGameInstance(response.body.gameInstance);
-        navigateTo('/battle')
+        navigateTo('/game/' + response.body.gameInstance.id)
       }
     }).catch(error => {
       componentError.value = templateServerErrorMessage

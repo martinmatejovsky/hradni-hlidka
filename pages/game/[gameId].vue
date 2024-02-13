@@ -57,6 +57,9 @@ const currentPlayer = useState<PlayerData>(STORE_CURRENT_PLAYER);
 const gameState: string = useGetterGameState();
 const battleZones: BattleZone[] = useGetterBattleZones();
 const connectedPlayers: string[] = useState<GameInstance>(STORE_GAME_INSTANCE).value.players.map(player => player.name);
+const route = useRoute()
+const gameId = route.params.battleId
+
 // METHODS
 const restartAttack = (): void => {
   // TODO: send request to server to clear game stats, set game state to "setting" and allow connection for others, etc.
