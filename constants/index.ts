@@ -5,7 +5,6 @@ export const STORE_GAME_STATE = 'gameState';
 export const STORE_WAKE_LOCK = 'wakeLock';
 export const STORE_CURRENT_PLAYER = 'currentPlayer';
 export const STORE_BATTLE_ZONE = 'battleZones';
-export const STORE_GAME_LOCATIONS = 'gameLocations';
 export const STORE_GAME_INSTANCE = 'gameInstance';
 export const STORE_BATTLE_ZONES = 'battleZones';
 

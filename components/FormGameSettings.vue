@@ -30,13 +30,9 @@
 </template>
 
 <script setup lang="ts">
-import type {GameLocation, PlayerData} from "~/types/CustomTypes";
-import {useState} from "nuxt/app";
-import {STORE_GAME_LOCATIONS, STORE_CURRENT_PLAYER} from "~/constants";
+import type {GameLocation} from "~/types/CustomTypes";
 import type {ComputedRef} from "vue";
-import { useRouter } from 'vue-router';
 
-const router = useRouter();
 const templateServerErrorMessage = 'Nepodařilo se spojit se serverem';
 
 // DATA
@@ -45,19 +41,19 @@ const isFormValid = computed(() => {
 })
 const selectedLocationKey = ref<string | null>(null)
 const selectedPlayerName = ref<string | null>('Test Beolf')
-const gameLocations = useState<GameLocation[]>(STORE_GAME_LOCATIONS);
+let gameLocations: GameLocation[]
 const dataLoading = ref<boolean>(false);
 const componentError = ref<string | null>(null);
 
 // COMPUTED
-const locationOptions: ComputedRef<string[]> = computed(() => gameLocations.value.map(location => location.locationName))
+const locationOptions: ComputedRef<string[]> = computed(() => gameLocations.map(location => location.locationName))
 
 // METHODS
 const fetchGameLocations = async () => {
   dataLoading.value = true;
   await $fetch('/api/game-locations')
       .then(response => {
-        useStoredGameLocations(response);
+        gameLocations = response;
       })
       .catch(error => {
         console.error(error)
@@ -65,11 +61,30 @@ const fetchGameLocations = async () => {
       })
       .finally(() => dataLoading.value = false);
 }
-const submitForm = () => {
+const submitForm = async () => {
   dataLoading.value = true;
   componentError.value = null;
 
-  router.push('/game')
+  await $fetch('/api/game', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      gameLocation: gameLocations.find(location => location.locationName === selectedLocationKey.value),
+      hostingPlayer: selectedPlayerName.value
+    })
+  }).then(response => {
+    if ('error' in response.body) {
+      componentError.value = templateServerErrorMessage
+      console.error(response.body.error);
+    } else {
+      useStoredGameInstance(response.body.gameInstance);
+      navigateTo('/game/' + response.body.gameInstance.id)
+    }
+  }).catch(error => {
+    componentError.value = templateServerErrorMessage
+  })
 
   // const selectedGameLocation = gameLocations.value.find(location => location.locationName === selectedLocationKey.value)
   // if (selectedGameLocation && selectedPlayerName.value) {

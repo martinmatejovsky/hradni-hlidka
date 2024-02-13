@@ -11,11 +11,13 @@ socket.on('connect', () => {
   console.log('Socket connected');
 });
 
-const closeSocket = () => {
+onBeforeMount(() => {
+  socket.emit('join', 'game');
+});
+
+onBeforeUnmount(() => {
   if (socket) {
     socket.close();
   }
-};
-
-onBeforeUnmount(closeSocket);
+});
 </script>

@@ -20,5 +20,4 @@ export const useStoredCurrentPlayer = () => useState<PlayerData>(CONST.STORE_CUR
         }
     }
 })
-export const useStoredGameLocations = (initialData: GameLocation[]) => useState<GameLocation[]>(CONST.STORE_GAME_LOCATIONS, () => initialData)
 export const useStoredGameInstance = (game: GameInstance) => useState<GameInstance>(CONST.STORE_GAME_INSTANCE, () => game)
