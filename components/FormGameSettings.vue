@@ -30,7 +30,7 @@
 </template>
 
 <script setup lang="ts">
-import type {GameLocation} from "~/types/CustomTypes";
+import type {GameInstance, GameLocation} from "~/types/CustomTypes";
 import type {ComputedRef} from "vue";
 
 const templateServerErrorMessage = 'Nepodařilo se spojit se serverem';
@@ -74,47 +74,18 @@ const submitForm = async () => {
       gameLocation: gameLocations.find(location => location.locationName === selectedLocationKey.value),
       hostingPlayer: selectedPlayerName.value
     })
-  }).then(response => {
-    if ('error' in response.body) {
-      componentError.value = templateServerErrorMessage
-      console.error(response.body.error);
-    } else {
-      useStoredGameInstance(response.body.gameInstance);
-      navigateTo('/game/' + response.body.gameInstance.id)
-    }
-  }).catch(() => {
-    componentError.value = templateServerErrorMessage
-  })
+  }).then((response) => {
+    const gameInstance = response as GameInstance;
 
-  // const selectedGameLocation = gameLocations.value.find(location => location.locationName === selectedLocationKey.value)
-  // if (selectedGameLocation && selectedPlayerName.value) {
-  //   let newPlayer: PlayerData = useState<PlayerData>(STORE_CURRENT_PLAYER).value;
-  //   newPlayer.name = selectedPlayerName.value;
-  //
-  //   await $fetch('/api/game-instances', {
-  //     method: 'POST',
-  //     headers: {
-  //       'Content-Type': 'application/json'
-  //     },
-  //     body: JSON.stringify({
-  //       gameLocation: selectedGameLocation,
-  //       hostingPlayer: newPlayer
-  //     })
-  //   }).then(response => {
-  //     if ('error' in response.body) {
-  //       componentError.value = templateServerErrorMessage
-  //       console.error(response.body.error);
-  //     } else {
-  //       useStoredGameInstance(response.body.gameInstance);
-  //       navigateTo('/game/' + response.body.gameInstance.id)
-  //     }
-  //   }).catch(error => {
-  //     componentError.value = templateServerErrorMessage
-  //     console.error(error)
-  //   })
-  // } else {
-  //   componentError.value = templateServerErrorMessage
-  // }
+    if (!gameInstance) {
+      componentError.value = templateServerErrorMessage
+    } else {
+      useStoredGameInstance(gameInstance);
+      navigateTo('/game/' + gameInstance.id)
+    }
+  }).catch((error) => {
+    componentError.value = templateServerErrorMessage + ' ' + error
+  })
 
   dataLoading.value = false;
 }
