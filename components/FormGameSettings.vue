@@ -21,6 +21,7 @@
               ></v-select>
               <v-text-field :clearable="true" v-model="selectedPlayerName" required label="Label"></v-text-field>
               <v-btn type="submit" class="mb-2" :block="true" :disabled="!isFormValid" rounded="xs">Založit novou bitvu</v-btn>
+              <v-btn @click="openTestGame" type="button" class="mb-2" :block="true" :disabled="!isFormValid" rounded="xs">testovací hra /1</v-btn>
             </v-form>
           </v-col>
         </v-row>
@@ -63,6 +64,11 @@ const fetchGameLocations = async () => {
         componentError.value = 'Nepodařilo se načíst seznam bitevních míst'
       })
       .finally(() => dataLoading.value = false);
+}
+const openTestGame = () => {
+  useState<PlayerData>(STORE_CURRENT_PLAYER).value.name = selectedPlayerName.value;
+  useState<PlayerData>(STORE_CURRENT_PLAYER).value.key = selectedPlayerName.value + '123456';
+  navigateTo('/game/1')
 }
 const submitForm = async () => {
   dataLoading.value = true;

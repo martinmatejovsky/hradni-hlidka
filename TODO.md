@@ -1,5 +1,8 @@
 # TODO
 
+## tlačítka zpět
+na stránce [gameId].vue když padne chyba, tak by bylo dobré mít tlačítko zpět na index
+
 ## Real time data upload
 doporučil mi ChatGPT:
 For real-time communication between the server and clients, consider using WebSocket protocol.

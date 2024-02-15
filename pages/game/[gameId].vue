@@ -61,9 +61,11 @@ import {computed, watch} from "vue";
 import {useState} from "nuxt/app";
 import * as CONST from "~/constants";
 import {useStoredGameInstance} from "~/composables/states";
+import io from "socket.io-client";
 
 // DATA
 const runtimeConfig = useRuntimeConfig()
+const socket = io(runtimeConfig.public.socketIoUrl as string, { transports: ['websocket'] });
 const intervalRunAttack = ref<NodeJS.Timeout | null>(null);
 const currentPlayer = useState<PlayerData>(STORE_CURRENT_PLAYER);
 const gameState = useGetterGameState;
@@ -126,6 +128,12 @@ watch(useState(CONST.STORE_GAME_STATE), (newValue): void => {
 })
 
 // LIFECYCLE HOOKS
+onBeforeMount(() => {
+  socket.on('connect', () => {
+    console.log('Socket connected');
+  });
+});
+
 onMounted(async () => {
   dataLoading.value = true;
   await $fetch(runtimeConfig.public.serverUrl + '/api/game/' + gameId)
@@ -140,5 +148,11 @@ onMounted(async () => {
   }
   await useReleaseWakeLockScreen();
   dataLoading.value = false
+})
+
+onBeforeUnmount(() => {
+  if (socket) {
+    socket.close();
+  }
 })
 </script>
