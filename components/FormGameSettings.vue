@@ -30,8 +30,10 @@
 </template>
 
 <script setup lang="ts">
-import type {GameLocation} from "~/types/CustomTypes";
+import type {GameLocation, PlayerData} from "~/types/CustomTypes";
 import type {ComputedRef} from "vue";
+import {useState} from "nuxt/app";
+import {STORE_CURRENT_PLAYER} from "~/constants";
 
 const templateServerErrorMessage = 'Nepodařilo se spojit se serverem';
 
@@ -40,7 +42,7 @@ const isFormValid = computed(() => {
   return selectedLocationKey.value !== null && selectedPlayerName.value
 })
 const selectedLocationKey = ref<string | null>(null)
-const selectedPlayerName = ref<string | null>('Test Beolf')
+const selectedPlayerName = ref<string>('Test Beolf')
 let gameLocations: GameLocation[]
 const dataLoading = ref<boolean>(false);
 const componentError = ref<string | null>(null);
@@ -65,6 +67,8 @@ const fetchGameLocations = async () => {
 const submitForm = async () => {
   dataLoading.value = true;
   componentError.value = null;
+  useState<PlayerData>(STORE_CURRENT_PLAYER).value.name = selectedPlayerName.value;
+  useState<PlayerData>(STORE_CURRENT_PLAYER).value.key = selectedPlayerName.value + '123456';
 
   await $fetch( runtimeConfig.public.serverUrl + '/api/game', {
     method: 'POST',
@@ -73,7 +77,7 @@ const submitForm = async () => {
     },
     body: JSON.stringify({
       gameLocation: gameLocations.find(location => location.locationName === selectedLocationKey.value),
-      hostingPlayer: selectedPlayerName.value
+      hostingPlayer: useState<PlayerData>(STORE_CURRENT_PLAYER).value
     })
   }).then((response) => {
     const gameInstance = response as {id: string};
@@ -82,7 +86,6 @@ const submitForm = async () => {
       componentError.value = templateServerErrorMessage
     } else {
       const newUrl = '/game/' + gameInstance.id
-      console.log('Navigating to: ' + newUrl)
       navigateTo(newUrl)
     }
   }).catch((error) => {

@@ -12,7 +12,7 @@ export const useWakeLock = () => useState<WakeLockSentinel | null>(CONST.STORE_W
 export const useStoredCurrentPlayer = () => useState<PlayerData>(CONST.STORE_CURRENT_PLAYER, (): PlayerData => {
     return {
         name: '',
-        key: String(Math.floor(100000 + Math.random() * 900000)),
+        key: '',
         location: {
             latitude: null,
             longitude: null,

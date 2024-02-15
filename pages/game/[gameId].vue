@@ -1,24 +1,34 @@
 <template>
+  <h1 class="mb-4">Bitva</h1>
   <!-- READY? -->
+  <div v-if="pageError">
+    <v-alert type="error" class="mb-4" dismissible v-html="pageError"></v-alert>
+  </div>
+
+  <div v-if="dataLoading">
+    <v-icon icon="mdi-loading" class="hh-icon-loading"></v-icon>
+    načítám data...
+  </div>
+
   <div v-if="gameState === 'ready'">
     <h2>Ke hře připraveni:</h2>
     <p v-if="connectedPlayers.length === 0">Nikdo se zatím nepřipojil.</p>
     <p v-else>
       <span v-for="player in connectedPlayers" :key="player" class="text-green">{{ player }}</span>
     </p>
-    <v-btn @click="startAttack" rounded="xs" class="mt-3 mb-3 mr-4">Zahájit útok</v-btn>
     <nuxt-link to="/">
-      <v-btn rounded="xs" class="mt-3 mb-3">Zpět</v-btn>
+      <v-btn rounded="xs" class="mt-3 mr-4 mb-3">Zpět</v-btn>
     </nuxt-link>
+    <v-btn @click="startAttack" rounded="xs" class="mt-3 mb-3">Zahájit útok</v-btn>
   </div>
 
   <!-- RUNNING -->
   <div v-else-if="gameState === 'running'">
     <p class="mb-4">Jsem uvnitř? <span class="text-h4 text-indigo-lighten-4">{{ nameOfIntersectedArea }}</span></p>
     <h3 class="mb-3">Postup útoku</h3>
-    <p v-if="!battleZones">Žádná data o útoku.</p>
+    <p v-if="!useGetterBattleZones">Žádná data o útoku.</p>
     <div v-else>
-      <div v-for="{ key, zoneName, guardians, assembledInvaders, assaultLadder } in battleZones" :key="key" class="mb-3">
+      <div v-for="{ key, zoneName, guardians, assembledInvaders, assaultLadder } in useGetterBattleZones" :key="key" class="mb-3">
         <h4 class="text-amber">{{ zoneName }}</h4>
         <p>strážce:
           <template v-if="!guardians.length">--</template>
@@ -50,15 +60,22 @@ import type {BattleZone, GameInstance, PlayerData} from "~/types/CustomTypes";
 import {computed, watch} from "vue";
 import {useState} from "nuxt/app";
 import * as CONST from "~/constants";
+import {useStoredGameInstance} from "~/composables/states";
 
 // DATA
+const runtimeConfig = useRuntimeConfig()
 const intervalRunAttack = ref<NodeJS.Timeout | null>(null);
 const currentPlayer = useState<PlayerData>(STORE_CURRENT_PLAYER);
-const gameState: string = useGetterGameState();
-const battleZones: BattleZone[] = useGetterBattleZones();
-const connectedPlayers: string[] = useState<GameInstance>(STORE_GAME_INSTANCE).value.players.map(player => player.name);
+const gameState = useGetterGameState;
 const route = useRoute()
-const gameId = route.params.battleId
+const gameId = route.params.gameId
+const dataLoading = ref<boolean>(false);
+const pageError = ref<string | null>(null);
+
+// COMPUTED
+const connectedPlayers = computed(() => {
+  return useState<GameInstance>(STORE_GAME_INSTANCE).value?.players.map(player => player.name)
+});
 
 // METHODS
 const restartAttack = (): void => {
@@ -72,20 +89,20 @@ const startAttack = () => {
 const keyOfIntersectedArea = computed(() => useIntersectedAreaKey(currentPlayer.value?.location));
 const nameOfIntersectedArea = computed(() => {
   if (keyOfIntersectedArea.value.length > 0) {
-    return battleZones.find((zone: BattleZone) => zone.key === keyOfIntersectedArea.value);
+    return useGetterBattleZones.value.find((zone: BattleZone) => zone.key === keyOfIntersectedArea.value);
   } else {
     return '--';
   }
 });
 const updateAreasOfCurrentPlayer = ():void => {
   if (keyOfIntersectedArea.value.length > 0) {
-    battleZones.forEach((zone: BattleZone) => {
+    useGetterBattleZones.value.forEach((zone: BattleZone) => {
       if (zone.key === keyOfIntersectedArea.value) {
         zone.guardians.push(currentPlayer.value);
       }
     })
   } else if (keyOfIntersectedArea.value === '') {
-    battleZones.forEach((area: BattleZone) => {
+    useGetterBattleZones.value.forEach((area: BattleZone) => {
       const index = area.guardians.findIndex((guardian: PlayerData) => guardian.name === currentPlayer.value.name);
       area.guardians.splice(index, 1);
     })
@@ -94,7 +111,7 @@ const updateAreasOfCurrentPlayer = ():void => {
 
 // WATCHERS
 watch(keyOfIntersectedArea, (): void => {
-  if (battleZones) {
+  if (useGetterBattleZones) {
     updateAreasOfCurrentPlayer()
   }
 });
@@ -109,10 +126,19 @@ watch(useState(CONST.STORE_GAME_STATE), (newValue): void => {
 })
 
 // LIFECYCLE HOOKS
-onMounted(() => {
+onMounted(async () => {
+  dataLoading.value = true;
+  await $fetch(runtimeConfig.public.serverUrl + '/api/game/' + gameId)
+      .then(response => {
+        useStoredGameInstance(response as GameInstance);
+      })
+      .catch(error => {
+        pageError.value = 'Nepodařilo se načíst bitvu s tímto ID.<br />' + error
+      })
   if (intervalRunAttack.value !== null) {
     clearInterval(intervalRunAttack.value);
   }
-  useReleaseWakeLockScreen();
+  await useReleaseWakeLockScreen();
+  dataLoading.value = false
 })
 </script>

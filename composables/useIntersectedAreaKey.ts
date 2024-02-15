@@ -1,16 +1,13 @@
-import type {PlayerCoordinates} from "~/types/CustomTypes";
-import {useState} from "nuxt/app";
-import type {BattleZone} from "~/types/CustomTypes";
-import {STORE_BATTLE_ZONES} from "~/constants";
+import type {BattleZone, PlayerCoordinates} from "~/types/CustomTypes";
 
 export function useIntersectedAreaKey(playerLocationValue: PlayerCoordinates | undefined): string {
     if (!playerLocationValue) {
         return 'Pozice hráče není k dispozici';
-    } else if (!useState<BattleZone>(STORE_BATTLE_ZONES).value) {
+    } else if (!useGetterBattleZones.value) {
         return 'Herní zóna není k dispozici';
     }
 
-    const foundAreas = useState<BattleZone[]>(STORE_BATTLE_ZONES).value.filter(zone => {
+    const foundAreas: BattleZone[] = useGetterBattleZones.value.filter(zone => {
         return useIsPositionInsidePolygon(playerLocationValue, zone.cornerCoordinates);
     });
 
