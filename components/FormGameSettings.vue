@@ -30,7 +30,7 @@
 </template>
 
 <script setup lang="ts">
-import type {GameInstance, GameLocation} from "~/types/CustomTypes";
+import type {GameLocation} from "~/types/CustomTypes";
 import type {ComputedRef} from "vue";
 
 const templateServerErrorMessage = 'Nepodařilo se spojit se serverem';
@@ -44,6 +44,7 @@ const selectedPlayerName = ref<string | null>('Test Beolf')
 let gameLocations: GameLocation[]
 const dataLoading = ref<boolean>(false);
 const componentError = ref<string | null>(null);
+const runtimeConfig = useRuntimeConfig()
 
 // COMPUTED
 const locationOptions: ComputedRef<string[]> = computed(() => gameLocations.map(location => location.locationName))
@@ -51,9 +52,9 @@ const locationOptions: ComputedRef<string[]> = computed(() => gameLocations.map(
 // METHODS
 const fetchGameLocations = async () => {
   dataLoading.value = true;
-  await $fetch('/api/game-locations')
+  await $fetch(runtimeConfig.public.serverUrl + '/api/game-locations')
       .then(response => {
-        gameLocations = response;
+        gameLocations = response as GameLocation[];
       })
       .catch(error => {
         console.error(error)
@@ -65,7 +66,7 @@ const submitForm = async () => {
   dataLoading.value = true;
   componentError.value = null;
 
-  await $fetch('/api/game', {
+  await $fetch( runtimeConfig.public.serverUrl + '/api/game', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
@@ -75,12 +76,11 @@ const submitForm = async () => {
       hostingPlayer: selectedPlayerName.value
     })
   }).then((response) => {
-    const gameInstance = response as GameInstance;
+    const gameInstance = response as {id: string};
 
-    if (!gameInstance) {
+    if (!gameInstance.id) {
       componentError.value = templateServerErrorMessage
     } else {
-      useStoredGameInstance(gameInstance);
       navigateTo('/game/' + gameInstance.id)
     }
   }).catch((error) => {

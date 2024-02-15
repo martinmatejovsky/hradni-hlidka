@@ -8,8 +8,8 @@ export default defineNuxtConfig({
   },
   runtimeConfig: {
     public: {
-      dbHost: process.env.NUXT_DB_HOST,
-      dbKey: process.env.NUXT_DB_KEY,
+      serverUrl: process.env.SERVER_URL,
+      socketIoUrl: process.env.SOCKET_IO_SERVER_URL,
     }
   },
   modules: [

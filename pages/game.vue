@@ -5,7 +5,9 @@
 <script setup lang="ts">
 import {onBeforeUnmount} from "vue";
 import io from 'socket.io-client';
-const socket = io("http://localhost:4000", { transports: ['websocket'] });
+
+const runtimeConfig = useRuntimeConfig()
+const socket = io(runtimeConfig.public.socketIoUrl as string, { transports: ['websocket'] });
 
 socket.on('connect', () => {
   console.log('Socket connected');
