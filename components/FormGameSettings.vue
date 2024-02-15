@@ -2,11 +2,11 @@
   <div class="my-4">
     <v-container>
       <div v-if="componentError">
-        <v-alert type="error" class="mb-4" dismissible>{{ componentError }}</v-alert>
+        <v-alert type="error" class="mb-4" dismissible v-html="componentError"></v-alert>
       </div>
       <div v-if="dataLoading">
         <v-icon icon="mdi-loading" class="hh-icon-loading"></v-icon>
-        loading data from server...
+        načítám data...
       </div>
       <div v-else>
         <v-row>
@@ -81,10 +81,12 @@ const submitForm = async () => {
     if (!gameInstance.id) {
       componentError.value = templateServerErrorMessage
     } else {
-      navigateTo('/game/' + gameInstance.id)
+      const newUrl = '/game/' + gameInstance.id
+      console.log('Navigating to: ' + newUrl)
+      navigateTo(newUrl)
     }
   }).catch((error) => {
-    componentError.value = templateServerErrorMessage + ' ' + error
+    componentError.value = templateServerErrorMessage + '<br />' + error
   })
 
   dataLoading.value = false;
