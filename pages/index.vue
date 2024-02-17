@@ -8,11 +8,8 @@
       <div v-if="!storedGeolocationWatcher">
         Zařízení nerozpoznává polohu.
       </div>
-      <v-row v-else>
+      <v-row v-if="!dataLoading">
         <v-col cols="6" md="4">
-          <div v-if="componentError">
-            <v-alert type="error" class="mb-4" dismissible v-html="componentError"></v-alert>
-          </div>
           <v-form :fast-fail="true" @submit.prevent="createNewBattle">
             <v-select
                 v-model="selectedLocationKey"
@@ -37,6 +34,7 @@
 // IMPORTS
 import {onMounted, onUnmounted, computed, type ComputedRef} from 'vue';
 import type {GameLocation} from "~/types/CustomTypes";
+import {STORE_APPLICATION_ERROR} from "~/constants";
 
 // STATE INITIAL VALUES
 const storedGeolocationWatcher = useStoredGeolocationWatcher();
@@ -56,7 +54,7 @@ const accuracyClass = computed(() => {
 });
 const selectedLocationKey = ref<string | null>(null)
 const dataLoading = ref<boolean>(false);
-const componentError = ref<string | null>(null);
+const pageError = useState(STORE_APPLICATION_ERROR);
 let gameLocations: GameLocation[]
 
 // COMPUTED
@@ -77,7 +75,6 @@ const openTestGame = () => {
 }
 const createNewBattle = async () => {
   dataLoading.value = true;
-  componentError.value = null;
   await $fetch( runtimeConfig.public.serverUrl + '/api/game', {
     method: 'POST',
     headers: {
@@ -90,18 +87,18 @@ const createNewBattle = async () => {
     const gameInstance = response as {id: string};
     navigateTo('/game/' + gameInstance.id)
   }).catch((error) => {
-    componentError.value = 'Nepodařilo se spojit se serverem <br />' + error
+    pageError.value = 'Nepodařilo se spojit se serverem <br />' + error
   }).finally(() => dataLoading.value = false);
 }
 const fetchGameLocations = async () => {
   dataLoading.value = true;
-  componentError.value = null;
+  pageError.value = null;
   await $fetch(runtimeConfig.public.serverUrl + '/api/game-locations')
     .then(response => {
       gameLocations = response as GameLocation[];
     })
     .catch(() => {
-      componentError.value = 'Nepodařilo se načíst seznam bitevních míst'
+      pageError.value = 'Nepodařilo se načíst seznam bitevních míst'
     })
     .finally(() => dataLoading.value = false);
 }

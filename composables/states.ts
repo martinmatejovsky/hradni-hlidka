@@ -21,3 +21,4 @@ export const useStoredCurrentPlayer = () => useState<PlayerData>(CONST.STORE_CUR
     }
 })
 export const useStoredGameInstance = (game: GameInstance) => useState<GameInstance>(CONST.STORE_GAME_INSTANCE, () => game)
+export const useStoredApplicationError = () => useState<string | null>(CONST.STORE_APPLICATION_ERROR, () => null)

@@ -1,10 +1,8 @@
 <template>
+<!--  TODO: put here a condition to check if player entering this page as in local Store currentPlayer filled and-->
+<!--  if this object has a unique id from socket.io. If not, show him component FormGameSettings.-->
   <h1 class="mb-4">Bitva</h1>
   <!-- READY? -->
-  <div v-if="pageError">
-    <v-alert type="error" class="mb-4" dismissible v-html="pageError"></v-alert>
-  </div>
-
   <div v-if="dataLoading">
     <v-icon icon="mdi-loading" class="hh-icon-loading"></v-icon>
     načítám data...
@@ -72,7 +70,6 @@ const gameState = useGetterGameState;
 const route = useRoute()
 const gameId = route.params.gameId
 const dataLoading = ref<boolean>(false);
-const pageError = ref<string | null>(null);
 
 // COMPUTED
 const connectedPlayers = computed(() => {
@@ -136,12 +133,14 @@ onBeforeMount(() => {
 
 onMounted(async () => {
   dataLoading.value = true;
+  useState(CONST.STORE_APPLICATION_ERROR).value = null;
+
   await $fetch(runtimeConfig.public.serverUrl + '/api/game/' + gameId)
       .then(response => {
         useStoredGameInstance(response as GameInstance);
       })
       .catch(error => {
-        pageError.value = 'Nepodařilo se načíst bitvu s tímto ID.<br />' + error
+        useState(CONST.STORE_APPLICATION_ERROR).value = 'Nepodařilo se načíst bitvu s tímto ID.<br />' + error
       })
   if (intervalRunAttack.value !== null) {
     clearInterval(intervalRunAttack.value);
