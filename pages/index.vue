@@ -36,7 +36,7 @@
 <script setup lang="ts">
 // IMPORTS
 import {onMounted, onUnmounted, computed, type ComputedRef} from 'vue';
-import type {GameLocation, PlayerData} from "~/types/CustomTypes";
+import type {GameLocation} from "~/types/CustomTypes";
 
 // STATE INITIAL VALUES
 const storedGeolocationWatcher = useStoredGeolocationWatcher();
