@@ -12,16 +12,8 @@
         <v-row>
           <v-col cols="6" md="4">
             <v-form :fast-fail="true" @submit.prevent="submitForm">
-              <v-select
-                  v-model="selectedLocationKey"
-                  :items="locationOptions"
-                  class="mb-2"
-                  label="Vyberte bitevní pole"
-                  required
-              ></v-select>
               <v-text-field :clearable="true" v-model="selectedPlayerName" required label="Label"></v-text-field>
               <v-btn type="submit" class="mb-2" :block="true" :disabled="!isFormValid" rounded="xs">Založit novou bitvu</v-btn>
-              <v-btn @click="openTestGame" type="button" class="mb-2" :block="true" :disabled="!isFormValid" rounded="xs">testovací hra /1</v-btn>
             </v-form>
           </v-col>
         </v-row>
@@ -31,8 +23,7 @@
 </template>
 
 <script setup lang="ts">
-import type {GameLocation, PlayerData} from "~/types/CustomTypes";
-import type {ComputedRef} from "vue";
+import type {PlayerData} from "~/types/CustomTypes";
 import {useState} from "nuxt/app";
 import {STORE_CURRENT_PLAYER} from "~/constants";
 
@@ -44,32 +35,11 @@ const isFormValid = computed(() => {
 })
 const selectedLocationKey = ref<string | null>(null)
 const selectedPlayerName = ref<string>('Test Beolf')
-let gameLocations: GameLocation[]
 const dataLoading = ref<boolean>(false);
 const componentError = ref<string | null>(null);
 const runtimeConfig = useRuntimeConfig()
 
-// COMPUTED
-const locationOptions: ComputedRef<string[]> = computed(() => gameLocations.map(location => location.locationName))
-
 // METHODS
-const fetchGameLocations = async () => {
-  dataLoading.value = true;
-  await $fetch(runtimeConfig.public.serverUrl + '/api/game-locations')
-      .then(response => {
-        gameLocations = response as GameLocation[];
-      })
-      .catch(error => {
-        console.error(error)
-        componentError.value = 'Nepodařilo se načíst seznam bitevních míst'
-      })
-      .finally(() => dataLoading.value = false);
-}
-const openTestGame = () => {
-  useState<PlayerData>(STORE_CURRENT_PLAYER).value.name = selectedPlayerName.value;
-  useState<PlayerData>(STORE_CURRENT_PLAYER).value.key = selectedPlayerName.value + '123456';
-  navigateTo('/game/1')
-}
 const submitForm = async () => {
   dataLoading.value = true;
   componentError.value = null;
@@ -82,7 +52,6 @@ const submitForm = async () => {
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({
-      gameLocation: gameLocations.find(location => location.locationName === selectedLocationKey.value),
       hostingPlayer: useState<PlayerData>(STORE_CURRENT_PLAYER).value
     })
   }).then((response) => {
@@ -100,11 +69,6 @@ const submitForm = async () => {
 
   dataLoading.value = false;
 }
-
-// LIFE CYCLE HOOKS
-onBeforeMount(() => {
-  fetchGameLocations();
-});
 </script>
 
 <style scoped>

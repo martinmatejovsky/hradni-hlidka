@@ -1,25 +1,49 @@
 <template>
+  <div v-if="componentError">
+    <v-alert type="error" class="mb-4" dismissible v-html="componentError"></v-alert>
+  </div>
   <div v-if="!storedGeolocationWatcher">
     Zařízení nerozpoznává polohu.
   </div>
-  <div v-else>
-    <form-game-settings />
-
-    <p>Hrajete jako {{ currentPlayer?.name }}</p>
-    <p>Souřadnice: {{ currentPlayer?.location.latitude }} {{ currentPlayer?.location.longitude }}</p>
-    <p>Přesnost: <span :class="[accuracyClass, 'font-weight-bold']">{{ playerAccuracy }}</span> m</p>
+  <div v-if="dataLoading">
+    <v-icon icon="mdi-loading" class="hh-icon-loading"></v-icon>
+    načítám data...
   </div>
+  <div v-else>
+    <v-container>
+      <v-row>
+        <v-col cols="6" md="4">
+          <v-form :fast-fail="true" @submit.prevent="createNewBattle">
+            <v-select
+                v-model="selectedLocationKey"
+                :items="locationOptions"
+                class="mb-2"
+                label="Vyberte bitevní pole"
+                required
+            ></v-select>
+            <v-btn type="submit" :disabled="!isFormValid" :block="true" rounded="xs" class="mb-2">Založit novou bitvu</v-btn>
+            <v-btn @click="openTestGame" type="button" :block="true" :disabled="!isFormValid" rounded="xs">testovací hra /1</v-btn>
+          </v-form>
+        </v-col>
+      </v-row>
+    </v-container>
+  </div>
+
+  <p>Souřadnice: {{ currentPlayer?.location.latitude }} {{ currentPlayer?.location.longitude }}</p>
+  <p>Přesnost: <span :class="[accuracyClass, 'font-weight-bold']">{{ playerAccuracy }}</span> m</p>
 </template>
 
 <script setup lang="ts">
 // IMPORTS
-import {onMounted, onUnmounted, computed} from 'vue';
+import {onMounted, onUnmounted, computed, type ComputedRef} from 'vue';
+import type {GameLocation, PlayerData} from "~/types/CustomTypes";
 
 // STATE INITIAL VALUES
 const storedGeolocationWatcher = useStoredGeolocationWatcher();
 const currentPlayer = useStoredCurrentPlayer();
 
 // DATA
+const runtimeConfig = useRuntimeConfig()
 const playerAccuracy = computed(() => Math.round(currentPlayer.value?.location.accuracy || 0));
 const accuracyClass = computed(() => {
   if (playerAccuracy.value < 7) {
@@ -30,8 +54,63 @@ const accuracyClass = computed(() => {
     return 'text-red';
   }
 });
+const selectedLocationKey = ref<string | null>(null)
+const dataLoading = ref<boolean>(false);
+const componentError = ref<string | null>(null);
+let gameLocations: GameLocation[]
+
+// COMPUTED
+const isFormValid = computed(() => {
+  return selectedLocationKey.value !== null
+})
+const locationOptions: ComputedRef<string[]> = computed(() => {
+  if (gameLocations) {
+    return gameLocations.map(location => location.locationName);
+  } else {
+    return [];
+  }
+});
+
+// METHODS
+const openTestGame = () => {
+  navigateTo('/game/1')
+}
+const createNewBattle = async () => {
+  dataLoading.value = true;
+  componentError.value = null;
+  await $fetch( runtimeConfig.public.serverUrl + '/api/game', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      gameLocation: gameLocations.find(location => location.locationName === selectedLocationKey.value),
+    })
+  }).then((response) => {
+    const gameInstance = response as {id: string};
+    navigateTo('/game/' + gameInstance.id)
+  }).catch((error) => {
+    componentError.value = 'Nepodařilo se spojit se serverem <br />' + error
+  }).finally(() => dataLoading.value = false);
+}
+const fetchGameLocations = async () => {
+  dataLoading.value = true;
+  componentError.value = null;
+  await $fetch(runtimeConfig.public.serverUrl + '/api/game-locations')
+    .then(response => {
+      gameLocations = response as GameLocation[];
+    })
+    .catch(() => {
+      componentError.value = 'Nepodařilo se načíst seznam bitevních míst'
+    })
+    .finally(() => dataLoading.value = false);
+}
 
 // LIFECYCLE HOOKS
+onBeforeMount(() => {
+  fetchGameLocations();
+});
+
 onMounted(() => {
   useInitializePlayerGeolocationWatcher();
 });
@@ -42,3 +121,13 @@ onUnmounted(() => {
   }
 });
 </script>
+
+<style scoped>
+.hh-icon-loading {
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  0% { transform:rotate(0deg); }
+  100% { transform:rotate(360deg); }
+}
+</style>
