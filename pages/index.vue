@@ -1,18 +1,18 @@
 <template>
-  <div v-if="componentError">
-    <v-alert type="error" class="mb-4" dismissible v-html="componentError"></v-alert>
-  </div>
-  <div v-if="!storedGeolocationWatcher">
-    Zařízení nerozpoznává polohu.
-  </div>
-  <div v-if="dataLoading">
-    <v-icon icon="mdi-loading" class="hh-icon-loading"></v-icon>
-    načítám data...
-  </div>
-  <div v-else>
+  <div class="my-4">
     <v-container>
-      <v-row>
+      <div v-if="dataLoading">
+        <v-icon icon="mdi-loading" class="hh-icon-loading"></v-icon>
+        načítám data...
+      </div>
+      <div v-if="!storedGeolocationWatcher">
+        Zařízení nerozpoznává polohu.
+      </div>
+      <v-row v-else>
         <v-col cols="6" md="4">
+          <div v-if="componentError">
+            <v-alert type="error" class="mb-4" dismissible v-html="componentError"></v-alert>
+          </div>
           <v-form :fast-fail="true" @submit.prevent="createNewBattle">
             <v-select
                 v-model="selectedLocationKey"
@@ -27,10 +27,10 @@
         </v-col>
       </v-row>
     </v-container>
-  </div>
 
-  <p>Souřadnice: {{ currentPlayer?.location.latitude }} {{ currentPlayer?.location.longitude }}</p>
-  <p>Přesnost: <span :class="[accuracyClass, 'font-weight-bold']">{{ playerAccuracy }}</span> m</p>
+    <p>Souřadnice: {{ currentPlayer?.location.latitude }} {{ currentPlayer?.location.longitude }}</p>
+    <p>Přesnost: <span :class="[accuracyClass, 'font-weight-bold']">{{ playerAccuracy }}</span> m</p>
+  </div>
 </template>
 
 <script setup lang="ts">
