@@ -1,7 +1,7 @@
 # TODO
 
-## tlačítka zpět
-na stránce [gameId].vue když padne chyba, tak by bylo dobré mít tlačítko zpět na index
+## Komponenta Loading indicator
+Nemá na to něco Vuetify? Pokud ne, tak bych měl vytvořit vlastní komponentu
 
 ## Real time data upload
 doporučil mi ChatGPT:
@@ -32,7 +32,7 @@ Jako alternativní řešení umístit tlačítko "znovu načíst polohu"
 ##  upozornit, že je potřeba zapnout GPS, i když povolení v prohlížeči bylo uděleno
 aplikace by měla poznat, že GPS nejede a upozornit, ať si uživatel zapne/zkontrolje GPS
 
-## zavést logger pro nějaké trapné informační výpisy
+## zavést logger pro nějaké informační výpisy nepodstatných věcí
 
 ## nástup na žebříky a shazování útočníků nedělat ve stejný moment
 Bude vypadat přirozeněji, pokud budou útočníci nastupovat na každý žebřík podle sebe, a ne
