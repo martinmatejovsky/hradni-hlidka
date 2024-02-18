@@ -2,54 +2,63 @@
 <!--  TODO: put here a condition to check if player entering this page as in local Store currentPlayer filled and-->
 <!--  if this object has a unique id from socket.io. If not, show him component FormGameSettings.-->
   <h1 class="mb-4">Bitva</h1>
-  <!-- READY? -->
+  <p>Místo: {{currentGameLocation?.gameLocation.locationName}}</p>
+
   <div v-if="dataLoading">
     <v-icon icon="mdi-loading" class="hh-icon-loading"></v-icon>
     načítám data...
   </div>
 
-  <div v-if="gameState === 'ready'">
-    <h2>Ke hře připraveni:</h2>
-    <p v-if="connectedPlayers.length === 0">Nikdo se zatím nepřipojil.</p>
-    <p v-else>
-      <span v-for="player in connectedPlayers" :key="player" class="text-green">{{ player }}</span>
-    </p>
-    <nuxt-link to="/">
-      <v-btn rounded="xs" class="mt-3 mr-4 mb-3">Zpět</v-btn>
-    </nuxt-link>
-    <v-btn @click="startAttack" rounded="xs" class="mt-3 mb-3">Zahájit útok</v-btn>
+  <!-- REGISTER PLAYER -->
+  <div v-if="!currentPlayer?.key">
+    <FormRegisterPlayer @form-submitted="registerPlayer"/>
   </div>
 
-  <!-- RUNNING -->
-  <div v-else-if="gameState === 'running'">
-    <p class="mb-4">Jsem uvnitř? <span class="text-h4 text-indigo-lighten-4">{{ nameOfIntersectedArea }}</span></p>
-    <h3 class="mb-3">Postup útoku</h3>
-    <p v-if="!useGetterBattleZones">Žádná data o útoku.</p>
-    <div v-else>
-      <div v-for="{ key, zoneName, guardians, assembledInvaders, assaultLadder } in useGetterBattleZones" :key="key" class="mb-3">
-        <h4 class="text-amber">{{ zoneName }}</h4>
-        <p>strážce:
-          <template v-if="!guardians.length">--</template>
-          <template v-else>
-            <span v-for="guardian in guardians" :key="guardian.name"  class="text-green">{{ guardian.name || '--' }}</span>
-          </template>
-        </p>
-        <p>Shromáždění útočníci:
-          <v-icon v-for="n in assembledInvaders" :key="n" icon="mdi-sword"></v-icon>
-        </p>
-        <p>Žebřik <v-icon icon="mdi-arrow-right-bold-outline"></v-icon></p>
-        <ClimbingLadder :climbingInvaders="assaultLadder" />
+  <template v-else>
+    <!-- READY? -->
+    <div v-if="gameState === 'ready'">
+      <h2>Ke hře připraveni:</h2>
+      <p v-if="connectedPlayers.length === 0">Nikdo se zatím nepřipojil.</p>
+      <p v-else>
+        <span v-for="player in connectedPlayers" :key="player" class="text-green">{{ player }}</span>
+      </p>
+      <nuxt-link to="/">
+        <v-btn rounded="xs" class="mt-3 mr-4 mb-3">Zpět</v-btn>
+      </nuxt-link>
+      <v-btn @click="startAttack" rounded="xs" class="mt-3 mb-3">Zahájit útok</v-btn>
+    </div>
+
+    <!-- RUNNING -->
+    <div v-else-if="gameState === 'running'">
+      <p class="mb-4">Jsem uvnitř? <span class="text-h4 text-indigo-lighten-4">{{ nameOfIntersectedArea }}</span></p>
+      <h3 class="mb-3">Postup útoku</h3>
+      <p v-if="!useGetterBattleZones">Žádná data o útoku.</p>
+      <div v-else>
+        <div v-for="{ key, zoneName, guardians, assembledInvaders, assaultLadder } in useGetterBattleZones" :key="key" class="mb-3">
+          <h4 class="text-amber">{{ zoneName }}</h4>
+          <p>strážce:
+            <template v-if="!guardians.length">--</template>
+            <template v-else>
+              <span v-for="guardian in guardians" :key="guardian.name"  class="text-green">{{ guardian.name || '--' }}</span>
+            </template>
+          </p>
+          <p>Shromáždění útočníci:
+            <v-icon v-for="n in assembledInvaders" :key="n" icon="mdi-sword"></v-icon>
+          </p>
+          <p>Žebřik <v-icon icon="mdi-arrow-right-bold-outline"></v-icon></p>
+          <ClimbingLadder :climbingInvaders="assaultLadder" />
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- LOST OR WON-->
-  <div v-else-if="gameState === 'lost' || gameState === 'won'">
-    <h4 class="text-h4 mb-4" :class="[gameState === 'won' ? 'text-green' : 'text-red']">
-      {{ gameState === 'won' ? 'Vítězství' : 'Prohráli jste' }}
-    </h4>
-    <v-btn @click="restartAttack" rounded="xs" class="mb-6">Znovu na ně!</v-btn>
-  </div>
+    <!-- LOST OR WON-->
+    <div v-else-if="gameState === 'lost' || gameState === 'won'">
+      <h4 class="text-h4 mb-4" :class="[gameState === 'won' ? 'text-green' : 'text-red']">
+        {{ gameState === 'won' ? 'Vítězství' : 'Prohráli jste' }}
+      </h4>
+      <v-btn @click="restartAttack" rounded="xs" class="mb-6">Znovu na ně!</v-btn>
+    </div>
+  </template>
 </template>
 
 <script setup lang="ts">
@@ -58,17 +67,17 @@ import type {BattleZone, GameInstance, PlayerData} from "~/types/CustomTypes";
 import {computed, watch} from "vue";
 import {useState} from "nuxt/app";
 import * as CONST from "~/constants";
-import {useStoredGameInstance} from "~/composables/states";
 import io from "socket.io-client";
 
 // DATA
 const runtimeConfig = useRuntimeConfig()
-const socket = io(runtimeConfig.public.socketIoUrl as string, { transports: ['websocket'] });
 const intervalRunAttack = ref<NodeJS.Timeout | null>(null);
 const currentPlayer = useState<PlayerData>(STORE_CURRENT_PLAYER);
+const currentGameLocation = useState<GameInstance>(CONST.STORE_GAME_INSTANCE)
 const gameState = useGetterGameState;
 const route = useRoute()
 const gameId = route.params.gameId
+const socket = io(runtimeConfig.public.socketIoUrl as string, { transports: ['websocket'], query: { gameId, player: JSON.stringify(currentPlayer.value) } })
 const dataLoading = ref<boolean>(false);
 
 // COMPUTED
@@ -77,10 +86,13 @@ const connectedPlayers = computed(() => {
 });
 
 // METHODS
+const registerPlayer = (): void => {
+  console.log(useState(CONST.STORE_CURRENT_PLAYER).value)
+}
 const restartAttack = (): void => {
   // TODO: send request to server to clear game stats, set game state to "setting" and allow connection for others, etc.
 }
-const startAttack = () => {
+const startAttack = (): void => {
   useRequestWakeLockScreen();
   // TODO: send to server that game has started. On response start the game also on client side
   // like for example with intervalRunAttack.value = useRunAttack();
@@ -88,12 +100,12 @@ const startAttack = () => {
 const keyOfIntersectedArea = computed(() => useIntersectedAreaKey(currentPlayer.value?.location));
 const nameOfIntersectedArea = computed(() => {
   if (keyOfIntersectedArea.value.length > 0) {
-    return useGetterBattleZones.value.find((zone: BattleZone) => zone.key === keyOfIntersectedArea.value);
+    return useGetterBattleZones.value.find((zone: BattleZone) => zone.key === keyOfIntersectedArea.value)?.zoneName;
   } else {
     return '--';
   }
 });
-const updateAreasOfCurrentPlayer = ():void => {
+const updateAreasOfCurrentPlayer = (): void => {
   if (keyOfIntersectedArea.value.length > 0) {
     useGetterBattleZones.value.forEach((zone: BattleZone) => {
       if (zone.key === keyOfIntersectedArea.value) {
@@ -107,6 +119,11 @@ const updateAreasOfCurrentPlayer = ():void => {
     })
   }
 }
+
+// SOCKET METHODS
+socket.on('newPlayerJoined', (params) => {
+  console.log(params.map((player: PlayerData) => player.name))
+})
 
 // WATCHERS
 watch(keyOfIntersectedArea, (): void => {
