@@ -75,7 +75,7 @@ const openTestGame = () => {
 }
 const createNewBattle = async () => {
   dataLoading.value = true;
-  await $fetch( runtimeConfig.public.serverUrl + '/api/game', {
+  await $fetch( `${runtimeConfig.public.serverUrl}/api/game`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
@@ -93,12 +93,12 @@ const createNewBattle = async () => {
 const fetchGameLocations = async () => {
   dataLoading.value = true;
   pageError.value = null;
-  await $fetch(runtimeConfig.public.serverUrl + '/api/game-locations')
+  await $fetch(`${runtimeConfig.public.serverUrl}/api/game-locations`)
     .then(response => {
       gameLocations = response as GameLocation[];
     })
-    .catch(() => {
-      pageError.value = 'Nepodařilo se načíst seznam bitevních míst'
+    .catch((error) => {
+      pageError.value = 'Nepodařilo se načíst seznam bitevních míst <br>' + error
     })
     .finally(() => dataLoading.value = false);
 }

@@ -2,62 +2,64 @@
 <!--  TODO: put here a condition to check if player entering this page as in local Store currentPlayer filled and-->
 <!--  if this object has a unique id from socket.io. If not, show him component FormGameSettings.-->
   <h1 class="mb-4">Bitva</h1>
-  <p>Místo: {{currentGameLocation?.gameLocation.locationName}}</p>
+  <template v-if="!applicationError">
+    <p>Místo: {{currentGameLocation?.gameLocation.locationName}}</p>
 
-  <div v-if="dataLoading">
-    <v-icon icon="mdi-loading" class="hh-icon-loading"></v-icon>
-    načítám data...
-  </div>
-
-  <!-- REGISTER PLAYER -->
-  <div v-if="!currentPlayer?.key">
-    <FormRegisterPlayer @form-submitted="registerPlayer"/>
-  </div>
-
-  <template v-else>
-    <!-- READY? -->
-    <div v-if="gameState === 'ready'">
-      <h2>Ke hře připraveni:</h2>
-      <p v-if="connectedPlayers.length === 0">Nikdo se zatím nepřipojil.</p>
-      <p v-else>
-        <span v-for="player in connectedPlayers" :key="player" class="text-green">{{ player }}</span>
-      </p>
-      <nuxt-link to="/">
-        <v-btn rounded="xs" class="mt-3 mr-4 mb-3">Zpět</v-btn>
-      </nuxt-link>
-      <v-btn @click="startAttack" rounded="xs" class="mt-3 mb-3">Zahájit útok</v-btn>
+    <div v-if="dataLoading">
+      <v-icon icon="mdi-loading" class="hh-icon-loading"></v-icon>
+      načítám data...
     </div>
 
-    <!-- RUNNING -->
-    <div v-else-if="gameState === 'running'">
-      <p class="mb-4">Jsem uvnitř? <span class="text-h4 text-indigo-lighten-4">{{ nameOfIntersectedArea }}</span></p>
-      <h3 class="mb-3">Postup útoku</h3>
-      <p v-if="!useGetterBattleZones">Žádná data o útoku.</p>
-      <div v-else>
-        <div v-for="{ key, zoneName, guardians, assembledInvaders, assaultLadder } in useGetterBattleZones" :key="key" class="mb-3">
-          <h4 class="text-amber">{{ zoneName }}</h4>
-          <p>strážce:
-            <template v-if="!guardians.length">--</template>
-            <template v-else>
-              <span v-for="guardian in guardians" :key="guardian.name"  class="text-green">{{ guardian.name || '--' }}</span>
-            </template>
-          </p>
-          <p>Shromáždění útočníci:
-            <v-icon v-for="n in assembledInvaders" :key="n" icon="mdi-sword"></v-icon>
-          </p>
-          <p>Žebřik <v-icon icon="mdi-arrow-right-bold-outline"></v-icon></p>
-          <ClimbingLadder :climbingInvaders="assaultLadder" />
+    <!-- REGISTER PLAYER -->
+    <div v-else-if="!currentPlayer?.key">
+      <FormRegisterPlayer @form-submitted="registerPlayer"/>
+    </div>
+
+    <template v-else>
+      <!-- READY? -->
+      <div v-if="gameState === 'ready'">
+        <h2>Ke hře připraveni:</h2>
+        <p v-if="connectedPlayers.length === 0">Nikdo se zatím nepřipojil.</p>
+        <p v-else>
+          <span v-for="player in connectedPlayers" :key="player" class="text-green">{{ player }}</span>
+        </p>
+        <nuxt-link to="/">
+          <v-btn rounded="xs" class="mt-3 mr-4 mb-3">Zpět</v-btn>
+        </nuxt-link>
+        <v-btn @click="startAttack" rounded="xs" class="mt-3 mb-3">Zahájit útok</v-btn>
+      </div>
+
+      <!-- RUNNING -->
+      <div v-else-if="gameState === 'running'">
+        <p class="mb-4">Jsem uvnitř? <span class="text-h4 text-indigo-lighten-4">{{ nameOfIntersectedArea }}</span></p>
+        <h3 class="mb-3">Postup útoku</h3>
+        <p v-if="!useGetterBattleZones">Žádná data o útoku.</p>
+        <div v-else>
+          <div v-for="{ key, zoneName, guardians, assembledInvaders, assaultLadder } in useGetterBattleZones" :key="key" class="mb-3">
+            <h4 class="text-amber">{{ zoneName }}</h4>
+            <p>strážce:
+              <template v-if="!guardians.length">--</template>
+              <template v-else>
+                <span v-for="guardian in guardians" :key="guardian.name"  class="text-green">{{ guardian.name || '--' }}</span>
+              </template>
+            </p>
+            <p>Shromáždění útočníci:
+              <v-icon v-for="n in assembledInvaders" :key="n" icon="mdi-sword"></v-icon>
+            </p>
+            <p>Žebřik <v-icon icon="mdi-arrow-right-bold-outline"></v-icon></p>
+            <ClimbingLadder :climbingInvaders="assaultLadder" />
+          </div>
         </div>
       </div>
-    </div>
 
-    <!-- LOST OR WON-->
-    <div v-else-if="gameState === 'lost' || gameState === 'won'">
-      <h4 class="text-h4 mb-4" :class="[gameState === 'won' ? 'text-green' : 'text-red']">
-        {{ gameState === 'won' ? 'Vítězství' : 'Prohráli jste' }}
-      </h4>
-      <v-btn @click="restartAttack" rounded="xs" class="mb-6">Znovu na ně!</v-btn>
-    </div>
+      <!-- LOST OR WON-->
+      <div v-else-if="gameState === 'lost' || gameState === 'won'">
+        <h4 class="text-h4 mb-4" :class="[gameState === 'won' ? 'text-green' : 'text-red']">
+          {{ gameState === 'won' ? 'Vítězství' : 'Prohráli jste' }}
+        </h4>
+        <v-btn @click="restartAttack" rounded="xs" class="mb-6">Znovu na ně!</v-btn>
+      </div>
+    </template>
   </template>
 </template>
 
@@ -79,6 +81,7 @@ const route = useRoute()
 const gameId = route.params.gameId
 const socket = io(runtimeConfig.public.socketIoUrl as string, { transports: ['websocket'], query: { gameId, player: JSON.stringify(currentPlayer.value) } })
 const dataLoading = ref<boolean>(false);
+const applicationError = useState(CONST.STORE_APPLICATION_ERROR)
 
 // COMPUTED
 const connectedPlayers = computed(() => {
@@ -150,14 +153,14 @@ onBeforeMount(() => {
 
 onMounted(async () => {
   dataLoading.value = true;
-  useState(CONST.STORE_APPLICATION_ERROR).value = null;
+  applicationError.value = null;
 
-  await $fetch(runtimeConfig.public.serverUrl + '/api/game/' + gameId)
+  await $fetch(`${runtimeConfig.public.serverUrl}/api/game/${gameId}`)
       .then(response => {
         useStoredGameInstance(response as GameInstance);
       })
       .catch(error => {
-        useState(CONST.STORE_APPLICATION_ERROR).value = 'Nepodařilo se načíst bitvu s tímto ID.<br />' + error
+        applicationError.value = 'Nepodařilo se načíst bitvu s tímto ID.<br />' + error
       })
   if (intervalRunAttack.value !== null) {
     clearInterval(intervalRunAttack.value);
