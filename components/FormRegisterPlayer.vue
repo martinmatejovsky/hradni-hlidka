@@ -24,7 +24,8 @@ import type {PlayerData} from "~/types/CustomTypes";
 import {useState} from "nuxt/app";
 import {STORE_CURRENT_PLAYER} from "~/constants";
 
-const templateServerErrorMessage = 'Nepodařilo se spojit se serverem';
+// PROPS
+const props = defineProps<{gameId: string}>();
 
 // DATA
 const emit = defineEmits(['@form-submitted'])
@@ -33,12 +34,18 @@ const isFormValid = computed(() => {
 })
 const selectedPlayerName = ref<string>('Test Beolf')
 const dataLoading = ref<boolean>(false);
+const currentPlayer = useState<PlayerData>(STORE_CURRENT_PLAYER);
 
 // METHODS
 const submitForm = async () => {
-  useState<PlayerData>(STORE_CURRENT_PLAYER).value.name = selectedPlayerName.value;
-  useState<PlayerData>(STORE_CURRENT_PLAYER).value.key = selectedPlayerName.value + '123456';
-  emit('@form-submitted');
+  currentPlayer.value.name = selectedPlayerName.value;
+  currentPlayer.value.key = selectedPlayerName.value + '123456';
+
+  const socket = useSocket();
+  if (!socket.connected) {
+    socket.connect();
+    socket.emit('joinGame', {gameId: props.gameId, player: currentPlayer.value});
+  }
 }
 </script>
 

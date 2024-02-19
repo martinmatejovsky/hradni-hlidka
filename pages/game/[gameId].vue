@@ -1,6 +1,6 @@
 <template>
 <!--  TODO: put here a condition to check if player entering this page as in local Store currentPlayer filled and-->
-<!--  if this object has a unique id from socket.io. If not, show him component FormGameSettings.-->
+<!--  if this object has a unique id from useSocket.io. If not, show him component FormGameSettings.-->
   <h1 class="mb-4">Bitva</h1>
   <template v-if="!applicationError">
     <p>Místo: {{currentGameLocation?.gameLocation.locationName}}</p>
@@ -12,7 +12,7 @@
 
     <!-- REGISTER PLAYER -->
     <div v-else-if="!currentPlayer?.key">
-      <FormRegisterPlayer @form-submitted="registerPlayer"/>
+      <FormRegisterPlayer :gameId="gameId" />
     </div>
 
     <template v-else>
@@ -69,7 +69,6 @@ import type {BattleZone, GameInstance, PlayerData} from "~/types/CustomTypes";
 import {computed, watch} from "vue";
 import {useState} from "nuxt/app";
 import * as CONST from "~/constants";
-import io from "socket.io-client";
 
 // DATA
 const runtimeConfig = useRuntimeConfig()
@@ -79,9 +78,9 @@ const currentGameLocation = useState<GameInstance>(CONST.STORE_GAME_INSTANCE)
 const gameState = useGetterGameState;
 const route = useRoute()
 const gameId = route.params.gameId
-const socket = io(runtimeConfig.public.socketIoUrl as string, { transports: ['websocket'], query: { gameId, player: JSON.stringify(currentPlayer.value) } })
 const dataLoading = ref<boolean>(false);
 const applicationError = useState(CONST.STORE_APPLICATION_ERROR)
+const socket = useSocket();
 
 // COMPUTED
 const connectedPlayers = computed(() => {
@@ -93,7 +92,7 @@ const registerPlayer = (): void => {
   console.log(useState(CONST.STORE_CURRENT_PLAYER).value)
 }
 const restartAttack = (): void => {
-  // TODO: send request to server to clear game stats, set game state to "setting" and allow connection for others, etc.
+  // TODO: send request to server to clear game stats, set game useSocketState to "setting" and allow connection for others, etc.
 }
 const startAttack = (): void => {
   useRequestWakeLockScreen();
@@ -123,10 +122,10 @@ const updateAreasOfCurrentPlayer = (): void => {
   }
 }
 
-// SOCKET METHODS
-socket.on('newPlayerJoined', (params) => {
-  console.log(params.map((player: PlayerData) => player.name))
-})
+// SOCKET EVENTS
+socket.on('newPlayerJoined', (player: PlayerData) => {
+  console.log('newPlayerJoined', player.name);
+});
 
 // WATCHERS
 watch(keyOfIntersectedArea, (): void => {
@@ -145,12 +144,6 @@ watch(useState(CONST.STORE_GAME_STATE), (newValue): void => {
 })
 
 // LIFECYCLE HOOKS
-onBeforeMount(() => {
-  socket.on('connect', () => {
-    console.log('Socket connected');
-  });
-});
-
 onMounted(async () => {
   dataLoading.value = true;
   applicationError.value = null;
@@ -162,16 +155,16 @@ onMounted(async () => {
       .catch(error => {
         applicationError.value = 'Nepodařilo se načíst bitvu s tímto ID.<br />' + error
       })
+      .finally(() => dataLoading.value = false);
   if (intervalRunAttack.value !== null) {
     clearInterval(intervalRunAttack.value);
   }
   await useReleaseWakeLockScreen();
-  dataLoading.value = false
 })
 
 onBeforeUnmount(() => {
-  if (socket) {
-    socket.close();
+  if (useSocketState.connected) {
+    socket.disconnect();
   }
 })
 </script>

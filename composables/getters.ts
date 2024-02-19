@@ -1,7 +1,7 @@
-import type {GameInstance, BattleZone} from "~/types/CustomTypes";
+import type {GameInstance, BattleZone, GameState} from "~/types/CustomTypes";
 import {STORE_GAME_INSTANCE} from "~/constants";
 
-export const useGetterGameState = computed((): string => {
+export const useGetterGameState = computed((): GameState => {
     return useState<GameInstance>(STORE_GAME_INSTANCE).value?.gameState
 })
 
