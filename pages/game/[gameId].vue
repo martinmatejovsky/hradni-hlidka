@@ -5,7 +5,7 @@
   <template v-if="!applicationError">
     <p>Místo: {{currentGameLocation?.gameLocation.locationName}}</p>
 
-    <div v-if="dataLoading">
+    <div v-if="!dataLoading">
       <v-icon icon="mdi-loading" class="hh-icon-loading"></v-icon>
       načítám data...
     </div>
@@ -23,9 +23,6 @@
         <p v-else>
           <span v-for="player in connectedPlayers" :key="player" class="text-green">{{ player }}</span>
         </p>
-        <nuxt-link to="/">
-          <v-btn rounded="xs" class="mt-3 mr-4 mb-3">Zpět</v-btn>
-        </nuxt-link>
         <v-btn @click="startAttack" rounded="xs" class="mt-3 mb-3">Zahájit útok</v-btn>
       </div>
 
@@ -60,6 +57,8 @@
         <v-btn @click="restartAttack" rounded="xs" class="mb-6">Znovu na ně!</v-btn>
       </div>
     </template>
+
+    <v-btn @click="getBack" size="small" rounded="xs" class="mt-3 mr-4 mb-3">Zpět</v-btn>
   </template>
 </template>
 
@@ -88,6 +87,11 @@ const connectedPlayers = computed(() => {
 });
 
 // METHODS
+const getBack = (): void => {
+  currentPlayer.value.name = '';
+  currentPlayer.value.key = '';
+  navigateTo('/');
+}
 const registerPlayer = (): void => {
   console.log(useState(CONST.STORE_CURRENT_PLAYER).value)
 }
@@ -168,3 +172,13 @@ onBeforeUnmount(() => {
   }
 })
 </script>
+
+<style scoped>
+.hh-icon-loading {
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  0% { transform:rotate(0deg); }
+  100% { transform:rotate(360deg); }
+}
+</style>

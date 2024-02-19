@@ -1,14 +1,14 @@
 <template>
   <div class="my-4">
     <v-container>
-      <div v-if="dataLoading">
-        <v-icon icon="mdi-loading" class="hh-icon-loading"></v-icon>
-        načítám data...
-      </div>
       <div v-if="!storedGeolocationWatcher">
         Zařízení nerozpoznává polohu.
       </div>
-      <v-row v-if="!dataLoading">
+      <div v-else-if="dataLoading">
+        <v-icon icon="mdi-loading" class="hh-icon-loading"></v-icon>
+        načítám data...
+      </div>
+      <v-row v-else>
         <v-col cols="6" md="4">
           <v-form :fast-fail="true" @submit.prevent="createNewBattle">
             <v-select
