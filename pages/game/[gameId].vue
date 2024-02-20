@@ -92,9 +92,6 @@ const getBack = (): void => {
   currentPlayer.value.key = '';
   navigateTo('/');
 }
-const registerPlayer = (): void => {
-  console.log(useState(CONST.STORE_CURRENT_PLAYER).value)
-}
 const restartAttack = (): void => {
   // TODO: send request to server to clear game stats, set game useSocketState to "setting" and allow connection for others, etc.
 }

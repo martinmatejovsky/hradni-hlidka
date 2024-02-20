@@ -6,12 +6,28 @@
         <div v-if="pageError">
           <v-alert type="error" class="mb-4" dismissible v-html="pageError"></v-alert>
         </div>
-        <slot></slot>
+
+        <NuxtPage/>
       </v-main>
     </v-container>
   </v-app>
 </template>
 
-<script setup lang="ts">
+<script setup>
 const pageError = useStoredApplicationError()
+
+// STATE INITIAL VALUES
+const storedGeolocationWatcher = useStoredGeolocationWatcher();
+
+// LIFECYCLE HOOKS
+onBeforeMount(() => {
+  useStoredCurrentPlayer()
+  useInitializePlayerGeolocationWatcher();
+})
+
+onUnmounted(() => {
+  if (storedGeolocationWatcher.value) {
+    navigator.geolocation.clearWatch(storedGeolocationWatcher.value);
+  }
+});
 </script>

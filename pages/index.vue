@@ -1,10 +1,7 @@
 <template>
   <div class="my-4">
     <v-container>
-      <div v-if="!storedGeolocationWatcher">
-        Zařízení nerozpoznává polohu.
-      </div>
-      <div v-else-if="dataLoading">
+      <div v-if="dataLoading">
         <v-icon icon="mdi-loading" class="hh-icon-loading"></v-icon>
         načítám data...
       </div>
@@ -32,15 +29,12 @@
 
 <script setup lang="ts">
 // IMPORTS
-import {onMounted, onUnmounted, computed, type ComputedRef} from 'vue';
-import type {GameLocation} from "~/types/CustomTypes";
-import {STORE_APPLICATION_ERROR} from "~/constants";
-
-// STATE INITIAL VALUES
-const storedGeolocationWatcher = useStoredGeolocationWatcher();
-const currentPlayer = useStoredCurrentPlayer();
+import {computed, type ComputedRef} from 'vue';
+import type {GameLocation, PlayerData} from "~/types/CustomTypes";
+import {STORE_APPLICATION_ERROR, STORE_CURRENT_PLAYER} from "~/constants";
 
 // DATA
+const currentPlayer = useState<PlayerData>(STORE_CURRENT_PLAYER);
 const runtimeConfig = useRuntimeConfig()
 const playerAccuracy = computed(() => Math.round(currentPlayer.value?.location.accuracy || 0));
 const accuracyClass = computed(() => {
@@ -106,16 +100,6 @@ const fetchGameLocations = async () => {
 // LIFECYCLE HOOKS
 onBeforeMount(() => {
   fetchGameLocations();
-});
-
-onMounted(() => {
-  useInitializePlayerGeolocationWatcher();
-});
-
-onUnmounted(() => {
-  if (storedGeolocationWatcher.value) {
-    navigator.geolocation.clearWatch(storedGeolocationWatcher.value);
-  }
 });
 </script>
 
