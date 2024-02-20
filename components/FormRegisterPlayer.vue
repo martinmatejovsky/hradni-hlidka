@@ -23,9 +23,10 @@
 import type {PlayerData} from "~/types/CustomTypes";
 import {useState} from "nuxt/app";
 import {STORE_CURRENT_PLAYER} from "~/constants";
+import type {Socket} from 'socket.io-client'
 
 // PROPS
-const props = defineProps<{gameId: string}>();
+const props = defineProps<{gameId: string, socket: Socket}>();
 
 // DATA
 const emit = defineEmits(['@form-submitted'])
@@ -39,13 +40,9 @@ const currentPlayer = useState<PlayerData>(STORE_CURRENT_PLAYER);
 // METHODS
 const submitForm = async () => {
   currentPlayer.value.name = selectedPlayerName.value;
-  currentPlayer.value.key = selectedPlayerName.value + '123456';
+  currentPlayer.value.key = props.socket.id as string;
 
-  const socket = useSocket();
-  if (!socket.connected) {
-    socket.connect();
-    socket.emit('joinGame', {gameId: props.gameId, player: currentPlayer.value});
-  }
+  props.socket.emit('joinGame', {gameId: props.gameId, player: currentPlayer.value});
 }
 </script>
 

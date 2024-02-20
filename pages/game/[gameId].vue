@@ -5,14 +5,14 @@
   <template v-if="!applicationError">
     <p>Místo: {{currentGameLocation?.gameLocation.locationName}}</p>
 
-    <div v-if="!dataLoading">
+    <div v-if="dataLoading">
       <v-icon icon="mdi-loading" class="hh-icon-loading"></v-icon>
       načítám data...
     </div>
 
     <!-- REGISTER PLAYER -->
     <div v-else-if="!currentPlayer?.key">
-      <FormRegisterPlayer :gameId="gameId" />
+      <FormRegisterPlayer :gameId="gameId" :socket="socket" />
     </div>
 
     <template v-else>
@@ -20,9 +20,9 @@
       <div v-if="gameState === 'ready'">
         <h2>Ke hře připraveni:</h2>
         <p v-if="connectedPlayers.length === 0">Nikdo se zatím nepřipojil.</p>
-        <p v-else>
-          <span v-for="player in connectedPlayers" :key="player" class="text-green">{{ player }}</span>
-        </p>
+        <ul v-else>
+          <li v-for="player in connectedPlayers" :key="player.key" class="text-green">{{ player.name }}</li>
+        </ul>
         <v-btn @click="startAttack" rounded="xs" class="mt-3 mb-3">Zahájit útok</v-btn>
       </div>
 
@@ -82,8 +82,8 @@ const applicationError = useState(CONST.STORE_APPLICATION_ERROR)
 const socket = useSocket();
 
 // COMPUTED
-const connectedPlayers = computed(() => {
-  return useState<GameInstance>(STORE_GAME_INSTANCE).value?.players.map(player => player.name)
+const connectedPlayers = computed((): PlayerData[] => {
+  return [...useState<GameInstance>(STORE_GAME_INSTANCE).value?.players];
 });
 
 // METHODS
@@ -125,11 +125,6 @@ const updateAreasOfCurrentPlayer = (): void => {
     })
   }
 }
-
-// SOCKET EVENTS
-socket.on('newPlayerJoined', (player: PlayerData) => {
-  console.log('newPlayerJoined', player.name);
-});
 
 // WATCHERS
 watch(keyOfIntersectedArea, (): void => {

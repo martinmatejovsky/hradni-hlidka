@@ -2,7 +2,8 @@
 
 import { reactive } from "vue"
 import { io } from "socket.io-client"
-import type {PlayerData} from "~/types/CustomTypes"
+import type { GameInstance } from "~/types/CustomTypes"
+import * as CONST from "~/constants";
 
 // TODO: create custom interface for useSocketState?
 export const useSocketState = reactive({
@@ -24,8 +25,8 @@ export function useSocket() {
         useSocketState.connected = false;
     })
 
-    socket.on('newPlayerJoined', (player: PlayerData) => {
-        console.log('newPlayerJoined', player);
+    socket.on('newPlayerJoined', (game: GameInstance) => {
+        useState<GameInstance>(CONST.STORE_GAME_INSTANCE).value = game;
     })
 
     return socket;
