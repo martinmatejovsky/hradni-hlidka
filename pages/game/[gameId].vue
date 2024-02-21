@@ -30,9 +30,9 @@
       <div v-else-if="gameState === 'running'">
         <p class="mb-4">Jsem uvnitř? <span class="text-h4 text-indigo-lighten-4">{{ nameOfIntersectedArea }}</span></p>
         <h3 class="mb-3">Postup útoku</h3>
-        <p v-if="!useGetterBattleZones">Žádná data o útoku.</p>
+        <p v-if="!getterBattleZones">Žádná data o útoku.</p>
         <div v-else>
-          <div v-for="{ key, zoneName, guardians, assembledInvaders, assaultLadder } in useGetterBattleZones" :key="key" class="mb-3">
+          <div v-for="{ key, zoneName, guardians, assembledInvaders, assaultLadder } in getterBattleZones" :key="key" class="mb-3">
             <h4 class="text-amber">{{ zoneName }}</h4>
             <p>strážce:
               <template v-if="!guardians.length">--</template>
@@ -54,7 +54,7 @@
         <h4 class="text-h4 mb-4" :class="[gameState === 'won' ? 'text-green' : 'text-red']">
           {{ gameState === 'won' ? 'Vítězství' : 'Prohráli jste' }}
         </h4>
-        <v-btn @click="restartAttack" rounded="xs" class="mb-6">Znovu na ně!</v-btn>
+        <v-btn rounded="xs" class="mb-6">Znovu na ně!</v-btn>
       </div>
     </template>
 
@@ -76,10 +76,11 @@ const currentPlayer = useState<PlayerData>(STORE_CURRENT_PLAYER);
 const currentGameLocation = useState<GameInstance>(CONST.STORE_GAME_INSTANCE)
 const gameState = useGetterGameState;
 const route = useRoute()
-const gameId = route.params.gameId
+const gameId: string = route.params.gameId[0]
 const dataLoading = ref<boolean>(false);
 const applicationError = useState(CONST.STORE_APPLICATION_ERROR)
-const socket = useSocket();
+const socket = useSocket(gameId);
+const getterBattleZones = useGetterBattleZones;
 
 // COMPUTED
 const connectedPlayers = computed((): PlayerData[] => {
@@ -92,9 +93,6 @@ const getBack = (): void => {
   currentPlayer.value.key = '';
   navigateTo('/');
 }
-const restartAttack = (): void => {
-  // TODO: send request to server to clear game stats, set game useSocketState to "setting" and allow connection for others, etc.
-}
 const startAttack = (): void => {
   useRequestWakeLockScreen();
   // TODO: send to server that game has started. On response start the game also on client side
@@ -103,20 +101,20 @@ const startAttack = (): void => {
 const keyOfIntersectedArea = computed(() => useIntersectedAreaKey(currentPlayer.value?.location));
 const nameOfIntersectedArea = computed(() => {
   if (keyOfIntersectedArea.value.length > 0) {
-    return useGetterBattleZones.value.find((zone: BattleZone) => zone.key === keyOfIntersectedArea.value)?.zoneName;
+    return getterBattleZones.value.find((zone: BattleZone) => zone.key === keyOfIntersectedArea.value)?.zoneName;
   } else {
     return '--';
   }
 });
 const updateAreasOfCurrentPlayer = (): void => {
   if (keyOfIntersectedArea.value.length > 0) {
-    useGetterBattleZones.value.forEach((zone: BattleZone) => {
+    getterBattleZones.value.forEach((zone: BattleZone) => {
       if (zone.key === keyOfIntersectedArea.value) {
         zone.guardians.push(currentPlayer.value);
       }
     })
   } else if (keyOfIntersectedArea.value === '') {
-    useGetterBattleZones.value.forEach((area: BattleZone) => {
+    getterBattleZones.value.forEach((area: BattleZone) => {
       const index = area.guardians.findIndex((guardian: PlayerData) => guardian.name === currentPlayer.value.name);
       area.guardians.splice(index, 1);
     })
@@ -125,7 +123,7 @@ const updateAreasOfCurrentPlayer = (): void => {
 
 // WATCHERS
 watch(keyOfIntersectedArea, (): void => {
-  if (useGetterBattleZones) {
+  if (getterBattleZones) {
     updateAreasOfCurrentPlayer()
   }
 });
@@ -160,6 +158,7 @@ onMounted(async () => {
 
 onBeforeUnmount(() => {
   if (useSocketState.connected) {
+    socket.emit('leaveGame', {gameId});
     socket.disconnect();
   }
 })

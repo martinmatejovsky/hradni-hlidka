@@ -10,10 +10,10 @@ export const useSocketState = reactive({
     connected: false,
 })
 
-export function useSocket() {
+export function useSocket(gameId: string) {
     const runtimeConfig = useRuntimeConfig();
     const URL = runtimeConfig.public.socketIoUrl as string;
-    const socket = io(URL);
+    const socket = io(URL, {query: {gameId}})
 
     socket.on("connect", () => {
         console.log("Connected to useSocket");
@@ -26,9 +26,14 @@ export function useSocket() {
     })
 
     socket.on('newPlayerJoined', (game: GameInstance) => {
+        console.log('++++++++++')
+        console.log(game.players)
+        useState<GameInstance>(CONST.STORE_GAME_INSTANCE).value = game;
+    })
+
+    socket.on('playerLeftGame', (game: GameInstance) => {
         useState<GameInstance>(CONST.STORE_GAME_INSTANCE).value = game;
     })
 
     return socket;
 }
-
