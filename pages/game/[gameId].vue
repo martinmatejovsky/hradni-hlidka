@@ -89,8 +89,6 @@ const connectedPlayers = computed((): PlayerData[] => {
 
 // METHODS
 const getBack = (): void => {
-  currentPlayer.value.name = '';
-  currentPlayer.value.key = '';
   navigateTo('/');
 }
 const startAttack = (): void => {
@@ -156,11 +154,16 @@ onMounted(async () => {
   await useReleaseWakeLockScreen();
 })
 
-onBeforeUnmount(() => {
-  if (useSocketState.connected) {
-    socket.emit('leaveGame', {gameId});
-    socket.disconnect();
-  }
+onBeforeUnmount(async () => {
+  // await to prevent closing socket connection before 'leaveGame' is for sure sent. Or else it sometimes disconnects before custom event 'leaveGame'
+  await new Promise<void>((resolve) => {
+    socket.emit('leaveGame', { gameId, player: currentPlayer.value }, () => {
+      resolve();
+    });
+  });
+  socket.disconnect();
+  currentPlayer.value.name = '';
+  currentPlayer.value.key = '';
 })
 </script>
 
