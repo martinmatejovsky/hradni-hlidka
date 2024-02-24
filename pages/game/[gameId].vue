@@ -21,7 +21,7 @@
         <h2>Ke hře připraveni:</h2>
         <p v-if="connectedPlayers.length === 0">Nikdo se zatím nepřipojil.</p>
         <ul v-else>
-          <li v-for="player in connectedPlayers" :key="player.key" class="text-green">{{ player.name }}</li>
+          <li v-for="player in connectedPlayers" :key="player.key" class="text-green">{{ player.name }} {{ currentPlayerMark(player) }}</li>
         </ul>
         <v-btn @click="startAttack" rounded="xs" class="mt-3 mb-3">Zahájit útok</v-btn>
       </div>
@@ -118,6 +118,10 @@ const updateAreasOfCurrentPlayer = (): void => {
     })
   }
 }
+
+const currentPlayerMark = ((player: PlayerData) => {
+  return currentPlayer.value?.key === player.key ? '(Já)' : '';
+})
 
 // WATCHERS
 watch(keyOfIntersectedArea, (): void => {
