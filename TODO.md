@@ -1,15 +1,17 @@
 # TODO
 
+## Canvas, SVG background?
+Mapu, co má být na pozadí, zkusit testovat na velikost 375 x 667 px. Zdá se, že je to velmi
+rozšířený rozměr pro menší, a tudíž náročnější zařízení.
+
 ## Komponenta Loading indicator
 Nemá na to něco Vuetify? Pokud ne, tak bych měl vytvořit vlastní komponentu
 
-## Real time data upload
-doporučil mi ChatGPT:
-For real-time communication between the server and clients, consider using WebSocket protocol.
-Libraries like Socket.IO can simplify WebSocket implementation and provide fallback mechanisms
-for environments where WebSocket is not supported. Alternatively, you can utilize server-sent
-events (SSE) for server-to-client communication. SSE allows the server to push updates to
-clients over HTTP.
+## Povolení zapnout GPS
+Podle best practices by se to nemělo dít hned při načtení homepage, ale až na uživatelovo gesto,
+například že stiskne tlačítko "zapnout GPS". Také je best practice vysvětlit uživateli, k emu
+to potřebuju a že je to v pohodě.
+
 
 ## Zhasínání displeje při nečinnosti
 Vypadá to, že Firefox to hodlá podporovat až ve verzi 125, která ještě není. Jinak je podpora
