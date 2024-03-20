@@ -1,32 +1,3 @@
-<template>
-  <div class="my-4">
-    <v-container>
-      <div v-if="dataLoading">
-        <v-icon icon="mdi-loading" class="hh-icon-loading"></v-icon>
-        načítám data...
-      </div>
-      <v-row v-else>
-        <v-col cols="6" md="4">
-          <v-form :fast-fail="true" @submit.prevent="createNewBattle">
-            <v-select
-                v-model="selectedLocationKey"
-                :items="locationOptions"
-                class="mb-2"
-                label="Vyberte bitevní pole"
-                required
-            ></v-select>
-            <v-btn type="submit" :disabled="!isFormValid" :block="true" rounded="xs" class="mb-2">Založit novou bitvu</v-btn>
-            <v-btn @click="openTestGame" type="button" :block="true" :disabled="!isFormValid" rounded="xs">testovací hra /1</v-btn>
-          </v-form>
-        </v-col>
-      </v-row>
-    </v-container>
-
-    <p>Souřadnice: {{ currentPlayer?.location.latitude }} {{ currentPlayer?.location.longitude }}</p>
-    <p>Přesnost: <span :class="[accuracyClass, 'font-weight-bold']">{{ playerAccuracy }}</span> m</p>
-  </div>
-</template>
-
 <script setup lang="ts">
 // IMPORTS
 import {computed, type ComputedRef} from 'vue';
@@ -65,7 +36,7 @@ const locationOptions: ComputedRef<string[]> = computed(() => {
 
 // METHODS
 const openTestGame = () => {
-  navigateTo('/game/1')
+  navigateTo('/game?id=1')
 }
 const createNewBattle = async () => {
   dataLoading.value = true;
@@ -79,7 +50,7 @@ const createNewBattle = async () => {
     })
   }).then((response) => {
     const gameInstance = response as {id: string};
-    navigateTo('/game/' + gameInstance.id)
+    navigateTo('/game?id=' + gameInstance.id)
   }).catch((error) => {
     pageError.value = 'Nepodařilo se spojit se serverem <br />' + error
   }).finally(() => dataLoading.value = false);
@@ -102,6 +73,35 @@ onBeforeMount(() => {
   fetchGameLocations();
 });
 </script>
+
+<template>
+  <div class="my-4">
+    <v-container>
+      <div v-if="dataLoading">
+        <v-icon icon="mdi-loading" class="hh-icon-loading"></v-icon>
+        načítám data...
+      </div>
+      <v-row v-else>
+        <v-col cols="6" md="4">
+          <v-form :fast-fail="true" @submit.prevent="createNewBattle">
+            <v-select
+                v-model="selectedLocationKey"
+                :items="locationOptions"
+                class="mb-2"
+                label="Vyberte bitevní pole"
+                required
+            ></v-select>
+            <v-btn type="submit" :disabled="!isFormValid" :block="true" rounded="xs" class="mb-2">Založit novou bitvu</v-btn>
+            <v-btn @click="openTestGame" type="button" :block="true" :disabled="!isFormValid" rounded="xs">testovací hra /1</v-btn>
+          </v-form>
+        </v-col>
+      </v-row>
+    </v-container>
+
+    <p>Souřadnice: {{ currentPlayer?.location.latitude }} {{ currentPlayer?.location.longitude }}</p>
+    <p>Přesnost: <span :class="[accuracyClass, 'font-weight-bold']">{{ playerAccuracy }}</span> m</p>
+  </div>
+</template>
 
 <style scoped>
 .hh-icon-loading {
