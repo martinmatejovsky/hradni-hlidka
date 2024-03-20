@@ -10,6 +10,9 @@ Make sure to install the dependencies:
 # npm
 npm install
 ```
+## AWS services
+login - mail 2
+heslo - plné herní
 
 ## Development Server
 
