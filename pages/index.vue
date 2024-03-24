@@ -82,7 +82,7 @@ onBeforeMount(() => {
         načítám data...
       </div>
       <v-row v-else>
-        <v-col cols="6" md="4">
+        <v-col cols="12" sm="6" md="4">
           <v-form :fast-fail="true" @submit.prevent="createNewBattle">
             <v-select
                 v-model="selectedLocationKey"

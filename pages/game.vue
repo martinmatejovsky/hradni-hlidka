@@ -1,38 +1,67 @@
 <script setup lang="ts">
-import {STORE_GAME_INSTANCE, STORE_CURRENT_PLAYER} from "~/constants";
+import {STORE_GAME_INSTANCE, STORE_CURRENT_PLAYER, STORE_APPLICATION_ERROR} from "~/constants";
 import type {BattleZone, GameInstance, PlayerData} from "~/types/CustomTypes";
 import {computed, watch} from "vue";
 import {useState} from "nuxt/app";
-import * as CONST from "~/constants";
+import {useGetterCurrentPlayerIsLeader, useGetterGameState} from "~/composables/getters";
 
 // DATA
 const runtimeConfig = useRuntimeConfig()
 const intervalRunAttack = ref<NodeJS.Timeout | null>(null);
 const currentPlayer = useState<PlayerData>(STORE_CURRENT_PLAYER);
-const currentGameLocation = useState<GameInstance>(CONST.STORE_GAME_INSTANCE)
+const currentGame = useState<GameInstance>(STORE_GAME_INSTANCE)
 const gameState = useGetterGameState;
+const getterBattleZones = useGetterBattleZones;
+const currentPlayerIsLeader = useGetterCurrentPlayerIsLeader
 const route = useRoute()
 const gameId: string = route.query.id as string;
 const dataLoading = ref<boolean>(false);
-const applicationError = useState(CONST.STORE_APPLICATION_ERROR)
+const applicationError = useState(STORE_APPLICATION_ERROR)
 const socket = useSocket(gameId);
-const getterBattleZones = useGetterBattleZones;
 
 // COMPUTED
 const connectedPlayers = computed((): PlayerData[] => {
-  return [...useState<GameInstance>(STORE_GAME_INSTANCE).value?.players];
+  return [...currentGame.value?.players];
 });
 
 // METHODS
 const getBack = (): void => {
   navigateTo('/');
 }
-const startAttack = (): void => {
+const startAttack = async (): Promise<void> => {
   useRequestWakeLockScreen();
+
   // TODO: send to server that game has started. On response start the game also on client side
   // like for example with intervalRunAttack.value = useRunAttack();
+
+  await $fetch(`${runtimeConfig.public.serverUrl}/api/game/${gameId}/start`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      gameId: gameId,
+    })
+  }).catch((error) => {
+    applicationError.value = 'Nepodařilo se zahájit útok.<br />' + error
+  });
 };
-const keyOfIntersectedArea = computed(() => useIntersectedAreaKey(currentPlayer.value?.location));
+const geolocationWarning = computed(() => {
+  if (!currentPlayer.value.location) {
+    return 'Pozice hráče není k dispozici';
+  } else if (!useGetterBattleZones.value) {
+    return 'Herní zóna není k dispozici';
+  } else {
+    return '';
+  }
+})
+const keyOfIntersectedArea = computed((): string => {
+  if (currentPlayer.value.location && useGetterBattleZones.value) {
+    return useIntersectedAreaKey(currentPlayer.value.location);
+  } else {
+    return '';
+  }
+})
 const nameOfIntersectedArea = computed(() => {
   if (keyOfIntersectedArea.value.length > 0) {
     return getterBattleZones.value.find((zone: BattleZone) => zone.key === keyOfIntersectedArea.value)?.zoneName;
@@ -41,7 +70,7 @@ const nameOfIntersectedArea = computed(() => {
   }
 });
 const updateAreasOfCurrentPlayer = (): void => {
-  if (keyOfIntersectedArea.value.length > 0) {
+  if (keyOfIntersectedArea?.value.length > 0) {
     getterBattleZones.value.forEach((zone: BattleZone) => {
       if (zone.key === keyOfIntersectedArea.value) {
         zone.guardians.push(currentPlayer.value);
@@ -65,7 +94,7 @@ watch(keyOfIntersectedArea, (): void => {
     updateAreasOfCurrentPlayer()
   }
 });
-watch(useState(CONST.STORE_GAME_STATE), (newValue): void => {
+watch(gameState, (newValue): void => {
   if (newValue === 'lost' || newValue === 'won') {
     if (intervalRunAttack.value !== null) {
       clearInterval(intervalRunAttack.value);
@@ -110,9 +139,12 @@ onBeforeUnmount(async () => {
 <template>
   <!--  TODO: put here a condition to check if player entering this page as in local Store currentPlayer filled and-->
   <!--  if this object has a unique id from useSocket.io. If not, show him component FormGameSettings.-->
-  <h1 class="mb-4">Bitva, OPTIONS</h1>
+  <h1 class="mb-4">Bitva</h1>
+
+  <v-alert v-if="geolocationWarning" type="warning" class="mb-4" dismissible></v-alert>
+
   <template v-if="!applicationError">
-    <p>Místo: {{currentGameLocation?.gameLocation.locationName}}</p>
+    <p>Místo: {{ currentGame?.gameLocation.locationName }}</p>
 
     <div v-if="dataLoading">
       <v-icon icon="mdi-loading" class="hh-icon-loading"></v-icon>
@@ -132,7 +164,7 @@ onBeforeUnmount(async () => {
         <ul v-else>
           <li v-for="player in connectedPlayers" :key="player.key" class="text-green">{{ player.name }} {{ currentPlayerMark(player) }}</li>
         </ul>
-        <v-btn @click="startAttack" rounded="xs" class="mt-3 mb-3">Zahájit útok</v-btn>
+        <v-btn v-if="currentPlayerIsLeader" @click="startAttack" rounded="xs" class="mt-3 mb-3">Zahájit útok</v-btn>
       </div>
 
       <!-- RUNNING -->

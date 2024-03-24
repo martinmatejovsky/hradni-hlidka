@@ -9,16 +9,20 @@ export function useSocket(gameId: string) {
     const URL = runtimeConfig.public.socketIoUrl as string;
     const socket = io(URL, {query: {gameId}})
 
-    socket.on("connect", () => {
+    socket.on("connect", (): void => {
         console.log("Connected to useSocket");
     })
 
-    socket.on('newPlayerJoined', (game: GameInstance) => {
+    socket.on('newPlayerJoined', (game: GameInstance): void => {
         useState<GameInstance>(CONST.STORE_GAME_INSTANCE).value = game;
     })
 
-    socket.on('playerLeftGame', (game: GameInstance) => {
-        console.log('a player Left Game')
+    socket.on('playerLeftGame', (game: GameInstance): void => {
+        useState<GameInstance>(CONST.STORE_GAME_INSTANCE).value = game;
+    })
+
+    socket.on('gameStarted', (game: GameInstance): void => {
+        console.log('game started')
         useState<GameInstance>(CONST.STORE_GAME_INSTANCE).value = game;
     })
 

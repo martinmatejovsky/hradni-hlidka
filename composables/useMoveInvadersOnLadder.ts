@@ -1,6 +1,7 @@
 import {useState} from "nuxt/app";
-import type {BattleZone} from "~/types/CustomTypes";
-import {ATTACK_TEMPO, LADDER_POSITIONS, STORE_BATTLE_ZONES, STORE_GAME_STATE} from "~/constants";
+import type {BattleZone, GameInstance} from "~/types/CustomTypes";
+import {ATTACK_TEMPO, LADDER_POSITIONS, STORE_BATTLE_ZONES, STORE_GAME_INSTANCE} from "~/constants";
+import {useGetterGameState} from "~/composables/getters";
 
 const delayBetweenIterations = Math.floor(ATTACK_TEMPO / (LADDER_POSITIONS * 2));
 
@@ -9,7 +10,7 @@ export const useMoveInvadersOnLadder = (): void => {
 
     areas.forEach((area: BattleZone): void => {
         for (let i = LADDER_POSITIONS - 1; i >= 0; i--) {
-            if (useState(STORE_GAME_STATE).value !== 'running') {
+            if (useGetterGameState.value !== 'running') {
                 return;
             }
              // Adjust the delay based on the iteration index
@@ -27,7 +28,8 @@ export const useMoveInvadersOnLadder = (): void => {
                     // TODO: really check it here? It offers nice small delay when an invader reaches top, but the delay should be gained by other mean
                     if (area.assaultLadder[LADDER_POSITIONS - 1] !== null) {
                         area.conquered = true;
-                        useState(STORE_GAME_STATE).value = 'lost';
+                        // TODO: emit it to server and do not write it into State directly
+                        useState<GameInstance>(STORE_GAME_INSTANCE).value.gameState = 'lost';
                     }
                 }
             }, (LADDER_POSITIONS - i) * delayBetweenIterations);

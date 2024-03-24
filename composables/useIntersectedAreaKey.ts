@@ -1,12 +1,6 @@
 import type {BattleZone, PlayerCoordinates} from "~/types/CustomTypes";
 
-export function useIntersectedAreaKey(playerLocationValue: PlayerCoordinates | undefined): string {
-    if (!playerLocationValue) {
-        return 'Pozice hráče není k dispozici';
-    } else if (!useGetterBattleZones.value) {
-        return 'Herní zóna není k dispozici';
-    }
-
+export function useIntersectedAreaKey(playerLocationValue: PlayerCoordinates): string {
     const foundAreas: BattleZone[] = useGetterBattleZones.value.filter(zone => {
         return useIsPositionInsidePolygon(playerLocationValue, zone.cornerCoordinates);
     });

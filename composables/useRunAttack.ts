@@ -1,6 +1,6 @@
-import type {BattleZone, Invader, InvaderType} from "~/types/CustomTypes";
+import type {BattleZone, GameInstance, Invader, InvaderType} from "~/types/CustomTypes";
 import {useState} from "nuxt/app";
-import {ATTACK_TEMPO, STORE_BATTLE_ZONES, STORE_GAME_STATE} from "~/constants";
+import {ATTACK_TEMPO, STORE_BATTLE_ZONES, STORE_GAME_INSTANCE} from "~/constants";
 
 export const useRunAttack = () => {
     let areas: BattleZone[] = useState<BattleZone[]>(STORE_BATTLE_ZONES).value;
@@ -24,7 +24,8 @@ export const useRunAttack = () => {
         if (areas.every((area: BattleZone): boolean => area.assembledInvaders.length === 0
             && area.assaultLadder.every(invader => invader === null)
         )) {
-            useState(STORE_GAME_STATE).value = 'won';
+            // TODO: emit it to server and do not write it into State directly
+            useState<GameInstance>(STORE_GAME_INSTANCE).value.gameState = 'won';
         }
 
         // 3. calculate damage done by guardians and remove attackers from ladders
