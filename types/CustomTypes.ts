@@ -5,21 +5,37 @@ export type Coordinates = {
 export type PlayerCoordinates = Coordinates & {accuracy: number | null}
 export type PlayerData = {
     name: string,
+    key: string,
     location: PlayerCoordinates,
 }
-export type AreaAttackStat = {
-    areaName: string,
-    threatLevel: number,
-    attackersAmount: number,
+export type GameState = "ready" | "running" | "won" | "lost"
+type PolygonType = "battleZone" | "smithy" | "barracks"
+export interface BasePolygon {
+    polygonName: string,
+    key: string,
+    polygonType: PolygonType,
+    cornerCoordinates: Coordinates[],
+}
+export interface GameLocation {
+    locationName: string,
+    key: string,
+    polygons: BasePolygon[],
+}
+export interface BattleZone {
+    zoneName: string,
+    key: string,
+    cornerCoordinates: Coordinates[],
     conquered: boolean,
     guardians: PlayerData[],
     assembledInvaders: Invader[],
     assaultLadder: (Invader | null)[],
 }
-export type GameState = "ready" | "running" | "won" | "lost"
-export type GamePolygons = {
-    areaName: string,
-    areaCornerCoordinates: Coordinates[],
+export interface GameInstance {
+    id: string,
+    gameState: GameState,
+    gameLocation: GameLocation,
+    battleZones: BattleZone[],
+    players: PlayerData[],
 }
 export type InvaderType = "normal"
 export type Invader = {

@@ -6,6 +6,12 @@ export default defineNuxtConfig({
   build: {
     transpile: ['vuetify'],
   },
+  runtimeConfig: {
+    public: {
+      serverUrl: process.env.SERVER_URL,
+      socketIoUrl: process.env.SOCKET_IO_SERVER_URL,
+    }
+  },
   modules: [
     async (options, nuxt) => {
       nuxt.hooks.hook('vite:extendConfig', config => config.plugins.push(

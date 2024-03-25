@@ -1,16 +1,16 @@
-import type {AreaAttackStat, Invader, InvaderType} from "~/types/CustomTypes";
+import type {BattleZone, GameInstance, Invader, InvaderType} from "~/types/CustomTypes";
 import {useState} from "nuxt/app";
-import {ATTACK_TEMPO, STORE_AREA_ATTACK_STAT, STORE_GAME_STATE} from "~/constants";
+import {ATTACK_TEMPO, STORE_BATTLE_ZONES, STORE_GAME_INSTANCE} from "~/constants";
 
 export const useRunAttack = () => {
-    let areas: AreaAttackStat[] = useState<AreaAttackStat[]>(STORE_AREA_ATTACK_STAT).value
+    let areas: BattleZone[] = useState<BattleZone[]>(STORE_BATTLE_ZONES).value;
 
     // 1. put attackers into waiting list, if it is empty. They should stay there for a moment
     // to let players react and prepare
     for (let i = 0; i < areas.length; i++) {
         if (areas[i].assembledInvaders.length === 0) {
-            const randomAttackersAmount = Math.floor(Math.random() * 4) + 1;
-            for (let j = 0; j < randomAttackersAmount; j++) {
+            const randomInvadersAmount = Math.floor(Math.random() * 4) + 1;
+            for (let j = 0; j < randomInvadersAmount; j++) {
                 areas[i].assembledInvaders.push({
                     type: "normal" as InvaderType,
                     health: 2,
@@ -20,11 +20,12 @@ export const useRunAttack = () => {
     }
 
     return setInterval(() => {
-        // 2. evaluate winning conditions
-        if (areas.every(area => area.assembledInvaders.length === 0
+        // 2. evaluate winning conditions - no attacker left or in assembly area
+        if (areas.every((area: BattleZone): boolean => area.assembledInvaders.length === 0
             && area.assaultLadder.every(invader => invader === null)
         )) {
-            useState(STORE_GAME_STATE).value = 'won';
+            // TODO: emit it to server and do not write it into State directly
+            useState<GameInstance>(STORE_GAME_INSTANCE).value.gameState = 'won';
         }
 
         // 3. calculate damage done by guardians and remove attackers from ladders

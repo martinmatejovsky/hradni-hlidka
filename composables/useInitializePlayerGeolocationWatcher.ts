@@ -1,10 +1,8 @@
 import {useState} from "nuxt/app";
 import type {PlayerData} from "~/types/CustomTypes";
-import { STORE_GEOLOCATION_WATCHER, STORE_CURRENT_PLAYER} from "~/constants";
+import {STORE_GEOLOCATION_WATCHER, STORE_CURRENT_PLAYER, STORE_APPLICATION_ERROR} from "~/constants";
 
 export function useInitializePlayerGeolocationWatcher(): void {
-    // TODO: verify if this name is not already taken
-    // or preset some fixed characters/names
     const geolocationOptions = {
         enableHighAccuracy: true,
     }
@@ -19,6 +17,6 @@ export function useInitializePlayerGeolocationWatcher(): void {
         function() {},
         geolocationOptions);
     } else {
-        console.log('Geolokace není podporována.')
+        useState(STORE_APPLICATION_ERROR).value = 'Geolokace není podporována. Bez ní nebude možné hrát.'
     }
 }

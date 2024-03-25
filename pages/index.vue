@@ -1,60 +1,12 @@
-<template>
-  <div v-if="!storedGeolocationWatcher">
-    Zařízení nerozpoznává polohu.
-  </div>
-  <div v-else>
-    <p>Hrajete jako {{ currentPlayer?.name }}</p>
-    <p>Souřadnice: {{ currentPlayer?.location.latitude }} {{ currentPlayer?.location.longitude }}</p>
-    <p>Přesnost: <span :class="[accuracyClass, 'font-weight-bold']">{{ playerAccuracy }}</span> m</p>
-    <p class="mb-4">Jsem uvnitř? <span class="text-h4 text-indigo-lighten-4">{{ nameOfIntersectedArea || '--'}}</span></p>
-
-    <v-divider class="mb-4"></v-divider>
-
-    <v-btn v-if="storedGameState === 'ready'" @click="startAttack" rounded="xs" class="mt-3 mb-3">Zahájit útok</v-btn>
-    <div v-else-if="storedGameState === 'lost' || storedGameState === 'won'">
-      <h4 class="text-h4 mb-4" :class="[storedGameState === 'won' ? 'text-green' : 'text-red']">
-        {{ storedGameState === 'won' ? 'Vítězství' : 'Prohráli jste' }}
-      </h4>
-      <v-btn @click="restartAttack" rounded="xs" class="mb-6">Znovu na ně!</v-btn>
-    </div>
-
-    <div v-else-if="storedGameState === 'running'">
-      <h3 class="mb-3">Postup útoku</h3>
-      <p v-if="storedAreaAttackStat.length === 0">Žádná data o útoku.</p>
-      <div v-else>
-        <div v-for="attackedArea in storedAreaAttackStat" class="mb-3" :key="attackedArea.areaName">
-          <h4 class="text-amber">{{ attackedArea.areaName }}</h4>
-          <p>strážce: {{ attackedArea.guardians[0]?.name || '--' }}</p>
-          <p>Shromáždění útočníci:
-            <v-icon v-for="n in attackedArea.assembledInvaders" :key="n" icon="mdi-sword"></v-icon>
-          </p>
-          <p>Žebřik <v-icon icon="mdi-arrow-right-bold-outline"></v-icon></p>
-          <ClimbingLadder :climbingInvaders="attackedArea.assaultLadder" />
-        </div>
-      </div>
-    </div>
-  </div>
-</template>
-
 <script setup lang="ts">
 // IMPORTS
-import {onMounted, onUnmounted, computed, watch} from 'vue';
-import type {PlayerData, AreaAttackStat} from "~/types/CustomTypes";
-import * as CONST from "~/constants";
-
-// CONSTANTS
-const testerPlayerName = 'TestBeolf';
-const intervalRunAttack = ref<NodeJS.Timeout | null>(null);
-
-// STATE INITIAL VALUES
-const storedGamePolygon = useStoredGamePolygons();
-const storedGeolocationWatcher = useStoredGeolocationWatcher();
-const storedAreaAttackStat = useStoredAreaAttackStat();
-const storedGameState = useGameState();
-const currentPlayer = useStoredCurrentPlayer();
+import {computed, type ComputedRef} from 'vue';
+import type {GameLocation, PlayerData} from "~/types/CustomTypes";
+import {STORE_APPLICATION_ERROR, STORE_CURRENT_PLAYER} from "~/constants";
 
 // DATA
-const nameOfIntersectedArea = computed(() => useIntersectedAreaName(currentPlayer.value?.location));
+const currentPlayer = useState<PlayerData>(STORE_CURRENT_PLAYER);
+const runtimeConfig = useRuntimeConfig()
 const playerAccuracy = computed(() => Math.round(currentPlayer.value?.location.accuracy || 0));
 const accuracyClass = computed(() => {
   if (playerAccuracy.value < 7) {
@@ -65,59 +17,98 @@ const accuracyClass = computed(() => {
     return 'text-red';
   }
 });
+const selectedLocationKey = ref<string | null>(null)
+const dataLoading = ref<boolean>(false);
+const pageError = useState(STORE_APPLICATION_ERROR);
+let gameLocations: GameLocation[]
+
+// COMPUTED
+const isFormValid = computed(() => {
+  return selectedLocationKey.value !== null
+})
+const locationOptions: ComputedRef<string[]> = computed(() => {
+  if (gameLocations) {
+    return gameLocations.map(location => location.locationName);
+  } else {
+    return [];
+  }
+});
 
 // METHODS
-const startAttack = () => {
-  useRequestWakeLockScreen();
-  storedGameState.value = 'running';
-  intervalRunAttack.value = useRunAttack();
-};
-const restartAttack = () => {
-  storedAreaAttackStat.value = useClearGameAreas();
-  storedGameState.value = 'ready';
-  updateAreasOfCurrentPlayer();
+const openTestGame = () => {
+  navigateTo('/game?id=1')
 }
-const updateAreasOfCurrentPlayer = ():void => {
-  if (nameOfIntersectedArea.value.length > 0) {
-    storedAreaAttackStat.value.forEach((area: AreaAttackStat) => {
-      if (area.areaName === nameOfIntersectedArea.value) {
-        area.guardians.push(currentPlayer.value);
-      }
+const createNewBattle = async () => {
+  dataLoading.value = true;
+  await $fetch( `${runtimeConfig.public.serverUrl}/api/game`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      gameLocation: gameLocations.find(location => location.locationName === selectedLocationKey.value),
     })
-  } else if (nameOfIntersectedArea.value === '') {
-    storedAreaAttackStat.value.forEach((area: AreaAttackStat) => {
-      const index = area.guardians.findIndex((guardian: PlayerData) => guardian.name === currentPlayer.value.name);
-      area.guardians.splice(index, 1);
-    })
-  }
+  }).then((response) => {
+    const gameInstance = response as {id: string};
+    navigateTo('/game?id=' + gameInstance.id)
+  }).catch((error) => {
+    pageError.value = 'Nepodařilo se spojit se serverem <br />' + error
+  }).finally(() => dataLoading.value = false);
 }
-
-// WATCHERS
-watch(nameOfIntersectedArea, (): void => {
-  updateAreasOfCurrentPlayer()
-});
-watch(useState(CONST.STORE_GAME_STATE), (newValue): void => {
-  if (newValue === 'lost' || newValue === 'won') {
-    if (intervalRunAttack.value !== null) {
-      clearInterval(intervalRunAttack.value);
-      intervalRunAttack.value = null;
-    }
-  }
-})
+const fetchGameLocations = async () => {
+  dataLoading.value = true;
+  pageError.value = null;
+  await $fetch(`${runtimeConfig.public.serverUrl}/api/game-locations`)
+    .then(response => {
+      gameLocations = response as GameLocation[];
+    })
+    .catch((error) => {
+      pageError.value = 'Nepodařilo se načíst seznam bitevních míst <br>' + error
+    })
+    .finally(() => dataLoading.value = false);
+}
 
 // LIFECYCLE HOOKS
-onMounted(() => {
-  currentPlayer.value.name = testerPlayerName;
-  useInitializePlayerGeolocationWatcher();
-});
-
-onUnmounted(() => {
-  if (storedGeolocationWatcher.value) {
-    navigator.geolocation.clearWatch(storedGeolocationWatcher.value);
-  }
-  if (intervalRunAttack.value !== null) {
-    clearInterval(intervalRunAttack.value);
-  }
-  useReleaseWakeLockScreen();
+onBeforeMount(() => {
+  fetchGameLocations();
 });
 </script>
+
+<template>
+  <div class="my-4">
+    <v-container>
+      <div v-if="dataLoading">
+        <v-icon icon="mdi-loading" class="hh-icon-loading"></v-icon>
+        načítám data...
+      </div>
+      <v-row v-else>
+        <v-col cols="12" sm="6" md="4">
+          <v-form :fast-fail="true" @submit.prevent="createNewBattle">
+            <v-select
+                v-model="selectedLocationKey"
+                :items="locationOptions"
+                class="mb-2"
+                label="Vyberte bitevní pole"
+                required
+            ></v-select>
+            <v-btn type="submit" :disabled="!isFormValid" :block="true" rounded="xs" class="mb-2">Založit novou bitvu</v-btn>
+            <v-btn @click="openTestGame" type="button" :block="true" :disabled="!isFormValid" rounded="xs">testovací hra /1</v-btn>
+          </v-form>
+        </v-col>
+      </v-row>
+    </v-container>
+
+    <p>Souřadnice: {{ currentPlayer?.location.latitude }} {{ currentPlayer?.location.longitude }}</p>
+    <p>Přesnost: <span :class="[accuracyClass, 'font-weight-bold']">{{ playerAccuracy }}</span> m</p>
+  </div>
+</template>
+
+<style scoped>
+.hh-icon-loading {
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  0% { transform:rotate(0deg); }
+  100% { transform:rotate(360deg); }
+}
+</style>
