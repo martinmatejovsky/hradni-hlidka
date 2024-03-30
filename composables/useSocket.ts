@@ -26,5 +26,9 @@ export function useSocket(gameId: string) {
         useState<GameInstance>(CONST.STORE_GAME_INSTANCE).value = game;
     })
 
+    socket.on('gameUpdated', (game: GameInstance) => {
+        useState<GameInstance>(CONST.STORE_GAME_INSTANCE).value = game;
+    })
+
     return socket;
 }

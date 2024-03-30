@@ -69,21 +69,6 @@ const nameOfIntersectedArea = computed(() => {
     return '--';
   }
 });
-const updateAreasOfCurrentPlayer = (): void => {
-  if (keyOfIntersectedArea?.value.length > 0) {
-    getterBattleZones.value.forEach((zone: BattleZone) => {
-      if (zone.key === keyOfIntersectedArea.value) {
-        zone.guardians.push(currentPlayer.value);
-      }
-    })
-  } else if (keyOfIntersectedArea.value === '') {
-    getterBattleZones.value.forEach((area: BattleZone) => {
-      const index = area.guardians.findIndex((guardian: PlayerData) => guardian.name === currentPlayer.value.name);
-      area.guardians.splice(index, 1);
-    })
-  }
-}
-
 const currentPlayerMark = ((player: PlayerData) => {
   return currentPlayer.value?.key === player.key ? '(Já)' : '';
 })
@@ -91,7 +76,7 @@ const currentPlayerMark = ((player: PlayerData) => {
 // WATCHERS
 watch(keyOfIntersectedArea, (): void => {
   if (getterBattleZones) {
-    updateAreasOfCurrentPlayer()
+    currentPlayer.value.insideZone = keyOfIntersectedArea.value;
   }
 });
 watch(gameState, (newValue): void => {
@@ -120,10 +105,12 @@ onMounted(async () => {
   if (intervalRunAttack.value !== null) {
     clearInterval(intervalRunAttack.value);
   }
+  currentPlayer.value.insideZone = keyOfIntersectedArea.value; // manually setting zone where player is when opening the game lobby
   await useReleaseWakeLockScreen();
 })
 
 onBeforeUnmount(async () => {
+  currentPlayer.value.insideZone = '';
   // await to prevent closing socket connection before 'leaveGame' is for sure sent. Or else it sometimes disconnects before custom event 'leaveGame'
   await new Promise<void>((resolve) => {
     socket.emit('leaveGame', { gameId, player: currentPlayer.value }, () => {
@@ -145,6 +132,7 @@ onBeforeUnmount(async () => {
 
   <template v-if="!applicationError">
     <p>Místo: {{ currentGame?.gameLocation.locationName }}</p>
+    <p>V zóně: {{ currentPlayer.insideZone }}</p>
 
     <div v-if="dataLoading">
       <v-icon icon="mdi-loading" class="hh-icon-loading"></v-icon>

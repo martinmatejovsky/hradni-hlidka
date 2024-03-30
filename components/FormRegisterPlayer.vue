@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import type {PlayerData} from "~/types/CustomTypes";
 import {useState} from "nuxt/app";
-import {STORE_CURRENT_PLAYER} from "~/constants";
+import {STORE_APPLICATION_ERROR, STORE_CURRENT_PLAYER} from "~/constants";
 import type {Socket} from 'socket.io-client'
 
 // PROPS
 const props = defineProps<{gameId: string, socket: Socket}>();
 
 // DATA
+const pageError = useState(STORE_APPLICATION_ERROR);
 const emit = defineEmits(['@form-submitted'])
 const isFormValid = computed(() => {
   return selectedPlayerName.value
@@ -20,7 +21,14 @@ const submitForm = async () => {
   currentPlayer.value.name = selectedPlayerName.value;
   currentPlayer.value.key = props.socket.id as string;
 
-  props.socket.emit('joinGame', {gameId: props.gameId, player: currentPlayer.value});
+  props.socket.emit('joinGame', {gameId: props.gameId, player: currentPlayer.value}, (response: string) => {
+    if (response === 'ok') {
+      emit('@form-submitted')
+    } else {
+      pageError.value = 'Nepodařilo se připojit ke hře'
+      console.error('Failed to join game', response)
+    }
+  })
 }
 </script>
 
