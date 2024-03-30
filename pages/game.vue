@@ -153,6 +153,7 @@ onBeforeUnmount(async () => {
           <li v-for="player in connectedPlayers" :key="player.key" class="text-green">{{ player.name }} {{ currentPlayerMark(player) }}</li>
         </ul>
         <v-btn v-if="currentPlayerIsLeader" @click="startAttack" rounded="xs" class="mt-3 mb-3">Zahájit útok</v-btn>
+        <p v-else>Útok může zahájit první hráč seznamu.</p>
       </div>
 
       <!-- RUNNING -->
@@ -166,7 +167,7 @@ onBeforeUnmount(async () => {
             <p>strážce:
               <template v-if="!guardians.length">--</template>
               <template v-else>
-                <span v-for="guardian in guardians" :key="guardian.name"  class="text-green">{{ guardian.name || '--' }}</span>
+                <span v-for="guardian in guardians" :key="guardian.name"  class="text-green mr-2">{{ guardian.name || '--' }}</span>
               </template>
             </p>
             <p>Shromáždění útočníci:
