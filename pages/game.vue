@@ -125,11 +125,9 @@ onBeforeUnmount(async () => {
 </script>
 
 <template>
-  <!--  TODO: put here a condition to check if player entering this page as in local Store currentPlayer filled and-->
-  <!--  if this object has a unique id from useSocket.io. If not, show him component FormGameSettings.-->
   <h1 class="mb-4">Bitva</h1>
 
-  <v-alert v-if="geolocationWarning" type="warning" class="mb-4" dismissible></v-alert>
+  <v-alert v-if="geolocationWarning" type="warning" class="mb-4" dismissible>{{geolocationWarning}}</v-alert>
 
   <template v-if="!applicationError">
     <p>Místo: {{ currentGame?.gameLocation.locationName }}</p>
