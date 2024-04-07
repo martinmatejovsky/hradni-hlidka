@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import type {PlayerData} from "~/types/CustomTypes";
+import type {GameInstance, PlayerData} from "~/types/CustomTypes";
 import {useState} from "nuxt/app";
-import {STORE_APPLICATION_ERROR, STORE_CURRENT_PLAYER} from "~/constants";
+import {STORE_APPLICATION_ERROR, STORE_CURRENT_PLAYER, STORE_GAME_INSTANCE} from "~/constants";
 import type {Socket} from 'socket.io-client'
 
 // PROPS
-const props = defineProps<{gameId: string, socket: Socket}>();
+const props = defineProps<{socket: Socket | undefined}>();
 
 // DATA
 const pageError = useState(STORE_APPLICATION_ERROR);
@@ -15,13 +15,19 @@ const isFormValid = computed(() => {
 })
 const selectedPlayerName = ref<string>('Test Beolf')
 const currentPlayer = useState<PlayerData>(STORE_CURRENT_PLAYER);
+const currentGame = useState<GameInstance>(STORE_GAME_INSTANCE);
 
 // METHODS
 const submitForm = async () => {
+  if (!props.socket) {
+    pageError.value = 'Nepodařilo se připojit k serveru'
+    return
+  }
+
   currentPlayer.value.name = selectedPlayerName.value;
   currentPlayer.value.key = props.socket.id as string;
 
-  props.socket.emit('joinGame', {gameId: props.gameId, player: currentPlayer.value}, (response: string) => {
+  props.socket.emit('joinGame', {gameId: currentGame.value.id, player: currentPlayer.value}, (response: string) => {
     if (response === 'ok') {
       emit('@form-submitted')
     } else {

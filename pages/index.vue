@@ -1,7 +1,7 @@
 <script setup lang="ts">
 // IMPORTS
 import {computed, type ComputedRef} from 'vue';
-import type {GameInstance, GameLocation, PlayerData} from "~/types/CustomTypes";
+import type {GameLocation, PlayerData, GameState} from "~/types/CustomTypes";
 import {STORE_APPLICATION_ERROR, STORE_CURRENT_PLAYER} from "~/constants";
 
 // DATA
@@ -23,6 +23,7 @@ const dataLoading = ref<boolean>(false);
 const pageError = useState(STORE_APPLICATION_ERROR);
 let gameLocations: GameLocation[]
 const gameAlreadyCreated = ref(false)
+const gameNotYetCreated = ref(false)
 
 // COMPUTED
 const isFormValid = computed(() => {
@@ -37,12 +38,45 @@ const locationOptions: ComputedRef<string[]> = computed(() => {
 });
 
 // METHODS
-const joinGame = () => {
-  navigateTo('/game?id=1')
+const checkGameCreated = async (): Promise<boolean> => {
+  try {
+    const response = await $fetch(`${runtimeConfig.public.serverUrl}/api/game/checkGameStatus`, {
+      method: 'GET',
+    });
+
+    const gameStatusResponse = response as { gameStatus: GameState };
+
+    if (gameStatusResponse.gameStatus === "none") {
+      gameNotYetCreated.value = true;
+      return false;
+    } else {
+      gameNotYetCreated.value = false;
+      return true;
+    }
+  } catch (error) {
+    pageError.value = 'Nepodařilo se spojit se serverem <br />' + error;
+    return false;
+  }
+}
+
+const joinGame = async () => {
+  const alreadyCreated = await checkGameCreated();
+
+  if (alreadyCreated) {
+    navigateTo('/game');
+  }
 }
 const createNewBattle = async () => {
   dataLoading.value = true;
-  await $fetch( `${runtimeConfig.public.serverUrl}/api/game`, {
+  const alreadyCreated = await checkGameCreated();
+
+  if (alreadyCreated) {
+    gameAlreadyCreated.value = true
+    dataLoading.value = false;
+    return
+  }
+
+  await $fetch( `${runtimeConfig.public.serverUrl}/api/game/createGame`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
@@ -54,8 +88,7 @@ const createNewBattle = async () => {
     if (response.statusCode === 200) {
       gameAlreadyCreated.value = true
     } else if (response.statusCode === 201) {
-      const gameInstance = response.gameInstance as GameInstance;
-      navigateTo('/game?id=' + gameInstance.id)
+      navigateTo('/game')
     }
   }).catch((error) => {
     pageError.value = 'Nepodařilo se spojit se serverem <br />' + error
@@ -92,6 +125,11 @@ onBeforeMount(() => {
     <v-card-text>
       <v-window v-model="tab">
         <v-window-item value="join">
+          <v-alert v-if="gameNotYetCreated"
+              class="mb-4"
+              text="Hra ještě není založena"
+              type="info"
+          ></v-alert>
           <v-btn @click="joinGame" type="button" rounded="xs">Přidat se do bitvy</v-btn>
         </v-window-item>
 

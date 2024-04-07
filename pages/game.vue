@@ -4,6 +4,7 @@ import type {BattleZone, GameInstance, PlayerData} from "~/types/CustomTypes";
 import {computed, watch} from "vue";
 import {useState} from "nuxt/app";
 import {useGetterCurrentPlayerIsLeader, useGetterGameState} from "~/composables/getters";
+import type {Socket} from "socket.io-client";
 
 // DATA
 const runtimeConfig = useRuntimeConfig()
@@ -13,11 +14,9 @@ const currentGame = useState<GameInstance>(STORE_GAME_INSTANCE)
 const gameState = useGetterGameState;
 const getterBattleZones = useGetterBattleZones;
 const currentPlayerIsLeader = useGetterCurrentPlayerIsLeader
-const route = useRoute()
-const gameId: string = route.query.id as string;
 const dataLoading = ref<boolean>(false);
 const applicationError = useState(STORE_APPLICATION_ERROR)
-const socket = useSocket(gameId);
+let socket: Socket;
 
 // COMPUTED
 const connectedPlayers = computed((): PlayerData[] => {
@@ -34,20 +33,20 @@ const startAttack = async (): Promise<void> => {
   // TODO: send to server that game has started. On response start the game also on client side
   // like for example with intervalRunAttack.value = useRunAttack();
 
-  await $fetch(`${runtimeConfig.public.serverUrl}/api/game/${gameId}/start`, {
+  await $fetch(`${runtimeConfig.public.serverUrl}/api/game/start`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({
-      gameId: gameId,
+      gameId: currentGame.value.id
     })
   }).catch((error) => {
     applicationError.value = 'Nepodařilo se zahájit útok.<br />' + error
   });
 };
 const geolocationWarning = computed(() => {
-  if (!currentPlayer.value.location) {
+  if (!currentPlayer?.value.location) {
     return 'Pozice hráče není k dispozici';
   } else if (!useGetterBattleZones.value) {
     return 'Herní zóna není k dispozici';
@@ -56,7 +55,7 @@ const geolocationWarning = computed(() => {
   }
 })
 const keyOfIntersectedArea = computed((): string => {
-  if (currentPlayer.value.location && useGetterBattleZones.value) {
+  if (currentPlayer?.value.location && useGetterBattleZones.value) {
     return useIntersectedAreaKey(currentPlayer.value.location);
   } else {
     return '';
@@ -77,7 +76,7 @@ const currentPlayerMark = ((player: PlayerData) => {
 watch(keyOfIntersectedArea, (): void => {
   if (getterBattleZones) {
     currentPlayer.value.insideZone = keyOfIntersectedArea.value;
-    socket.emit('playerRelocated', {gameId, player: currentPlayer.value})
+    socket.emit('playerRelocated', {gameId: currentGame.value.id, player: currentPlayer.value})
   }
 });
 watch(gameState, (newValue): void => {
@@ -95,14 +94,17 @@ onMounted(async () => {
   dataLoading.value = true;
   applicationError.value = null;
 
-  await $fetch(`${runtimeConfig.public.serverUrl}/api/game/${gameId}`)
-      .then(response => {
-        useStoredGameInstance(response as GameInstance);
-      })
-      .catch(error => {
-        applicationError.value = 'Nepodařilo se načíst bitvu s tímto ID.<br />' + error
-      })
-      .finally(() => dataLoading.value = false);
+  await $fetch(`${runtimeConfig.public.serverUrl}/api/game`, {
+      method: 'GET',
+    })
+    .then(response => {
+      useStoredGameInstance(response as GameInstance);
+      socket = useSocket(currentGame.value.id);
+    })
+    .catch(error => {
+      applicationError.value = 'Nepodařilo se načíst bitvu s tímto ID.<br />' + error
+    })
+    .finally(() => dataLoading.value = false);
   if (intervalRunAttack.value !== null) {
     clearInterval(intervalRunAttack.value);
   }
@@ -114,7 +116,7 @@ onBeforeUnmount(async () => {
   currentPlayer.value.insideZone = '';
   // await to prevent closing socket connection before 'leaveGame' is for sure sent. Or else it sometimes disconnects before custom event 'leaveGame'
   await new Promise<void>((resolve) => {
-    socket.emit('leaveGame', { gameId, player: currentPlayer.value }, () => {
+    socket.emit('leaveGame', { gameId: currentGame.value.id, player: currentPlayer.value }, () => {
       resolve();
     });
   });
@@ -130,8 +132,8 @@ onBeforeUnmount(async () => {
   <v-alert v-if="geolocationWarning" type="warning" class="mb-4" dismissible>{{geolocationWarning}}</v-alert>
 
   <template v-if="!applicationError">
-    <p>Místo: {{ currentGame?.gameLocation.locationName }}</p>
-    <p>V zóně: {{ currentPlayer.insideZone }}</p>
+    <p>Místo: {{ currentGame?.gameLocation?.locationName }}</p>
+    <p>V zóně: {{ currentPlayer.insideZone || '--'}}</p>
 
     <div v-if="dataLoading">
       <v-icon icon="mdi-loading" class="hh-icon-loading"></v-icon>
@@ -140,7 +142,7 @@ onBeforeUnmount(async () => {
 
     <!-- REGISTER PLAYER -->
     <div v-else-if="!currentPlayer?.key">
-      <FormRegisterPlayer :gameId="gameId" :socket="socket" />
+      <FormRegisterPlayer :socket="socket" />
     </div>
 
     <template v-else>
