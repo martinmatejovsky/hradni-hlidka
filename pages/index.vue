@@ -19,6 +19,8 @@ const accuracyClass = computed(() => {
   }
 });
 const selectedLocationKey = ref<string | null>(null)
+const selectedGameTempo = ref<number | null>(null)
+const selectedLadderLength = ref<number | null>(null)
 const dataLoading = ref<boolean>(false);
 const pageError = useState(STORE_APPLICATION_ERROR);
 let gameLocations: GameLocation[]
@@ -27,7 +29,7 @@ const gameNotYetCreated = ref(false)
 
 // COMPUTED
 const isFormValid = computed(() => {
-  return selectedLocationKey.value !== null
+  return selectedLocationKey.value !== null && selectedGameTempo.value !== null && selectedLadderLength.value !== null;
 })
 const locationOptions: ComputedRef<string[]> = computed(() => {
   if (gameLocations) {
@@ -35,6 +37,15 @@ const locationOptions: ComputedRef<string[]> = computed(() => {
   } else {
     return [];
   }
+});
+const selectedGameLocation = computed(() => {
+  return gameLocations?.find(location => location.locationName === selectedLocationKey.value) ?? null;
+});
+const gameTemposOptions: ComputedRef<number[]> = computed(() => {
+  return selectedGameLocation.value?.speedChoices ?? [];
+});
+const ladderLengthOptions: ComputedRef<number[]> = computed(() => {
+  return selectedGameLocation.value?.ladderLengthChoices ?? [];
 });
 
 // METHODS
@@ -83,6 +94,8 @@ const createNewBattle = async () => {
     },
     body: JSON.stringify({
       gameLocation: gameLocations.find(location => location.locationName === selectedLocationKey.value),
+      gameTempo: selectedGameTempo.value,
+      ladderLength: selectedLadderLength.value,
     })
   }).then((response: any) => {
     if (response.statusCode === 200) {
@@ -156,6 +169,20 @@ onBeforeMount(() => {
                     :items="locationOptions"
                     class="mb-2"
                     label="Vyberte bitevní pole"
+                    required
+                ></v-select>
+                <v-select
+                    v-model="selectedGameTempo"
+                    :items="gameTemposOptions"
+                    class="mb-2"
+                    label="Tempo hry"
+                    required
+                ></v-select>
+                <v-select
+                    v-model="selectedLadderLength"
+                    :items="ladderLengthOptions"
+                    class="mb-2"
+                    label="Výška hradeb"
                     required
                 ></v-select>
                 <v-btn type="submit" :disabled="!isFormValid" :block="true" rounded="xs" class="mb-2">Založit novou bitvu</v-btn>
