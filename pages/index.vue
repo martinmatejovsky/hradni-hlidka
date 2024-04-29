@@ -1,12 +1,14 @@
 <script setup lang="ts">
 // IMPORTS
 import {computed, type ComputedRef} from 'vue';
-import type {GameLocation, PlayerData, GameState} from "~/types/CustomTypes";
-import {STORE_APPLICATION_ERROR, STORE_CURRENT_PLAYER} from "~/constants";
+import type {GameLocation, PlayerData, GameState, GameInstance} from "~/types/CustomTypes";
+import {STORE_APPLICATION_ERROR, STORE_CURRENT_PLAYER, STORE_GAME_INSTANCE} from "~/constants";
+import {useState} from "nuxt/app";
 
 // DATA
 const tab = ref<string>('join');
 const currentPlayer = useState<PlayerData>(STORE_CURRENT_PLAYER);
+const currentGame = useState<GameInstance>(STORE_GAME_INSTANCE)
 const runtimeConfig = useRuntimeConfig()
 const playerAccuracy = computed(() => Math.round(currentPlayer.value?.location.accuracy || 0));
 const accuracyClass = computed(() => {
@@ -19,8 +21,8 @@ const accuracyClass = computed(() => {
   }
 });
 const selectedLocationKey = ref<string | null>(null)
-const selectedGameTempo = ref<number | null>(null)
-const selectedLadderLength = ref<number | null>(null)
+const selectedGameTempo = ref<number | null>(2000)
+const selectedLadderLength = ref<number | null>(20)
 const dataLoading = ref<boolean>(false);
 const pageError = useState(STORE_APPLICATION_ERROR);
 let gameLocations: GameLocation[]
@@ -101,6 +103,7 @@ const createNewBattle = async () => {
     if (response.statusCode === 200) {
       gameAlreadyCreated.value = true
     } else if (response.statusCode === 201) {
+      console.log('check it')
       navigateTo('/game')
     }
   }).catch((error) => {
@@ -176,6 +179,7 @@ onBeforeMount(() => {
                     :items="gameTemposOptions"
                     class="mb-2"
                     label="Tempo hry"
+                    value="2000"
                     required
                 ></v-select>
                 <v-select
