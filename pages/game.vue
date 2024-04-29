@@ -99,9 +99,6 @@ onMounted(async () => {
     })
     .then((response) => {
       useStoredGameInstance(response as GameInstance);
-      console.log(response)
-      console.log(currentGame?.value?.id) // TODO: sometimes currentGame is empty at this moment and socket without ID is created
-      console.log(currentGame?.value) // TODO: sometimes currentGame is empty at this moment and socket without ID is created
       socket = useSocket(currentGame.value.id);
     })
     .catch(error => {
@@ -126,7 +123,7 @@ onBeforeUnmount(async () => {
   socket.disconnect();
   currentPlayer.value.name = '';
   currentPlayer.value.key = '';
-  useStoredGameInstance(null);
+  clearNuxtState(STORE_GAME_INSTANCE);
 })
 </script>
 

@@ -22,7 +22,6 @@ export function useSocket(gameId: string) {
     })
 
     socket.on('gameStarted', (game: GameInstance): void => {
-        console.log('game started')
         useState<GameInstance>(CONST.STORE_GAME_INSTANCE).value = game;
     })
 

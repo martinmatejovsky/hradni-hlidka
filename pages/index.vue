@@ -103,7 +103,6 @@ const createNewBattle = async () => {
     if (response.statusCode === 200) {
       gameAlreadyCreated.value = true
     } else if (response.statusCode === 201) {
-      console.log('check it')
       navigateTo('/game')
     }
   }).catch((error) => {
