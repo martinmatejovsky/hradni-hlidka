@@ -1,11 +1,14 @@
 <script setup lang="ts">
 // IMPORTS
 import {computed, type ComputedRef} from 'vue';
-import type {GameLocation, PlayerData} from "~/types/CustomTypes";
-import {STORE_APPLICATION_ERROR, STORE_CURRENT_PLAYER} from "~/constants";
+import type {GameLocation, PlayerData, GameState, GameInstance} from "~/types/CustomTypes";
+import {STORE_APPLICATION_ERROR, STORE_CURRENT_PLAYER, STORE_GAME_INSTANCE} from "~/constants";
+import {useState} from "nuxt/app";
 
 // DATA
+const tab = ref<string>('join');
 const currentPlayer = useState<PlayerData>(STORE_CURRENT_PLAYER);
+const currentGame = useState<GameInstance>(STORE_GAME_INSTANCE)
 const runtimeConfig = useRuntimeConfig()
 const playerAccuracy = computed(() => Math.round(currentPlayer.value?.location.accuracy || 0));
 const accuracyClass = computed(() => {
@@ -18,13 +21,17 @@ const accuracyClass = computed(() => {
   }
 });
 const selectedLocationKey = ref<string | null>(null)
+const selectedGameTempo = ref<number | null>(2000)
+const selectedLadderLength = ref<number | null>(20)
 const dataLoading = ref<boolean>(false);
 const pageError = useState(STORE_APPLICATION_ERROR);
 let gameLocations: GameLocation[]
+const gameAlreadyCreated = ref(false)
+const gameNotYetCreated = ref(false)
 
 // COMPUTED
 const isFormValid = computed(() => {
-  return selectedLocationKey.value !== null
+  return selectedLocationKey.value !== null && selectedGameTempo.value !== null && selectedLadderLength.value !== null;
 })
 const locationOptions: ComputedRef<string[]> = computed(() => {
   if (gameLocations) {
@@ -33,24 +40,71 @@ const locationOptions: ComputedRef<string[]> = computed(() => {
     return [];
   }
 });
+const selectedGameLocation = computed(() => {
+  return gameLocations?.find(location => location.locationName === selectedLocationKey.value) ?? null;
+});
+const gameTemposOptions: ComputedRef<number[]> = computed(() => {
+  return selectedGameLocation.value?.speedChoices ?? [];
+});
+const ladderLengthOptions: ComputedRef<number[]> = computed(() => {
+  return selectedGameLocation.value?.ladderLengthChoices ?? [];
+});
 
 // METHODS
-const openTestGame = () => {
-  navigateTo('/game?id=1')
+const checkGameCreated = async (): Promise<boolean> => {
+  try {
+    const response = await $fetch(`${runtimeConfig.public.serverUrl}/api/game/checkGameStatus`, {
+      method: 'GET',
+    });
+
+    const gameStatusResponse = response as { gameStatus: GameState };
+
+    if (gameStatusResponse.gameStatus === "none") {
+      gameNotYetCreated.value = true;
+      return false;
+    } else {
+      gameNotYetCreated.value = false;
+      return true;
+    }
+  } catch (error) {
+    pageError.value = 'Nepodařilo se spojit se serverem <br />' + error;
+    return false;
+  }
+}
+
+const joinGame = async () => {
+  const alreadyCreated = await checkGameCreated();
+
+  if (alreadyCreated) {
+    navigateTo('/game');
+  }
 }
 const createNewBattle = async () => {
   dataLoading.value = true;
-  await $fetch( `${runtimeConfig.public.serverUrl}/api/game`, {
+  const alreadyCreated = await checkGameCreated();
+
+  if (alreadyCreated) {
+    gameAlreadyCreated.value = true
+    dataLoading.value = false;
+    return
+  }
+
+  await $fetch( `${runtimeConfig.public.serverUrl}/api/game/createGame`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({
       gameLocation: gameLocations.find(location => location.locationName === selectedLocationKey.value),
+      gameTempo: selectedGameTempo.value,
+      ladderLength: selectedLadderLength.value,
     })
-  }).then((response) => {
-    const gameInstance = response as {id: string};
-    navigateTo('/game?id=' + gameInstance.id)
+  }).then((response: any) => {
+    if (response.statusCode === 200) {
+      gameAlreadyCreated.value = true
+    } else if (response.statusCode === 201) {
+      navigateTo('/game')
+    }
   }).catch((error) => {
     pageError.value = 'Nepodařilo se spojit se serverem <br />' + error
   }).finally(() => dataLoading.value = false);
@@ -75,32 +129,76 @@ onBeforeMount(() => {
 </script>
 
 <template>
-  <div class="my-4">
-    <v-container>
-      <div v-if="dataLoading">
-        <v-icon icon="mdi-loading" class="hh-icon-loading"></v-icon>
-        načítám data...
-      </div>
-      <v-row v-else>
-        <v-col cols="12" sm="6" md="4">
-          <v-form :fast-fail="true" @submit.prevent="createNewBattle">
-            <v-select
-                v-model="selectedLocationKey"
-                :items="locationOptions"
-                class="mb-2"
-                label="Vyberte bitevní pole"
-                required
-            ></v-select>
-            <v-btn type="submit" :disabled="!isFormValid" :block="true" rounded="xs" class="mb-2">Založit novou bitvu</v-btn>
-            <v-btn @click="openTestGame" type="button" :block="true" :disabled="!isFormValid" rounded="xs">testovací hra /1</v-btn>
-          </v-form>
-        </v-col>
-      </v-row>
-    </v-container>
+  <v-card class="my-4">
+    <v-tabs
+        v-model="tab"
+    >
+      <v-tab value="join">Přidat se</v-tab>
+      <v-tab value="create">Založit novou</v-tab>
+    </v-tabs>
 
-    <p>Souřadnice: {{ currentPlayer?.location.latitude }} {{ currentPlayer?.location.longitude }}</p>
-    <p>Přesnost: <span :class="[accuracyClass, 'font-weight-bold']">{{ playerAccuracy }}</span> m</p>
-  </div>
+    <v-card-text>
+      <v-window v-model="tab">
+        <v-window-item value="join">
+          <v-alert v-if="gameNotYetCreated"
+              class="mb-4"
+              text="Hra ještě není založena"
+              type="info"
+          ></v-alert>
+          <v-btn @click="joinGame" type="button" rounded="xs">Přidat se do bitvy</v-btn>
+        </v-window-item>
+
+        <v-window-item value="create">
+          <div v-if="dataLoading">
+            <v-icon icon="mdi-loading" class="hh-icon-loading"></v-icon>
+            načítám data...
+          </div>
+          <v-row v-else-if="gameAlreadyCreated">
+            <v-col cols="12" sm="6" md="4">
+              <v-alert
+                  class="mb-4"
+                  text="Hra je již založena"
+                  type="info"
+              ></v-alert>
+              <v-btn @click="joinGame" type="button" rounded="xs">Přidat se do bitvy</v-btn>
+            </v-col>
+          </v-row>
+          <v-row v-else>
+            <v-col cols="12" sm="6" md="4">
+              <v-form :fast-fail="true" @submit.prevent="createNewBattle">
+                <v-select
+                    v-model="selectedLocationKey"
+                    :items="locationOptions"
+                    class="mb-2"
+                    label="Vyberte bitevní pole"
+                    required
+                ></v-select>
+                <v-select
+                    v-model="selectedGameTempo"
+                    :items="gameTemposOptions"
+                    class="mb-2"
+                    label="Tempo hry"
+                    value="2000"
+                    required
+                ></v-select>
+                <v-select
+                    v-model="selectedLadderLength"
+                    :items="ladderLengthOptions"
+                    class="mb-2"
+                    label="Výška hradeb"
+                    required
+                ></v-select>
+                <v-btn type="submit" :disabled="!isFormValid" :block="true" rounded="xs" class="mb-2">Založit novou bitvu</v-btn>
+              </v-form>
+            </v-col>
+          </v-row>
+        </v-window-item>
+      </v-window>
+    </v-card-text>
+  </v-card>
+
+  <p>Souřadnice: {{ currentPlayer?.location.latitude }} {{ currentPlayer?.location.longitude }}</p>
+  <p>Přesnost: <span :class="[accuracyClass, 'font-weight-bold']">{{ playerAccuracy }}</span> m</p>
 </template>
 
 <style scoped>

@@ -17,8 +17,9 @@ export const useStoredCurrentPlayer = () => useState<PlayerData>(CONST.STORE_CUR
             latitude: null,
             longitude: null,
             accuracy: null,
-        }
+        },
+        insideZone: '',
     }
 })
-export const useStoredGameInstance = (game: GameInstance) => useState<GameInstance>(CONST.STORE_GAME_INSTANCE, () => game)
+export const useStoredGameInstance = (game: GameInstance | Ref<GameInstance>) => useState<GameInstance>(CONST.STORE_GAME_INSTANCE, () => game)
 export const useStoredApplicationError = () => useState<string | null>(CONST.STORE_APPLICATION_ERROR, () => null)

@@ -12,6 +12,9 @@ Podle best practices by se to nemělo dít hned při načtení homepage, ale až
 například že stiskne tlačítko "zapnout GPS". Také je best practice vysvětlit uživateli, k emu
 to potřebuju a že je to v pohodě.
 
+## ochrana před vícenásobným připojením ze stejné adresy
+tzv. útok brute force. Viz rada https://peacockindia.mintlify.app/docs/secure-coding#preventing-brute-force-attacks
+Jsou zde i jiné dobré rady.
 
 ## Zhasínání displeje při nečinnosti
 Vypadá to, že Firefox to hodlá podporovat až ve verzi 125, která ještě není. Jinak je podpora
