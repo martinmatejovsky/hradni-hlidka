@@ -25,15 +25,6 @@ export default defineNuxtConfig({
       })
     },
   ],
-  app: {
-    head: {
-        title: 'Hradní hlídka',
-        meta: [
-          { charset: 'utf-8' },
-          { name: 'description', content: 'Hra pod otevřeným nebem' },
-        ],
-      },
-  },
   vite: {
     vue: {
       template: {
@@ -41,4 +32,16 @@ export default defineNuxtConfig({
       },
     },
   },
+  // head() {
+  //   return {
+  //     title: 'Hradní hlídka',
+  //     meta: [
+  //       { charset: 'utf-8' },
+  //       { name: 'description', content: 'Hra pod otevřeným nebem' },
+  //     ],
+  //     style: [
+  //       { href: 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css', integrity: "sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=", crossorigin: "" },
+  //     ],
+  //   }
+  // }
 })
