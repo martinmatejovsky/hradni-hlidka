@@ -1,12 +1,18 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-const zoom = ref(20)
+import {useState} from "nuxt/app";
+import type {PlayerData} from "~/types/CustomTypes";
+import {STORE_CURRENT_PLAYER} from "~/constants";
+import horseRiderIcon from '~/assets/icons/horse-rider.svg';
+
+const currentPlayer = useState<PlayerData>(STORE_CURRENT_PLAYER);
+
+const zoom = ref(11)
 </script>
 
 <template>
 <h1>Mapa</h1>
 
-<div style="height:70vh; width:70vw">
+<div style="height:70vh; width:100%">
   <LMap
       ref="map"
       :zoom="zoom"
@@ -18,9 +24,15 @@ const zoom = ref(20)
         layer-type="base"
         name="OpenStreetMap"
     />
+    <l-marker :lat-lng="[currentPlayer.location.latitude, currentPlayer.location.longitude]">
+      <l-icon :iconUrl="horseRiderIcon" :icon-size="25" />
+    </l-marker>
   </LMap>
 </div>
 </template>
 
-<style scoped>
+<style>
+.leaflet-marker-icon {
+  transition: all 0.3s;
+}
 </style>

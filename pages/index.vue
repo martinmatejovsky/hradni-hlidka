@@ -199,6 +199,8 @@ onBeforeMount(() => {
 
   <p>Souřadnice: {{ currentPlayer?.location.latitude }} {{ currentPlayer?.location.longitude }}</p>
   <p>Přesnost: <span :class="[accuracyClass, 'font-weight-bold']">{{ playerAccuracy }}</span> m</p>
+
+  <v-btn @click="navigateTo('/map')" type="button" rounded="xs" class="mt-4">Mapa (testovací)</v-btn>
 </template>
 
 <style scoped>
