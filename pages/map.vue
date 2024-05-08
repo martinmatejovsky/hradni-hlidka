@@ -24,8 +24,14 @@ const zoom = ref(11)
         layer-type="base"
         name="OpenStreetMap"
     />
+    <LTileLayer
+        url="/map-layers/{z}/{x}/{y}.png"
+        attribution="&amp;copy; <a href=&quot;https://www.openstreetmap.org/&quot;>OpenStreetMap</a> + copy; Martin Matějovský bejby contributors"
+        layer-type="base"
+        name="OpenStreetMap"
+    />
     <l-marker :lat-lng="[currentPlayer.location.latitude, currentPlayer.location.longitude]">
-      <l-icon :iconUrl="horseRiderIcon" :icon-size="25" />
+      <l-icon :iconUrl="horseRiderIcon" :icon-size="[25, 25]" />
     </l-marker>
   </LMap>
 </div>
