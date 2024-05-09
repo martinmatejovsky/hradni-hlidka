@@ -5,6 +5,7 @@ import {computed, watch} from "vue";
 import {useState} from "nuxt/app";
 import {useGetterCurrentPlayerIsLeader, useGetterGameState} from "~/composables/getters";
 import type {Socket} from "socket.io-client";
+import Map from "~/components/Map.vue";
 
 // DATA
 const runtimeConfig = useRuntimeConfig()
@@ -160,9 +161,8 @@ onBeforeUnmount(async () => {
 
       <!-- RUNNING -->
       <div v-else-if="gameState === 'running'">
-        <p class="mb-4">Jsem uvnitř? <span class="text-h4 text-indigo-lighten-4">{{ nameOfIntersectedArea }}</span></p>
-        <h3 class="mb-3">Postup útoku</h3>
         <p v-if="!getterBattleZones">Žádná data o útoku.</p>
+
         <div v-else>
           <div v-for="{ key, zoneName, guardians, assembledInvaders, assaultLadder } in getterBattleZones" :key="key" class="mb-3">
             <h4 class="text-amber">{{ zoneName }}</h4>
@@ -179,6 +179,8 @@ onBeforeUnmount(async () => {
             <ClimbingLadder :climbingInvaders="assaultLadder" />
           </div>
         </div>
+
+        <Map :connectedPlayers="connectedPlayers"></Map>
       </div>
 
       <!-- LOST OR WON-->
