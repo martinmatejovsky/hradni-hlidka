@@ -1,44 +1,62 @@
 <script setup lang="ts">
-import {useState} from "nuxt/app";
-import type {PlayerData} from "~/types/CustomTypes";
-import {STORE_CURRENT_PLAYER} from "~/constants";
+useHead({
+  script: [ { src: 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js', defer: true, integrity: "sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=", crossorigin: "" } ],
+  link: [{ href: 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css', integrity: "sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=", crossorigin: "" }]
+})
+
 import horseRiderIcon from '~/assets/icons/horse-rider.svg';
 
-const currentPlayer = useState<PlayerData>(STORE_CURRENT_PLAYER);
+onMounted(() => {
+  let map = L.map('map').setView([50.1912094, 12.7429419], 11);
 
-const zoom = ref(11)
+  let currentPlayerIcon = L.divIcon({
+    className: 'h-rider-icon',
+    html: `<img class="h-rider-icon-image" alt="" src="${horseRiderIcon}"/>`+
+        '<span class="h-rider-icon-description">Hrdina</span>',
+  });
+
+  L.TileLayer.Battlefield = L.TileLayer.extend({
+    getTileUrl: function(coords) {
+      return `/map-layers/{z}/{x}/{y}.png`
+        .replace('{z}', coords.z)
+        .replace('{x}', coords.x)
+        .replace('{y}', coords.y);
+    },
+    getAttribution: function() {
+      return '&copy; Martin Matějovský, bejby'
+    }
+  });
+
+  L.tileLayer.battlefield = function() {
+    return new L.TileLayer.Battlefield();
+  }
+
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+  }).addTo(map);
+
+  L.tileLayer.battlefield().addTo(map);
+  L.marker([50.1912094, 12.7429419], {icon: currentPlayerIcon}).addTo(map)
+
+})
 </script>
 
 <template>
-<h1>Mapa</h1>
 
-<div style="height:70vh; width:100%">
-  <LMap
-      ref="map"
-      :zoom="zoom"
-      :center="[50.1912094, 12.7429419]"
-  >
-    <LTileLayer
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        attribution="&amp;copy; <a href=&quot;https://www.openstreetmap.org/&quot;>OpenStreetMap</a> contributors"
-        layer-type="base"
-        name="OpenStreetMap"
-    />
-    <LTileLayer
-        url="/map-layers/{z}/{x}/{y}.png"
-        attribution="&amp;copy; <a href=&quot;https://www.openstreetmap.org/&quot;>OpenStreetMap</a> + copy; Martin Matějovský bejby contributors"
-        layer-type="base"
-        name="OpenStreetMap"
-    />
-    <l-marker :lat-lng="[currentPlayer.location.latitude, currentPlayer.location.longitude]">
-      <l-icon :iconUrl="horseRiderIcon" :icon-size="[25, 25]" />
-    </l-marker>
-  </LMap>
-</div>
+  <div id="map"></div>
+
 </template>
 
 <style>
-.leaflet-marker-icon {
-  transition: all 0.3s;
+#map {
+  height: 60vh;
+  width: 100%;
+}
+
+.h-rider-icon-description {
+  color: #000000;
+  font-size: 14px;
+  font-weight: bold;
 }
 </style>
