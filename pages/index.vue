@@ -20,8 +20,8 @@ const accuracyClass = computed(() => {
     return 'text-red';
   }
 });
-const selectedLocationKey = ref<string | null>(null)
-const selectedGameTempo = ref<number | null>(2000)
+const selectedLocationKey = ref<string | null>('Loket Sportovní')
+const selectedGameTempo = ref<number | null>(30000)
 const selectedLadderLength = ref<number | null>(20)
 const dataLoading = ref<boolean>(false);
 const pageError = useState(STORE_APPLICATION_ERROR);
@@ -171,6 +171,7 @@ onBeforeMount(() => {
                     :items="locationOptions"
                     class="mb-2"
                     label="Vyberte bitevní pole"
+                    value="loketSportovni"
                     required
                 ></v-select>
                 <v-select
@@ -178,7 +179,7 @@ onBeforeMount(() => {
                     :items="gameTemposOptions"
                     class="mb-2"
                     label="Tempo hry"
-                    value="2000"
+                    value="30000"
                     required
                 ></v-select>
                 <v-select
