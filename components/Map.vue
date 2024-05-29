@@ -12,7 +12,7 @@ import horseRiderIcon from '~/assets/icons/horse-rider.svg';
 const currentPlayer = useState<PlayerData>(STORE_CURRENT_PLAYER);
 const zoom = ref(11)
 
-defineProps({
+const props = defineProps({
   connectedPlayers: {
     type: Array as PropType<PlayerData[]>,
     required: true
@@ -22,11 +22,7 @@ defineProps({
 onMounted(() => {
   let map = L.map('map').setView([50.1912094, 12.7429419], zoom.value);
 
-  let currentPlayerIcon = L.divIcon({
-    className: 'h-rider-icon',
-    html: `<img class="h-rider-icon-image" alt="" src="${horseRiderIcon}"/>`+
-        '<span class="h-rider-icon-description">{{ currentPlayer.name }}</span>',
-  });
+  let currentPlayerIcon = L.divIcon(useIconLeaflet({label: currentPlayer.value.name}));
 
   L.TileLayer.Battlefield = L.TileLayer.extend({
     getTileUrl: function(coords) {
@@ -52,13 +48,9 @@ onMounted(() => {
   L.tileLayer.battlefield().addTo(map);
 
   // TODO: this does not work. How to get it from defineProps?
-  connectedPlayers.value.forEach((player: PlayerData) => {
-    if (player.key !== currentPlayer.value.key) {
-      let otherPlayerIcon = L.divIcon({
-        className: 'h-rider-icon',
-        html: `<img class="h-rider-icon-image" alt="" src="${horseRiderIcon}"/>`+
-            '<span class="h-rider-icon-description">{{ player.name }}</span>',
-      });
+  props.connectedPlayers.forEach((player: PlayerData) => {
+    if (player.key !== currentPlayer.value.key && player.location.latitude && player.location.longitude) {
+      let otherPlayerIcon = L.divIcon(useIconLeaflet({label: player.name}));
       L.marker([player.location.latitude, player.location.longitude], {icon: otherPlayerIcon}).addTo(map)
     }
   })
@@ -75,9 +67,18 @@ onMounted(() => {
 </template>
 
 <style>
+:root {
+  --icon-leaflet-body-size: 100px;
+}
+
 #map {
   height: 60vh;
   width: 100%;
+}
+
+.h-icon-leaflet {
+  width: var(--icon-leaflet-body-size);
+  transform: translate(calc(var(--icon-leaflet-body-size) / -2), -12px);
 }
 
 .h-rider-icon-description {
@@ -87,6 +88,7 @@ onMounted(() => {
 }
 
 .leaflet-marker-icon {
+  position: relative;
   transition: all 0.3s;
 }
 </style>
