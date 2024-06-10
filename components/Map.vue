@@ -7,7 +7,6 @@ useHead({
 import {useState} from "nuxt/app";
 import type {PlayerData} from "~/types/CustomTypes";
 import {STORE_CURRENT_PLAYER} from "~/constants";
-import horseRiderIcon from '~/assets/icons/horse-rider.svg';
 
 const currentPlayer = useState<PlayerData>(STORE_CURRENT_PLAYER);
 const zoom = ref(11)
@@ -18,6 +17,8 @@ const props = defineProps({
     required: true
   },
 });
+
+const markers = reactive<{ [key: string]: L.Marker }>({});
 
 onMounted(() => {
   let map = L.map('map').setView([50.1912094, 12.7429419], zoom.value);
@@ -47,21 +48,33 @@ onMounted(() => {
 
   L.tileLayer.battlefield().addTo(map);
 
-  // TODO: this does not work. How to get it from defineProps?
   props.connectedPlayers.forEach((player: PlayerData) => {
     if (player.key !== currentPlayer.value.key && player.location.latitude && player.location.longitude) {
       let otherPlayerIcon = L.divIcon(useIconLeaflet({label: player.name}));
-      L.marker([player.location.latitude, player.location.longitude], {icon: otherPlayerIcon}).addTo(map)
+      markers[player.key] = L.marker([player.location.latitude, player.location.longitude], { icon: otherPlayerIcon }).addTo(map);
     }
   })
 
-  L.marker([50.1912094, 12.7429419], {icon: currentPlayerIcon}).addTo(map)
+  if (currentPlayer.value.location.latitude && currentPlayer.value.location.longitude) {
+    markers[currentPlayer.value.key] = L.marker([currentPlayer.value.location.latitude, currentPlayer.value.location.longitude], {icon: currentPlayerIcon}).addTo(map)
+  }
 
 })
+
+// write watch method to watch changes in currentPlayer.value.location and update the map with new location of the player
+watch(() => currentPlayer.value.location, (newLocation) => {
+  if (newLocation.latitude && newLocation.longitude) {
+    const marker = markers[currentPlayer.value.key];
+    if (marker) {
+      marker.setLatLng([newLocation.latitude, newLocation.longitude]);
+    }
+  }
+})
+
 </script>
 
 <template>
-  <p>connected players count: {{connectedPlayers?.length}}</p>
+  <p>Curent player position: {{currentPlayer.location.latitude}} {{currentPlayer.location.longitude}}</p>
 
   <div id="map"></div>
 </template>
