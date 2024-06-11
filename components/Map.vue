@@ -34,17 +34,16 @@ onMounted(() => {
     },
     getAttribution: function() {
       return '&copy; Martin Matějovský, bejby'
+    },
+    options: {
+      minZoom: 11,
+      maxZoom: 11,
     }
   });
 
   L.tileLayer.battlefield = function() {
     return new L.TileLayer.Battlefield();
   }
-
-  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19,
-    attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-  }).addTo(map);
 
   L.tileLayer.battlefield().addTo(map);
 
