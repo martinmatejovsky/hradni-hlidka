@@ -77,7 +77,7 @@ const currentPlayerMark = ((player: PlayerData) => {
 watch(keyOfIntersectedArea, (): void => {
   if (getterBattleZones) {
     currentPlayer.value.insideZone = keyOfIntersectedArea.value;
-    socket.emit('playerRelocated', {gameId: currentGame.value.id, player: currentPlayer.value})
+    socket.emit('playerRelocatedToZone', {gameId: currentGame.value.id, player: currentPlayer.value})
   }
 });
 watch(gameState, (newValue): void => {

@@ -1,15 +1,29 @@
 <script setup lang="ts">
 useHead({
-  script: [ { src: 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js', defer: true, integrity: "sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=", crossorigin: "" } ],
-  link: [{ href: 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css', integrity: "sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=", crossorigin: "" }]
-})
+  script: [
+    {
+      src: 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js',
+      defer: true,
+      integrity: "sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=",
+      crossorigin: ""
+    }
+  ],
+  link: [
+    {
+      href: 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',
+      integrity: "sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=",
+      crossorigin: ""
+    }
+  ]
+});
 
-import {useState} from "nuxt/app";
-import type {PlayerData} from "~/types/CustomTypes";
-import {STORE_CURRENT_PLAYER} from "~/constants";
+import { ref, onMounted, watch, reactive } from 'vue';
+import { useState } from 'nuxt/app';
+import type { PlayerData } from '~/types/CustomTypes';
+import { STORE_CURRENT_PLAYER } from '~/constants';
 
 const currentPlayer = useState<PlayerData>(STORE_CURRENT_PLAYER);
-const zoom = ref(11)
+const zoom = ref(11);
 
 const props = defineProps({
   connectedPlayers: {
@@ -19,21 +33,22 @@ const props = defineProps({
 });
 
 const markers = reactive<{ [key: string]: L.Marker }>({});
+let map: L.Map;
 
 onMounted(() => {
-  let map = L.map('map').setView([50.1912094, 12.7429419], zoom.value);
+  map = L.map('map').setView([50.1912094, 12.7429419], zoom.value);
 
-  let currentPlayerIcon = L.divIcon(useIconLeaflet({label: currentPlayer.value.name}));
+  let currentPlayerIcon = L.divIcon(useIconLeaflet({ label: currentPlayer.value.name }));
 
   L.TileLayer.Battlefield = L.TileLayer.extend({
-    getTileUrl: function(coords) {
+    getTileUrl: function (coords) {
       return `/map-layers/{z}/{x}/{y}.png`
           .replace('{z}', coords.z)
           .replace('{x}', coords.x)
           .replace('{y}', coords.y);
     },
-    getAttribution: function() {
-      return '&copy; Martin Matějovský, bejby'
+    getAttribution: function () {
+      return '&copy; Martin Matějovský, bejby';
     },
     options: {
       minZoom: 11,
@@ -41,7 +56,7 @@ onMounted(() => {
     }
   });
 
-  L.tileLayer.battlefield = function() {
+  L.tileLayer.battlefield = function () {
     return new L.TileLayer.Battlefield();
   }
 
@@ -49,18 +64,16 @@ onMounted(() => {
 
   props.connectedPlayers.forEach((player: PlayerData) => {
     if (player.key !== currentPlayer.value.key && player.location.latitude && player.location.longitude) {
-      let otherPlayerIcon = L.divIcon(useIconLeaflet({label: player.name}));
+      let otherPlayerIcon = L.divIcon(useIconLeaflet({ label: player.name }));
       markers[player.key] = L.marker([player.location.latitude, player.location.longitude], { icon: otherPlayerIcon }).addTo(map);
     }
   })
 
   if (currentPlayer.value.location.latitude && currentPlayer.value.location.longitude) {
-    markers[currentPlayer.value.key] = L.marker([currentPlayer.value.location.latitude, currentPlayer.value.location.longitude], {icon: currentPlayerIcon}).addTo(map)
+    markers[currentPlayer.value.key] = L.marker([currentPlayer.value.location.latitude, currentPlayer.value.location.longitude], { icon: currentPlayerIcon }).addTo(map);
   }
+});
 
-})
-
-// write watch method to watch changes in currentPlayer.value.location and update the map with new location of the player
 watch(() => currentPlayer.value.location, (newLocation) => {
   if (newLocation.latitude && newLocation.longitude) {
     const marker = markers[currentPlayer.value.key];
@@ -68,7 +81,21 @@ watch(() => currentPlayer.value.location, (newLocation) => {
       marker.setLatLng([newLocation.latitude, newLocation.longitude]);
     }
   }
-})
+});
+
+watch(() => props.connectedPlayers, (updatedConnectedPlayers) => {
+  updatedConnectedPlayers.forEach((player: PlayerData) => {
+    if (player.key !== currentPlayer.value.key && player.location.latitude && player.location.longitude) {
+      const marker = markers[player.key];
+      if (marker) {
+        marker.setLatLng([player.location.latitude, player.location.longitude]);
+      } else {
+        let otherPlayerIcon = L.divIcon(useIconLeaflet({ label: player.name }));
+        markers[player.key] = L.marker([player.location.latitude, player.location.longitude], { icon: otherPlayerIcon }).addTo(map);
+      }
+    }
+  });
+});
 
 </script>
 
