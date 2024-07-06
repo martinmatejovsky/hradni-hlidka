@@ -23,7 +23,7 @@ import type { PlayerData } from '~/types/CustomTypes';
 import { STORE_CURRENT_PLAYER } from '~/constants';
 
 const currentPlayer = useState<PlayerData>(STORE_CURRENT_PLAYER);
-const zoom = ref(11);
+const zoom = ref([19, 20]);
 
 const props = defineProps({
   connectedPlayers: {
@@ -36,7 +36,7 @@ const markers = reactive<{ [key: string]: L.Marker }>({});
 let map: L.Map;
 
 onMounted(() => {
-  map = L.map('map').setView([50.1912094, 12.7429419], zoom.value);
+  map = L.map('map').setView([50.1910336, 12.7435078], zoom.value[0]);
 
   let currentPlayerIcon = L.divIcon(useIconLeaflet({ label: currentPlayer.value.name }));
 
@@ -51,8 +51,8 @@ onMounted(() => {
       return '&copy; Martin Matějovský, bejby';
     },
     options: {
-      minZoom: 11,
-      maxZoom: 11,
+      minZoom: zoom.value[0],
+      maxZoom: zoom.value[zoom.value.length - 1],
     }
   });
 
