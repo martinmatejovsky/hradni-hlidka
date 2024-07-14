@@ -62,6 +62,7 @@ onMounted(() => {
 
   L.tileLayer.battlefield().addTo(map);
 
+  // render PLAYER ICONS
   props.connectedPlayers.forEach((player: PlayerData) => {
     if (player.key !== currentPlayer.value.key && player.location.latitude && player.location.longitude) {
       let otherPlayerIcon = L.divIcon(useIconLeaflet({ label: player.name }));
@@ -72,6 +73,19 @@ onMounted(() => {
   if (currentPlayer.value.location.latitude && currentPlayer.value.location.longitude) {
     markers[currentPlayer.value.key] = L.marker([currentPlayer.value.location.latitude, currentPlayer.value.location.longitude], { icon: currentPlayerIcon }).addTo(map);
   }
+
+  // render LADDERS
+  const ladderStart = [50.1914017, 12.7434836];
+  const ladderEnd = [50.1912128, 12.7432047];
+
+  const ladder = L.polyline([ladderStart, ladderEnd], { color: 'blue' }).addTo(map);
+  // render LADDERS
+  var ladderSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  ladderSvg.setAttribute('xmlns', "http://www.w3.org/2000/svg");
+  ladderSvg.setAttribute('viewBox', "0 0 200 200");
+  ladderSvg.innerHTML = '<rect width="200" height="200"/><rect x="75" y="23" width="50" height="50" style="fill:red"/><rect x="75" y="123" width="50" height="50" style="fill:#0013ff"/>';
+  var ladderSvgBounds = [ [50.1914017, 12.7434836], [50.1912128, 12.7432047] ];
+  L.svgOverlay(ladderSvg, ladderSvgBounds).addTo(map);
 });
 
 watch(() => currentPlayer.value.location, (newLocation) => {
