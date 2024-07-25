@@ -21,7 +21,7 @@ import { ref, onMounted, watch, reactive } from 'vue';
 import { useState } from 'nuxt/app';
 import type { PlayerData } from '~/types/CustomTypes';
 import { STORE_CURRENT_PLAYER } from '~/constants';
-
+import ladderImage from '~/assets/icons/ladder.svg';
 const currentPlayer = useState<PlayerData>(STORE_CURRENT_PLAYER);
 const zoom = ref([19, 20]);
 
@@ -75,17 +75,25 @@ onMounted(() => {
   }
 
   // render LADDERS
-  const ladderStart = [50.1914017, 12.7434836];
-  const ladderEnd = [50.1912128, 12.7432047];
+  const ladderStart: L.LatLngTuple  = [50.1912517, 12.7434836];
+  const ladderEnd: L.LatLngTuple = [50.1912128, 12.7432047];
 
-  const ladder = L.polyline([ladderStart, ladderEnd], { color: 'blue' }).addTo(map);
   // render LADDERS
-  var ladderSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-  ladderSvg.setAttribute('xmlns', "http://www.w3.org/2000/svg");
-  ladderSvg.setAttribute('viewBox', "0 0 200 200");
-  ladderSvg.innerHTML = '<rect width="200" height="200"/><rect x="75" y="23" width="50" height="50" style="fill:red"/><rect x="75" y="123" width="50" height="50" style="fill:#0013ff"/>';
-  var ladderSvgBounds = [ [50.1914017, 12.7434836], [50.1912767, 12.7435606] ];
-  L.svgOverlay(ladderSvg, ladderSvgBounds).addTo(map);
+  var ladderSvgBounds = [ ladderStart, ladderEnd ];
+  let ladder1 = L.imageOverlay(ladderImage, ladderSvgBounds).addTo(map);
+
+  var customIcon = L.icon({
+    iconUrl: './assets/icons/ladder.svg', // Cesta k vašemu obrázku
+    iconSize: [50, 50], // Velikost ikony v pixelech
+    iconAnchor: [25, 25] // Bod na ikonu, který bude umístěn na souřadnici
+  });
+
+  // Přidání markeru s vlastní ikonou na mapu
+  var marker = L.marker(ladderStart, { icon: customIcon }).addTo(map);
+
+  // render helper points
+  L.marker(ladderStart).addTo(map);
+  L.marker(ladderEnd).addTo(map);
 });
 
 watch(() => currentPlayer.value.location, (newLocation) => {
