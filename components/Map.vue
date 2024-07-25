@@ -84,7 +84,7 @@ onMounted(() => {
   ladderSvg.setAttribute('xmlns', "http://www.w3.org/2000/svg");
   ladderSvg.setAttribute('viewBox', "0 0 200 200");
   ladderSvg.innerHTML = '<rect width="200" height="200"/><rect x="75" y="23" width="50" height="50" style="fill:red"/><rect x="75" y="123" width="50" height="50" style="fill:#0013ff"/>';
-  var ladderSvgBounds = [ [50.1914017, 12.7434836], [50.1912128, 12.7432047] ];
+  var ladderSvgBounds = [ [50.1914017, 12.7434836], [50.1912767, 12.7435606] ];
   L.svgOverlay(ladderSvg, ladderSvgBounds).addTo(map);
 });
 
