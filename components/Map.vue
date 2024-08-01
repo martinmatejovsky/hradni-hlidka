@@ -1,4 +1,6 @@
 <script setup lang="ts">
+// import {useCalculateSquareCorner} from "~/composables/useCoordinatesUtils";
+
 useHead({
   script: [
     {
@@ -23,6 +25,11 @@ import ladderImage from '~/assets/icons/ladder.svg';
 import * as L from 'leaflet';
 const currentPlayer = useState<PlayerData>(STORE_CURRENT_PLAYER);
 const zoom = ref([19, 20]);
+
+// helper points. Must be in object of game area
+const ladderStart: L.LatLngTuple  = [50.1912128, 12.7434836];
+const ladderEnd: L.LatLngTuple = [50.1912128, 12.7432047];
+let checkLeafletInterval: ReturnType<typeof setInterval>;
 
 const props = defineProps({
   connectedPlayers: {
@@ -73,29 +80,26 @@ onMounted(async () => {
     markers[currentPlayer.value.key] = L.marker([currentPlayer.value.location.latitude, currentPlayer.value.location.longitude], { icon: currentPlayerIcon }).addTo(map);
   }
 
+  L.marker(ladderStart).addTo(map)
+  L.marker(ladderEnd).addTo(map)
+
   // Počkejte, až se leafletRotated.js načte
-  const interval = setInterval(() => {
+  checkLeafletInterval = setInterval(() => {
     if (L.imageOverlay && typeof L.imageOverlay.rotated === "function") {
-      clearInterval(interval);
+      clearInterval(checkLeafletInterval);
       addLadders();
     }
-  }, 100);
+  }, 200);
 });
 
 // Funkce pro přidání žebříků
 function addLadders() {
-  const ladderStart: L.LatLngTuple  = [50.1912517, 12.7434836];
-  const ladderEnd: L.LatLngTuple = [50.1912128, 12.7432047];
-  const ladderCorner: L.LatLngTuple = [50.1913347, 12.7435111];
+  const ladderCorner = useCalculateSquareCorner(ladderStart, ladderEnd);
 
-  let ladderMarker = L.divIcon({
-    className: 'hh-ladder',
-    iconSize: [100, 100], // Velikost ikony
-    iconAnchor: [50, 50] // Bod, který bude umístěn na souřadnici (střed)
-  });
+  // helper marker
+  L.marker(ladderCorner).addTo(map)
 
-  let overlayLadder = L.imageOverlay.rotated(ladderImage, ladderCorner, ladderStart, ladderEnd, {
-    opacity: 0.5,
+  let overlayLadder = L.imageOverlay.rotated(ladderImage, ladderCorner, ladderEnd, ladderStart, {
     interactive: false,
   }).addTo(map);
 }
@@ -122,6 +126,10 @@ watch(() => props.connectedPlayers, (updatedConnectedPlayers) => {
     }
   });
 });
+
+onBeforeUnmount(() => {
+  clearInterval(checkLeafletInterval)
+})
 
 </script>
 

@@ -1,5 +1,3 @@
-console.log("Leaflet Rotate loaded")
-
 /*
  * 🍂class ImageOverlay.Rotated
  * 🍂inherits ImageOverlay
