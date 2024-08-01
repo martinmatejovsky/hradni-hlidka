@@ -25,6 +25,7 @@
     "@mdi/font": "^7.4.47",
     "@supabase/supabase-js": "^2.39.3",
     "dotenv": "^16.4.3",
+    "geolib": "^3.3.4",
     "mariadb": "^3.2.3",
     "prettier": "^3.2.5",
     "socket.io-client": "^4.7.4"
