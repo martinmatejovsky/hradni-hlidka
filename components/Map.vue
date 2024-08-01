@@ -2,10 +2,8 @@
 useHead({
   script: [
     {
-      src: 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js',
-      defer: true,
-      integrity: "sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=",
-      crossorigin: ""
+      src: "/leafletRotated.js",
+      defer: true
     }
   ],
   link: [
@@ -22,6 +20,7 @@ import { useState } from 'nuxt/app';
 import type { PlayerData } from '~/types/CustomTypes';
 import { STORE_CURRENT_PLAYER } from '~/constants';
 import ladderImage from '~/assets/icons/ladder.svg';
+import * as L from 'leaflet';
 const currentPlayer = useState<PlayerData>(STORE_CURRENT_PLAYER);
 const zoom = ref([19, 20]);
 
@@ -35,7 +34,7 @@ const props = defineProps({
 const markers = reactive<{ [key: string]: L.Marker }>({});
 let map: L.Map;
 
-onMounted(() => {
+onMounted(async () => {
   map = L.map('map').setView([50.1910336, 12.7435078], zoom.value[0]);
 
   let currentPlayerIcon = L.divIcon(useIconLeaflet({ label: currentPlayer.value.name }));
@@ -74,27 +73,32 @@ onMounted(() => {
     markers[currentPlayer.value.key] = L.marker([currentPlayer.value.location.latitude, currentPlayer.value.location.longitude], { icon: currentPlayerIcon }).addTo(map);
   }
 
-  // render LADDERS
+  // Počkejte, až se leafletRotated.js načte
+  const interval = setInterval(() => {
+    if (L.imageOverlay && typeof L.imageOverlay.rotated === "function") {
+      clearInterval(interval);
+      addLadders();
+    }
+  }, 100);
+});
+
+// Funkce pro přidání žebříků
+function addLadders() {
   const ladderStart: L.LatLngTuple  = [50.1912517, 12.7434836];
   const ladderEnd: L.LatLngTuple = [50.1912128, 12.7432047];
+  const ladderCorner: L.LatLngTuple = [50.1913347, 12.7435111];
 
-  // render LADDERS
-  var ladderSvgBounds = [ ladderStart, ladderEnd ];
-  let ladder1 = L.imageOverlay(ladderImage, ladderSvgBounds).addTo(map);
-
-  var customIcon = L.icon({
-    iconUrl: './assets/icons/ladder.svg', // Cesta k vašemu obrázku
-    iconSize: [50, 50], // Velikost ikony v pixelech
-    iconAnchor: [25, 25] // Bod na ikonu, který bude umístěn na souřadnici
+  let ladderMarker = L.divIcon({
+    className: 'hh-ladder',
+    iconSize: [100, 100], // Velikost ikony
+    iconAnchor: [50, 50] // Bod, který bude umístěn na souřadnici (střed)
   });
 
-  // Přidání markeru s vlastní ikonou na mapu
-  var marker = L.marker(ladderStart, { icon: customIcon }).addTo(map);
-
-  // render helper points
-  L.marker(ladderStart).addTo(map);
-  L.marker(ladderEnd).addTo(map);
-});
+  let overlayLadder = L.imageOverlay.rotated(ladderImage, ladderCorner, ladderStart, ladderEnd, {
+    opacity: 0.5,
+    interactive: false,
+  }).addTo(map);
+}
 
 watch(() => currentPlayer.value.location, (newLocation) => {
   if (newLocation.latitude && newLocation.longitude) {
@@ -151,5 +155,12 @@ watch(() => props.connectedPlayers, (updatedConnectedPlayers) => {
 .leaflet-marker-icon {
   position: relative;
   transition: all 0.3s;
+}
+
+.hh-ladder {
+  position: absolute;
+  background-image: url('assets/icons/ladder.svg');
+  background-size: contain;
+  transform-origin: top left;
 }
 </style>
