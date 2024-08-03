@@ -1,5 +1,6 @@
 <script setup lang="ts">
-// import {useCalculateSquareCorner} from "~/composables/useCoordinatesUtils";
+
+import type {LatLngExpression} from "leaflet";
 
 useHead({
   script: [
@@ -29,6 +30,7 @@ const zoom = ref([19, 20]);
 // helper points. Must be in object of game area
 const ladderStart: L.LatLngTuple  = [50.1912128, 12.7434836];
 const ladderEnd: L.LatLngTuple = [50.1912128, 12.7432047];
+const battleZones = ref(useGetterBattleZones)
 let checkLeafletInterval: ReturnType<typeof setInterval>;
 
 const props = defineProps({
@@ -80,8 +82,14 @@ onMounted(async () => {
     markers[currentPlayer.value.key] = L.marker([currentPlayer.value.location.latitude, currentPlayer.value.location.longitude], { icon: currentPlayerIcon }).addTo(map);
   }
 
-  L.marker(ladderStart).addTo(map)
-  L.marker(ladderEnd).addTo(map)
+  // Přidání orientacnich obdélníků pro každou battleZone
+  battleZones.value.forEach(battleZone => {
+    const corners = battleZone.cornerCoordinates
+
+    console.table(corners)
+
+    L.polygon(corners, { color: "#ff7800", weight: 1 }).addTo(map);
+  });
 
   // Počkejte, až se leafletRotated.js načte
   checkLeafletInterval = setInterval(() => {
@@ -95,9 +103,6 @@ onMounted(async () => {
 // Funkce pro přidání žebříků
 function addLadders() {
   const ladderCorner = useCalculateSquareCorner(ladderStart, ladderEnd);
-
-  // helper marker
-  L.marker(ladderCorner).addTo(map)
 
   let overlayLadder = L.imageOverlay.rotated(ladderImage, ladderCorner, ladderEnd, ladderStart, {
     interactive: false,
