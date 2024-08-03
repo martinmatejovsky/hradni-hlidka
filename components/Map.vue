@@ -25,13 +25,13 @@ import { STORE_CURRENT_PLAYER } from '~/constants';
 import ladderImage from '~/assets/icons/ladder.svg';
 import * as L from 'leaflet';
 const currentPlayer = useState<PlayerData>(STORE_CURRENT_PLAYER);
+const battleZones = ref(useGetterBattleZones)
 const zoom = ref([19, 20]);
+let checkLeafletInterval: ReturnType<typeof setInterval>;
 
 // helper points. Must be in object of game area
 const ladderStart: L.LatLngTuple  = [50.1912128, 12.7434836];
 const ladderEnd: L.LatLngTuple = [50.1912128, 12.7432047];
-const battleZones = ref(useGetterBattleZones)
-let checkLeafletInterval: ReturnType<typeof setInterval>;
 
 const props = defineProps({
   connectedPlayers: {
@@ -49,7 +49,7 @@ onMounted(async () => {
   let currentPlayerIcon = L.divIcon(useIconLeaflet({ label: currentPlayer.value.name }));
 
   L.TileLayer.Battlefield = L.TileLayer.extend({
-    getTileUrl: function (coords) {
+    getTileUrl: function (coords: {x: string, y: string, z: string}) {
       return `/map-layers/{z}/{x}/{y}.png`
           .replace('{z}', coords.z)
           .replace('{x}', coords.x)
@@ -72,19 +72,19 @@ onMounted(async () => {
 
   // render PLAYER ICONS
   props.connectedPlayers.forEach((player: PlayerData) => {
-    if (player.key !== currentPlayer.value.key && player.location.latitude && player.location.longitude) {
+    if (player.key !== currentPlayer.value.key && player.location.lat && player.location.lng) {
       let otherPlayerIcon = L.divIcon(useIconLeaflet({ label: player.name }));
-      markers[player.key] = L.marker([player.location.latitude, player.location.longitude], { icon: otherPlayerIcon }).addTo(map);
+      markers[player.key] = L.marker([player.location.lat, player.location.lng], { icon: otherPlayerIcon }).addTo(map);
     }
   })
 
-  if (currentPlayer.value.location.latitude && currentPlayer.value.location.longitude) {
-    markers[currentPlayer.value.key] = L.marker([currentPlayer.value.location.latitude, currentPlayer.value.location.longitude], { icon: currentPlayerIcon }).addTo(map);
+  if (currentPlayer.value.location.lat && currentPlayer.value.location.lng) {
+    markers[currentPlayer.value.key] = L.marker([currentPlayer.value.location.lat, currentPlayer.value.location.lng], { icon: currentPlayerIcon }).addTo(map);
   }
 
   // Přidání orientacnich obdélníků pro každou battleZone
   battleZones.value.forEach(battleZone => {
-    const corners = battleZone.cornerCoordinates
+    const corners = battleZone.cornerCoordinates as LatLngExpression[]
 
     console.table(corners)
 
@@ -110,23 +110,23 @@ function addLadders() {
 }
 
 watch(() => currentPlayer.value.location, (newLocation) => {
-  if (newLocation.latitude && newLocation.longitude) {
+  if (newLocation.lat && newLocation.lng) {
     const marker = markers[currentPlayer.value.key];
     if (marker) {
-      marker.setLatLng([newLocation.latitude, newLocation.longitude]);
+      marker.setLatLng([newLocation.lat, newLocation.lng]);
     }
   }
 });
 
 watch(() => props.connectedPlayers, (updatedConnectedPlayers) => {
   updatedConnectedPlayers.forEach((player: PlayerData) => {
-    if (player.key !== currentPlayer.value.key && player.location.latitude && player.location.longitude) {
+    if (player.key !== currentPlayer.value.key && player.location.lat && player.location.lng) {
       const marker = markers[player.key];
       if (marker) {
-        marker.setLatLng([player.location.latitude, player.location.longitude]);
+        marker.setLatLng([player.location.lat, player.location.lng]);
       } else {
         let otherPlayerIcon = L.divIcon(useIconLeaflet({ label: player.name }));
-        markers[player.key] = L.marker([player.location.latitude, player.location.longitude], { icon: otherPlayerIcon }).addTo(map);
+        markers[player.key] = L.marker([player.location.lat, player.location.lng], { icon: otherPlayerIcon }).addTo(map);
       }
     }
   });
@@ -139,7 +139,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <p>Curent player position: {{currentPlayer.location.latitude}} {{currentPlayer.location.longitude}}</p>
+  <p>Curent player position: {{currentPlayer.location.lat}} {{currentPlayer.location.lng}}</p>
 
   <div id="map"></div>
 </template>
