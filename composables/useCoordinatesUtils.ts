@@ -1,5 +1,6 @@
 import { getDistance, computeDestinationPoint } from 'geolib';
 import type {LatLngTuple} from "leaflet";
+import type {AssaultLadder} from "~/types/CustomTypes";
 
 // Pomocná funkce pro výpočet úhlu mezi dvěma body
 const calculateAngle = (start: LatLngTuple, end: LatLngTuple): number => {
@@ -22,22 +23,20 @@ const calculateNewPoint = (start: LatLngTuple, distance: number, angle: number):
 };
 
 // Funkce pro výpočet levého horního rohu čtverce
-export const useCalculateSquareCorner = (ladderStart: LatLngTuple, ladderEnd: LatLngTuple): LatLngTuple => {
-    // Vzdálenost mezi startem a koncem (úhlopříčka čtverce)
+export const useCalculateSquareCorner = ({ location: { start, end } }: AssaultLadder): LatLngTuple => {
+    const ladderStart = [start.lat, start.lng] as LatLngTuple;
+    const ladderEnd = [end.lat, end.lng] as LatLngTuple;
+
     const diagonal = getDistance(
         { latitude: ladderStart[0], longitude: ladderStart[1] },
         { latitude: ladderEnd[0], longitude: ladderEnd[1] }
     );
 
-    // Délka strany čtverce
     const side = diagonal / Math.sqrt(2);
-
-    // Úhel mezi startem a koncem
     const angle = calculateAngle(ladderStart, ladderEnd);
 
-    // Úhel pro levý horní roh (45 stupňů v radiánech přičtený k původnímu úhlu)
+    // Úhel pro levý horní roh od ladderStart (45 stupňů v radiánech přičtený k původnímu úhlu)
     const angleTopLeft = angle + Math.PI / 4; // 45 stupňů v radiánech
 
-    // Výpočet souřadnic levého horního rohu
     return calculateNewPoint(ladderStart, side, angleTopLeft);
 };

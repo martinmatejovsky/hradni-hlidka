@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import {STORE_GAME_INSTANCE, STORE_CURRENT_PLAYER, STORE_APPLICATION_ERROR} from "~/constants";
-import type {BattleZone, GameInstance, PlayerData} from "~/types/CustomTypes";
+import type {BattleZone, GameInstance, PlayerData, Invader} from "~/types/CustomTypes";
 import {computed, watch} from "vue";
 import {useState} from "nuxt/app";
 import {useGetterCurrentPlayerIsLeader, useGetterGameState} from "~/composables/getters";
@@ -69,13 +69,16 @@ const nameOfIntersectedArea = computed(() => {
     return '--';
   }
 });
+const assembledInvaders = (invaders: Invader[]) => {
+  return invaders.filter(invader => invader.assembleArea !== null)
+}
 const currentPlayerMark = ((player: PlayerData) => {
   return currentPlayer.value?.key === player.key ? '(Já)' : '';
 })
 
 // WATCHERS
 watch(keyOfIntersectedArea, (): void => {
-  if (getterBattleZones) {
+  if (getterBattleZones && currentPlayer.value.key) {
     currentPlayer.value.insideZone = keyOfIntersectedArea.value;
     socket.emit('playerRelocatedToZone', {gameId: currentGame.value.id, player: currentPlayer.value})
   }
@@ -164,7 +167,7 @@ onBeforeUnmount(async () => {
         <p v-if="!getterBattleZones">Žádná data o útoku.</p>
 
         <div v-else>
-          <div v-for="{ key, zoneName, guardians, assembledInvaders, assaultLadder } in getterBattleZones" :key="key" class="mb-3">
+          <div v-for="{ key, zoneName, guardians, invaders, assaultLadder } in getterBattleZones" :key="key" class="mb-3">
             <h4 class="text-amber">{{ zoneName }}</h4>
             <p>strážce:
               <template v-if="!guardians.length">--</template>
@@ -173,10 +176,10 @@ onBeforeUnmount(async () => {
               </template>
             </p>
             <p>Shromáždění útočníci:
-              <v-icon v-for="n in assembledInvaders" :key="n" icon="mdi-sword"></v-icon>
+              <v-icon v-for="n in assembledInvaders(invaders)" :key="n" icon="mdi-sword"></v-icon>
             </p>
             <p>Žebřik <v-icon icon="mdi-arrow-right-bold-outline"></v-icon></p>
-            <ClimbingLadder :climbingInvaders="assaultLadder" />
+            <ClimbingLadder :climbingInvaders="assaultLadder.content" />
           </div>
         </div>
 
@@ -188,7 +191,6 @@ onBeforeUnmount(async () => {
         <h4 class="text-h4 mb-4" :class="[gameState === 'won' ? 'text-green' : 'text-red']">
           {{ gameState === 'won' ? 'Vítězství' : 'Prohráli jste' }}
         </h4>
-        <v-btn rounded="xs" class="mb-6">Znovu na ně!</v-btn>
       </div>
     </template>
 

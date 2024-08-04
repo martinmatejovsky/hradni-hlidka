@@ -16,6 +16,7 @@ export interface BasePolygon {
     key: string,
     polygonType: PolygonType,
     cornerCoordinates: Coordinates[],
+    assaultLadder: AssaultLadder,
 }
 export interface GameLocation {
     locationName: string,
@@ -24,14 +25,22 @@ export interface GameLocation {
     speedChoices: number[],
     ladderLengthChoices: number[],
 }
+export interface AssaultLadder {
+    content: (Invader | null)[],
+    location: {
+        start: Coordinates,
+        end: Coordinates
+    }
+}
 export interface BattleZone {
     zoneName: string,
     key: string,
     cornerCoordinates: Coordinates[],
     conquered: boolean,
     guardians: PlayerData[],
+    invaders: Invader[],
     assembledInvaders: Invader[],
-    assaultLadder: (Invader | null)[],
+    assaultLadder: AssaultLadder,
 }
 export interface GameInstance {
     id: string,
@@ -46,4 +55,6 @@ export type InvaderType = "normal"
 export type Invader = {
     type: InvaderType,
     health: number,
+    assembleArea: number|null,
+    ladderStep: number|null,
 }

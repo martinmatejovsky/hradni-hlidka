@@ -29,10 +29,6 @@ const battleZones = ref(useGetterBattleZones)
 const zoom = ref([19, 20]);
 let checkLeafletInterval: ReturnType<typeof setInterval>;
 
-// helper points. Must be in object of game area
-const ladderStart: L.LatLngTuple  = [50.1912128, 12.7434836];
-const ladderEnd: L.LatLngTuple = [50.1912128, 12.7432047];
-
 const props = defineProps({
   connectedPlayers: {
     type: Array as PropType<PlayerData[]>,
@@ -86,12 +82,10 @@ onMounted(async () => {
   battleZones.value.forEach(battleZone => {
     const corners = battleZone.cornerCoordinates as LatLngExpression[]
 
-    console.table(corners)
-
     L.polygon(corners, { color: "#ff7800", weight: 1 }).addTo(map);
   });
 
-  // Počkejte, až se leafletRotated.js načte
+  // Počkejme, až se leafletRotated.js načte
   checkLeafletInterval = setInterval(() => {
     if (L.imageOverlay && typeof L.imageOverlay.rotated === "function") {
       clearInterval(checkLeafletInterval);
@@ -102,11 +96,16 @@ onMounted(async () => {
 
 // Funkce pro přidání žebříků
 function addLadders() {
-  const ladderCorner = useCalculateSquareCorner(ladderStart, ladderEnd);
+  battleZones.value.forEach(battleZone => {
+    const ladder = battleZone.assaultLadder.location
 
-  let overlayLadder = L.imageOverlay.rotated(ladderImage, ladderCorner, ladderEnd, ladderStart, {
-    interactive: false,
-  }).addTo(map);
+    const ladderCorner = useCalculateSquareCorner(battleZone.assaultLadder);
+
+    let overlayLadder = L.imageOverlay.rotated(ladderImage, ladderCorner, ladder.end, ladder.start, {
+      interactive: false,
+      id: 'ladder-' + battleZone.key,
+    }).addTo(map);
+  })
 }
 
 watch(() => currentPlayer.value.location, (newLocation) => {

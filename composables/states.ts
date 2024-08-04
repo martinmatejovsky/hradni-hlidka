@@ -14,8 +14,8 @@ export const useStoredCurrentPlayer = () => useState<PlayerData>(CONST.STORE_CUR
         name: '',
         key: '',
         location: {
-            latitude: null,
-            longitude: null,
+            lat: null,
+            lng: null,
             accuracy: null,
         },
         insideZone: '',

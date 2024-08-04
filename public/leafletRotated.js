@@ -17,6 +17,7 @@
  * var overlay = L.imageOverlay.rotated("./palacio.jpg", topleft, topright, bottomleft, {
  * 	opacity: 0.4,
  * 	interactive: true,
+ *  id?: string,
  * 	attribution: "&copy; <a href='http://www.ign.es'>Instituto Geográfico Nacional de España</a>"
  * });
  * ```
@@ -90,6 +91,8 @@ L.ImageOverlay.Rotated = L.ImageOverlay.extend({
             'leaflet-image-layer ' + (this._zoomAnimated ? 'leaflet-zoom-animated' : ''));
 
         this._updateZIndex(); // apply z-index style setting to the div (if defined)
+
+        if (this.options.id) div.id = this.options.id;
 
         div.appendChild(img);
 
