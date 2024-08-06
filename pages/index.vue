@@ -1,14 +1,13 @@
 <script setup lang="ts">
 // IMPORTS
 import {computed, type ComputedRef} from 'vue';
-import type {GameLocation, PlayerData, GameState, GameInstance} from "~/types/CustomTypes";
-import {STORE_APPLICATION_ERROR, STORE_CURRENT_PLAYER, STORE_GAME_INSTANCE} from "~/constants";
+import type {GameLocation, PlayerData, GameState} from "~/types/CustomTypes";
+import {STORE_APPLICATION_ERROR, STORE_CURRENT_PLAYER} from "~/constants";
 import {useState} from "nuxt/app";
 
 // DATA
 const tab = ref<string>('join');
 const currentPlayer = useState<PlayerData>(STORE_CURRENT_PLAYER);
-const currentGame = useState<GameInstance>(STORE_GAME_INSTANCE)
 const runtimeConfig = useRuntimeConfig()
 const playerAccuracy = computed(() => Math.round(currentPlayer.value?.location.accuracy || 0));
 const accuracyClass = computed(() => {
@@ -179,7 +178,7 @@ onBeforeMount(() => {
                     :items="gameTemposOptions"
                     class="mb-2"
                     label="Tempo hry"
-                    value="30000"
+                    value="5000"
                     required
                 ></v-select>
                 <v-select

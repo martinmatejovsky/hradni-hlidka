@@ -10,7 +10,7 @@ export function useSocket(gameId: string) {
     const socket = io(URL, {query: {gameId}})
 
     socket.on("connect", (): void => {
-        console.log("Connected to useSocket", gameId);
+        console.log("Connected to useSocket with game ID", gameId);
     })
 
     socket.on('newPlayerJoined', (game: GameInstance): void => {
