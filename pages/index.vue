@@ -20,7 +20,7 @@ const accuracyClass = computed(() => {
   }
 });
 const selectedLocationKey = ref<string | null>('Loket Sportovní')
-const selectedGameTempo = ref<number | null>(30000)
+const selectedGameTempo = ref<number | null>(60000)
 const selectedLadderLength = ref<number | null>(30)
 const dataLoading = ref<boolean>(false);
 const pageError = useState(STORE_APPLICATION_ERROR);

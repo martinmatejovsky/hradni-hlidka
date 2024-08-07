@@ -88,7 +88,10 @@ L.ImageOverlay.Rotated = L.ImageOverlay.extend({
         // this._image is reused by some of the methods of the parent class and
         // must keep the name, even if it is counter-intuitive.
         var div = this._image = L.DomUtil.create('div',
-            'leaflet-image-layer ' + (this._zoomAnimated ? 'leaflet-zoom-animated' : ''));
+            'leaflet-image-layer '
+            + (this._zoomAnimated ? 'leaflet-zoom-animated' : '')
+            + (this.options.className ? ' ' + this.options.className : '')
+        );
 
         this._updateZIndex(); // apply z-index style setting to the div (if defined)
 
