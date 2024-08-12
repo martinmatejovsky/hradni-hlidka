@@ -6,6 +6,10 @@ export default defineNuxtConfig({
   build: {
     transpile: ['vuetify'],
   },
+  css: [
+    '~/assets/styles/_map.scss',
+    '~/assets/styles/_elements.scss',
+  ],
   runtimeConfig: {
     public: {
       serverUrl: process.env.SERVER_URL,

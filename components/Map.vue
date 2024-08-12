@@ -238,39 +238,3 @@ onBeforeUnmount(() => {
 
   <div id="map"></div>
 </template>
-
-<style>
-:root {
-  --icon-leaflet-body-size: 100px;
-}
-#map {
-  height: 60vh;
-  width: 100%;
-}
-.h-icon-leaflet {
-  width: var(--icon-leaflet-body-size);
-  transform: translate(calc(var(--icon-leaflet-body-size) / -2), -12px);
-}
-.h-rider-icon-description {
-  color: #000000;
-  font-size: 14px;
-  font-weight: bold;
-}
-.leaflet-marker-icon {
-  position: relative;
-  transition: all 0.3s;
-}
-.hh-ladder-image {
-  position: absolute;
-}
-.hh-invader-icon {
-  position: relative;
-  width: auto;
-  height: auto;
-  padding: 4px;
-  background-color: #af1b7b;
-  color: white;
-  float: right;
-  z-index: 400;
-}
-</style>
