@@ -23,8 +23,10 @@ import { ref, onMounted, watch, reactive } from 'vue';
 import { useState } from 'nuxt/app';
 import type {Invader, PlayerData} from '~/types/CustomTypes';
 import { STORE_CURRENT_PLAYER } from '~/constants';
+import {useListenBus} from "~/composables/useEventBus";
 import ladderImage from '~/assets/icons/ladder.svg';
 import * as L from 'leaflet';
+
 const currentPlayer = useState<PlayerData>(STORE_CURRENT_PLAYER);
 const battleZones = ref(useGetterBattleZones)
 const zoom = ref([19, 20]);
@@ -65,13 +67,9 @@ function updateInvadersOnMap(index: number) {
     mapElement = document.getElementById('map');
   }
 
-  console.log("updating invaders in", index, battleZones.value[index].zoneName)
-
   battleZones.value[index].invaders.forEach(invader => {
     // Check if invader is on the ladder
     if (invader.ladderStep !== null) {
-      console.log("climbing is ID", invader.id)
-
       // Create or update the invader icon
       if (!invaderIcons[invader.id]) {
         // Create new icon
@@ -102,6 +100,10 @@ function addLadders() {
   })
 }
 
+function handleUpdateLiveInvaders() {
+  console.log("event bus triggered")
+}
+
 // WATCHERS
 
 // watch changes in invaders
@@ -113,9 +115,6 @@ watch(
           updateInvadersOnMap(i);
         }
       }
-
-      console.log("DIV invaders:")
-      console.table(invaderIcons)
     },
     { deep: true }
 );
@@ -145,8 +144,8 @@ watch(() => props.connectedPlayers, (updatedConnectedPlayers) => {
 
 // LIFECYCLE
 onMounted(async () => {
+  useListenBus('updateLiveOfInvaders', handleUpdateLiveInvaders)
   map = L.map('map').setView([50.1910336, 12.7435078], zoom.value[0]);
-
   let currentPlayerIcon = L.divIcon(useIconLeaflet({ label: currentPlayer.value.name }));
 
   L.TileLayer.Battlefield = L.TileLayer.extend({
@@ -206,7 +205,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <p>Curent player position: {{currentPlayer.location.lat}} {{currentPlayer.location.lng}}</p>
+  <p>Current player position: {{currentPlayer.location.lat}} {{currentPlayer.location.lng}}</p>
 
   <div id="map"></div>
 </template>

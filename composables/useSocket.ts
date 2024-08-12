@@ -3,6 +3,7 @@
 import { io } from "socket.io-client"
 import type { GameInstance } from "~/types/CustomTypes"
 import * as CONST from "~/constants";
+import {useEventBus} from "~/composables/useEventBus";
 
 export function useSocket(gameId: string) {
     const runtimeConfig = useRuntimeConfig();
@@ -27,6 +28,7 @@ export function useSocket(gameId: string) {
 
     socket.on('gameUpdated', (game: GameInstance) => {
         useState<GameInstance>(CONST.STORE_GAME_INSTANCE).value = game;
+        useEventBus('updateLiveOfInvaders', true)
     })
 
     return socket;
