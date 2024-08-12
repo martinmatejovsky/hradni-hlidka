@@ -21,7 +21,7 @@ useHead({
 
 import { ref, onMounted, watch, reactive } from 'vue';
 import { useState } from 'nuxt/app';
-import type {Invader, PlayerData} from '~/types/CustomTypes';
+import type {BattleZone, Invader, PlayerData} from '~/types/CustomTypes';
 import { STORE_CURRENT_PLAYER } from '~/constants';
 import {useListenBus} from "~/composables/useEventBus";
 import ladderImage from '~/assets/icons/ladder.svg';
@@ -62,30 +62,6 @@ function arraysEqual (arr1: Invader[], arr2: Invader[]): boolean {
   return true;
 }
 
-function updateInvadersOnMap(index: number) {
-  if (!mapElement) {
-    mapElement = document.getElementById('map');
-  }
-
-  battleZones.value[index].invaders.forEach(invader => {
-    // Check if invader is on the ladder
-    if (invader.ladderStep !== null) {
-      // Create or update the invader icon
-      if (!invaderIcons[invader.id]) {
-        // Create new icon
-        const invaderIcon = document.createElement('div');
-        invaderIcon.classList.add('hh-invader-icon');
-        invaderIcon.id = `invader-${invader.id}`;
-        invaderIcon.textContent = `Invader ${invader.id}`;
-        mapElement!.appendChild(invaderIcon);
-        invaderIcons[invader.id] = invaderIcon;
-      }
-      // Update the invader icon position or other properties if needed
-      // For example: invaderIcons[invader.id].style.left = `${invader.ladderStep * 10}px`;
-    }
-  });
-}
-
 function addLadders() {
   battleZones.value.forEach(battleZone => {
     const ladder = battleZone.assaultLadder.location
@@ -100,8 +76,56 @@ function addLadders() {
   })
 }
 
-function handleUpdateLiveInvaders() {
-  console.log("event bus triggered")
+function handleUpdateInvadersIcons() {
+  const currentInvaders: Invader[] = battleZones.value.flatMap((zone: BattleZone) => zone.invaders);
+
+  // 1. Add new icons for invaders that don't have an icon yet
+  currentInvaders.forEach(invader => {
+    if (!invaderIcons[invader.id]) {
+      createInvaderIcon(invader.id)
+    }
+  });
+
+  // 2. Remove icons for invaders that no longer exist in currentInvaders
+  Object.keys(invaderIcons).forEach(id => {
+    const invaderId = parseInt(id);
+    const invaderStillExists = currentInvaders.some(invader => invader.id === invaderId);
+
+    console.log(invaderId)
+
+    if (!invaderStillExists) {
+      const iconToRemove = invaderIcons[invaderId];
+      if (iconToRemove && mapElement) {
+        mapElement.removeChild(iconToRemove);
+      }
+      delete invaderIcons[invaderId];
+    }
+  });
+}
+
+function updateInvadersOnMap(index: number) {
+  battleZones.value[index].invaders.forEach(invader => {
+    // Check if invader is on the ladder
+    if (invader.ladderStep !== null) {
+      // Create or update the invader icon
+      if (!invaderIcons[invader.id]) {
+        createInvaderIcon(invader.id)
+      }
+
+      // Update the invader icon position or other properties if needed
+      // For example: invaderIcons[invader.id].style.left = `${invader.ladderStep * 10}px`;
+    }
+  });
+}
+
+function createInvaderIcon(id: number) {
+  const invaderIcon = document.createElement('div');
+  invaderIcon.classList.add('hh-invader-icon');
+  invaderIcon.id = `invader-${id}`;
+  invaderIcon.textContent = `Invader ${id}`;
+
+  if(mapElement) mapElement.appendChild(invaderIcon);
+  invaderIcons[id] = invaderIcon;
 }
 
 // WATCHERS
@@ -144,7 +168,12 @@ watch(() => props.connectedPlayers, (updatedConnectedPlayers) => {
 
 // LIFECYCLE
 onMounted(async () => {
-  useListenBus('updateLiveOfInvaders', handleUpdateLiveInvaders)
+  useListenBus('updateLiveOfInvaders', handleUpdateInvadersIcons)
+
+  if (!mapElement) {
+    mapElement = document.getElementById('map');
+  }
+
   map = L.map('map').setView([50.1910336, 12.7435078], zoom.value[0]);
   let currentPlayerIcon = L.divIcon(useIconLeaflet({ label: currentPlayer.value.name }));
 
