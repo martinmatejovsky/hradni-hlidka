@@ -6,7 +6,7 @@ interface IconLeafletOptions {
     size?: [number, number];
 }
 
-export function useIconLeaflet(options: IconLeafletOptions = {}) {
+export function useIconLeaflet(options: IconLeafletOptions = {}): L.DivIconOptions {
     const {
         className = 'h-rider-icon',
         label = 'Hráč',

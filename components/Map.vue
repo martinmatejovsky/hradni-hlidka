@@ -21,7 +21,7 @@ useHead({
 
 import { ref, onMounted, watch, reactive } from 'vue';
 import { useState } from 'nuxt/app';
-import type {BattleZone, Invader, PlayerData} from '~/types/CustomTypes';
+import type {BattleZone, Invader, PlayerData, Coordinates} from '~/types/CustomTypes';
 import { STORE_CURRENT_PLAYER } from '~/constants';
 import {useListenBus} from "~/composables/useEventBus";
 import ladderImage from '~/assets/icons/ladder.svg';
@@ -41,14 +41,13 @@ const props = defineProps({
   },
 });
 
-
 let map: L.Map;
 
 // Simplified comparison function for Invader objects
 function simpleEqual (obj1: Invader, obj2: Invader): boolean {
   return (
       obj1.id === obj2.id &&
-      obj1.assembleArea === obj2.assembleArea &&
+      obj1.assemblyArea === obj2.assemblyArea &&
       obj1.ladderStep === obj2.ladderStep
   );
 }
@@ -103,16 +102,27 @@ function handleUpdateInvadersIcons() {
 }
 
 function updateInvadersOnMap(index: number) {
-  battleZones.value[index].invaders.forEach(invader => {
-    // Check if invader is on the ladder
-    if (invader.ladderStep !== null) {
-      // Create or update the invader icon
-      if (!invaderIcons[invader.id]) {
-        createInvaderIcon(invader.id, battleZones.value[index].key);
-      }
+  let zone = battleZones.value[index];
 
-      // Update the invader icon position or other properties if needed
-      // For example: invaderIcons[invader.id].style.left = `${invader.ladderStep * 10}px`;
+  zone.invaders.forEach(invader => {
+    const marker = invaderIcons[invader.id];
+    if (!marker) {
+      console.warn(`Marker for invader ${invader.id} not found.`);
+      return;
+    }
+
+    let newCoordinates: Coordinates | null = null;
+
+    if (invader.assemblyArea !== null) {
+      newCoordinates = zone.assemblyArea[invader.assemblyArea];
+    } else if (invader.ladderStep !== null) {
+      newCoordinates = zone.assaultLadder.steps[invader.ladderStep];
+    } else return;
+
+    if (newCoordinates.lat && newCoordinates.lng) {
+      marker.setLatLng([newCoordinates.lat, newCoordinates.lng]);
+    } else {
+      console.warn(`No valid coordinates found for invader ${invader.id}.`);
     }
   });
 }
@@ -132,8 +142,8 @@ function createInvaderIcon(id: number, zoneKey: string) {
   }
 
   // Get the coordinate for the invader's assembly area
-  const assembleAreaIndex = invader.assembleArea ? invader.assembleArea: 0;
-  const assemblyCoordinate = battleZone.assemblyArea[assembleAreaIndex];
+  const assemblyAreaIndex = invader.assemblyArea ? invader.assemblyArea: 0;
+  const assemblyCoordinate = battleZone.assemblyArea[assemblyAreaIndex];
 
   if (assemblyCoordinate.lat && assemblyCoordinate.lng) {
     // Create a Leaflet divIcon
@@ -145,7 +155,7 @@ function createInvaderIcon(id: number, zoneKey: string) {
 
     invaderIcons[id] = L.marker([assemblyCoordinate.lat, assemblyCoordinate.lng], { icon: invaderDivIcon }).addTo(map);
   } else {
-    console.warn(`No coordinate found for assembleArea index ${assembleAreaIndex} in zone ${zoneKey}`);
+    console.warn(`No coordinate found for assemblyArea index ${assemblyAreaIndex} in zone ${zoneKey}`);
     return;
   }
 }

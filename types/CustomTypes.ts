@@ -29,7 +29,8 @@ export interface AssaultLadder {
     location: {
         start: Coordinates,
         end: Coordinates
-    }
+    },
+    steps: Coordinates[],
 }
 export interface BattleZone {
     zoneName: string,
@@ -56,6 +57,6 @@ export type Invader = {
     id: number,
     type: InvaderType,
     health: number,
-    assembleArea: number|null,
+    assemblyArea: number|null,
     ladderStep: number|null,
 }
