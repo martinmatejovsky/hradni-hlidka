@@ -31,7 +31,8 @@ const currentPlayer = useState<PlayerData>(STORE_CURRENT_PLAYER);
 const battleZones = ref(useGetterBattleZones)
 const zoom = ref([19, 20]);
 let checkLeafletInterval: ReturnType<typeof setInterval>;
-let mapElement: HTMLElement | null = null;
+const markers = reactive<{ [key: string]: L.Marker }>({});
+const invaderIcons = reactive<{ [key: number]: L.Marker }>({});
 
 const props = defineProps({
   connectedPlayers: {
@@ -40,8 +41,6 @@ const props = defineProps({
   },
 });
 
-const markers = reactive<{ [key: string]: L.Marker }>({});
-const invaderIcons = reactive<{ [key: number]: HTMLDivElement }>({});
 
 let map: L.Map;
 
@@ -80,10 +79,12 @@ function handleUpdateInvadersIcons() {
   const currentInvaders: Invader[] = battleZones.value.flatMap((zone: BattleZone) => zone.invaders);
 
   // 1. Add new icons for invaders that don't have an icon yet
-  currentInvaders.forEach(invader => {
-    if (!invaderIcons[invader.id]) {
-      createInvaderIcon(invader.id)
-    }
+  battleZones.value.forEach((zone: BattleZone) => {
+    zone.invaders.forEach(invader => {
+      if (!invaderIcons[invader.id]) {
+        createInvaderIcon(invader.id, zone.key)
+      }
+    });
   });
 
   // 2. Remove icons for invaders that no longer exist in currentInvaders
@@ -91,12 +92,10 @@ function handleUpdateInvadersIcons() {
     const invaderId = parseInt(id);
     const invaderStillExists = currentInvaders.some(invader => invader.id === invaderId);
 
-    console.log(invaderId)
-
     if (!invaderStillExists) {
-      const iconToRemove = invaderIcons[invaderId];
-      if (iconToRemove && mapElement) {
-        mapElement.removeChild(iconToRemove);
+      const markerToRemove = invaderIcons[invaderId];
+      if (markerToRemove) {
+        markerToRemove.remove();
       }
       delete invaderIcons[invaderId];
     }
@@ -109,7 +108,7 @@ function updateInvadersOnMap(index: number) {
     if (invader.ladderStep !== null) {
       // Create or update the invader icon
       if (!invaderIcons[invader.id]) {
-        createInvaderIcon(invader.id)
+        createInvaderIcon(invader.id, battleZones.value[index].key);
       }
 
       // Update the invader icon position or other properties if needed
@@ -118,29 +117,52 @@ function updateInvadersOnMap(index: number) {
   });
 }
 
-function createInvaderIcon(id: number) {
-  const invaderIcon = document.createElement('div');
-  invaderIcon.classList.add('hh-invader-icon');
-  invaderIcon.id = `invader-${id}`;
-  invaderIcon.textContent = `Invader ${id}`;
+function createInvaderIcon(id: number, zoneKey: string) {
+  const battleZone = battleZones.value.find(zone => zone.key === zoneKey);
+  if (!battleZone) {
+    console.warn(`BattleZone with key ${zoneKey} not found`);
+    return;
+  }
 
-  if(mapElement) mapElement.appendChild(invaderIcon);
-  invaderIcons[id] = invaderIcon;
+  // Find the invader in the battleZone
+  const invader = battleZone.invaders.find(invader => invader.id === id);
+  if (!invader) {
+    console.warn(`Invader with id ${id} not found in zone ${zoneKey}`);
+    return;
+  }
+
+  // Get the coordinate for the invader's assembly area
+  const assembleAreaIndex = invader.assembleArea ? invader.assembleArea: 0;
+  const assemblyCoordinate = battleZone.assemblyArea[assembleAreaIndex];
+
+  if (assemblyCoordinate.lat && assemblyCoordinate.lng) {
+    // Create a Leaflet divIcon
+    const invaderDivIcon = L.divIcon({
+      className: 'hh-invader-icon',
+      html: `${id}`,
+      iconSize: [20, 20], // Set the size of the icon
+    });
+
+    invaderIcons[id] = L.marker([assemblyCoordinate.lat, assemblyCoordinate.lng], { icon: invaderDivIcon }).addTo(map);
+  } else {
+    console.warn(`No coordinate found for assembleArea index ${assembleAreaIndex} in zone ${zoneKey}`);
+    return;
+  }
 }
 
 // WATCHERS
 
 // watch changes in invaders
 watch(
-    () => battleZones.value.map(zone => zone.invaders),
-    (newInvaders, oldInvaders) => {
-      for (let i = 0; i < newInvaders.length; i++) {
-        if (!arraysEqual(newInvaders[i], oldInvaders[i])) {
-          updateInvadersOnMap(i);
-        }
+  () => battleZones.value.map(zone => zone.invaders),
+  (newInvaders, oldInvaders) => {
+    for (let i = 0; i < newInvaders.length; i++) {
+      if (!arraysEqual(newInvaders[i], oldInvaders[i])) {
+        updateInvadersOnMap(i);
       }
-    },
-    { deep: true }
+    }
+  },
+  { deep: true }
 );
 
 watch(() => currentPlayer.value.location, (newLocation) => {
@@ -169,10 +191,6 @@ watch(() => props.connectedPlayers, (updatedConnectedPlayers) => {
 // LIFECYCLE
 onMounted(async () => {
   useListenBus('updateLiveOfInvaders', handleUpdateInvadersIcons)
-
-  if (!mapElement) {
-    mapElement = document.getElementById('map');
-  }
 
   map = L.map('map').setView([50.1910336, 12.7435078], zoom.value[0]);
   let currentPlayerIcon = L.divIcon(useIconLeaflet({ label: currentPlayer.value.name }));

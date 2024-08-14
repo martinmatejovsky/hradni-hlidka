@@ -39,6 +39,7 @@ export interface BattleZone {
     guardians: PlayerData[],
     invaders: Invader[],
     assembledInvaders: Invader[],
+    assemblyArea: Coordinates[],
     assaultLadder: AssaultLadder,
 }
 export interface GameInstance {
