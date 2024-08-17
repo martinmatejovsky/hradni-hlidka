@@ -20,8 +20,12 @@ const accuracyClass = computed(() => {
   }
 });
 const selectedLocationKey = ref<string | null>('Loket Sportovní')
-const selectedGameTempo = ref<number | null>(60000)
+const selectedGameTempo = ref<number | null>(1000)
 const selectedLadderLength = ref<number | null>(30)
+const selectWaveVolume = ref<number | null>(4)
+const selectAssemblyCountdown = ref<number | null>(5)
+const selectWavesDelay = ref<number | null>(5)
+const selectDefendersHitStrength = ref<number | null>(2)
 const dataLoading = ref<boolean>(false);
 const pageError = useState(STORE_APPLICATION_ERROR);
 let gameLocations: GameLocation[]
@@ -47,6 +51,18 @@ const gameTemposOptions: ComputedRef<number[]> = computed(() => {
 });
 const ladderLengthOptions: ComputedRef<number[]> = computed(() => {
   return selectedGameLocation.value?.ladderLengthChoices ?? [];
+});
+const waveVolumeOptions: ComputedRef<number[]> = computed(() => {
+  return [4, 8, 12];
+});
+const assemblyCountdown: ComputedRef<number[]> = computed(() => {
+  return [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+});
+const wavesDelay: ComputedRef<number[]> = computed(() => {
+  return [5, 10, 15, 20, 25, 30];
+});
+const defendersStrength: ComputedRef<number[]> = computed(() => {
+  return [1, 2, 3, 4];
 });
 
 // METHODS
@@ -95,8 +111,14 @@ const createNewBattle = async () => {
     },
     body: JSON.stringify({
       gameLocation: gameLocations.find(location => location.locationName === selectedLocationKey.value),
-      gameTempo: selectedGameTempo.value,
-      ladderLength: selectedLadderLength.value,
+      constants: {
+        gameTempo: selectedGameTempo.value,
+        ladderLength: selectedLadderLength.value,
+        assaultWaveVolume: selectWaveVolume.value,
+        assemblyCountdown: selectAssemblyCountdown.value,
+        wavesMinDelay: selectWavesDelay.value,
+        defendersHitStrength: selectDefendersHitStrength.value,
+      }
     })
   }).then((response: any) => {
     if (response.statusCode === 200) {
@@ -162,9 +184,9 @@ onBeforeMount(() => {
               <v-btn @click="joinGame" type="button" rounded="xs">Přidat se do bitvy</v-btn>
             </v-col>
           </v-row>
-          <v-row v-else>
-            <v-col cols="12" sm="6" md="4">
-              <v-form :fast-fail="true" @submit.prevent="createNewBattle">
+          <v-form v-else :fast-fail="true" @submit.prevent="createNewBattle">
+            <v-row>
+              <v-col cols="12" sm="6" md="4">
                 <v-select
                     v-model="selectedLocationKey"
                     :items="locationOptions"
@@ -189,9 +211,41 @@ onBeforeMount(() => {
                     required
                 ></v-select>
                 <v-btn type="submit" :disabled="!isFormValid" :block="true" rounded="xs" class="mb-2">Založit novou bitvu</v-btn>
-              </v-form>
-            </v-col>
-          </v-row>
+              </v-col>
+
+              <v-col cols="12" sm="6" md="4">
+                Herní konstanty:
+                <v-select
+                    v-model="selectWaveVolume"
+                    :items="waveVolumeOptions"
+                    class="mb-2"
+                    label="Početnost ve vlně"
+                    required
+                ></v-select>
+                <v-select
+                    v-model="selectAssemblyCountdown"
+                    :items="assemblyCountdown"
+                    class="mb-2"
+                    label="Čekání před žebříkem"
+                    required
+                ></v-select>
+                <v-select
+                    v-model="selectWavesDelay"
+                    :items="wavesDelay"
+                    class="mb-2"
+                    label="Pauza mezi vlnami"
+                    required
+                ></v-select>
+                <v-select
+                    v-model="selectDefendersHitStrength"
+                    :items="defendersStrength"
+                    class="mb-2"
+                    label="ÚČ obránce"
+                    required
+                ></v-select>
+              </v-col>
+            </v-row>
+          </v-form>
         </v-window-item>
       </v-window>
     </v-card-text>

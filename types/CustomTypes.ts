@@ -8,6 +8,7 @@ export type PlayerData = {
     key: string,
     location: PlayerCoordinates,
     insideZone: string,
+    strength: number,
 }
 export type GameState = "none" | "ready" | "running" | "won" | "lost"
 type PolygonType = "battleZone" | "smithy" | "barracks"
@@ -41,7 +42,9 @@ export interface BattleZone {
     invaders: Invader[],
     assembledInvaders: Invader[],
     assemblyArea: Coordinates[],
+    assemblyCountdown: number,
     assaultLadder: AssaultLadder,
+    waveCooldown: number,
 }
 export interface GameInstance {
     id: string,

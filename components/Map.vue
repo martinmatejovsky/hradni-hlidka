@@ -239,12 +239,15 @@ onMounted(async () => {
     markers[currentPlayer.value.key] = L.marker([currentPlayer.value.location.lat, currentPlayer.value.location.lng], { icon: currentPlayerIcon }).addTo(map);
   }
 
-  // Přidání orientacnich obdélníků pro každou battleZone
+  // Přidání orientacnich obdélníků pro každou battleZone. Testovací účely.
   battleZones.value.forEach(battleZone => {
     const corners = battleZone.cornerCoordinates as LatLngExpression[]
 
     L.polygon(corners, { color: "#ff7800", weight: 1 }).addTo(map);
   });
+
+  // vykreslit ikonky utocniku, pokud uz nejaci maji byt na mape
+  handleUpdateInvadersIcons();
 
   // Počkejme, až se leafletRotated.js načte
   checkLeafletInterval = setInterval(() => {

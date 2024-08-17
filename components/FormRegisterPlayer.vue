@@ -26,6 +26,7 @@ const submitForm = async () => {
 
   currentPlayer.value.name = selectedPlayerName.value;
   currentPlayer.value.key = props.socket.id as string;
+  currentPlayer.value.strength = 1;
 
   props.socket.emit('joinGame', {gameId: currentGame.value.id, player: currentPlayer.value}, (response: string) => {
     if (response === 'ok') {
