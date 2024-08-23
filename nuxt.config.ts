@@ -2,13 +2,12 @@
 import vuetify, { transformAssetUrls } from 'vite-plugin-vuetify'
 
 export default defineNuxtConfig({
-  devtools: { enabled: true },
+  devtools: { enabled: false },
   build: {
     transpile: ['vuetify'],
   },
   css: [
-    '~/assets/styles/_map.scss',
-    '~/assets/styles/_elements.scss',
+    '~/assets/styles/main.scss',
   ],
   runtimeConfig: {
     public: {
@@ -17,11 +16,6 @@ export default defineNuxtConfig({
     }
   },
   modules: [
-    async (options, nuxt) => {
-      nuxt.hooks.hook('vite:extendConfig', config => config.plugins.push(
-        vuetify()
-      ))
-    },
     (_options, nuxt) => {
       nuxt.hooks.hook('vite:extendConfig', (config) => {
         // @ts-expect-error

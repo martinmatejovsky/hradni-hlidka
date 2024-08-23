@@ -63,3 +63,11 @@ export type Invader = {
     assemblyArea: number|null,
     ladderStep: number|null,
 }
+export type Settings = {
+    gameTempo: number,
+    ladderLength: number,
+    assaultWaveVolume: number,
+    assemblyCountdown: number,
+    wavesMinDelay: number,
+    defendersHitStrength: number,
+}

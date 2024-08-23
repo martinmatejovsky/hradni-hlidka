@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import {STORE_GAME_INSTANCE, STORE_CURRENT_PLAYER, STORE_APPLICATION_ERROR} from "~/constants";
-import type {BattleZone, GameInstance, PlayerData, Invader} from "~/types/CustomTypes";
+import {STORE_GAME_INSTANCE, STORE_CURRENT_PLAYER, STORE_APPLICATION_ERROR, STORE_GAME_SETTINGS} from "~/constants";
+import type {GameInstance, PlayerData, Settings} from "~/types/CustomTypes";
 import {computed, watch} from "vue";
 import {useState} from "nuxt/app";
 import {useGetterCurrentPlayerIsLeader, useGetterGameState} from "~/composables/getters";
+import {useStoredGameInstance, useStoredGameSettings} from "~/composables/states";
+import {useReleaseWakeLockScreen, useRequestWakeLockScreen} from "~/composables/useWakeLockScreen";
 import type {Socket} from "socket.io-client";
 import Map from "~/components/Map.vue";
 import {useFilterInvadersAssembled, useFilterInvadersOnLadder} from "~/composables/useUtilsFilterZone";
@@ -31,7 +33,7 @@ const getBack = (): void => {
   navigateTo('/');
 }
 const startAttack = async (): Promise<void> => {
-  useRequestWakeLockScreen();
+  await useRequestWakeLockScreen();
 
   // TODO: send to server that game has started. After response start also the game on client side,
   // like for example with intervalRunAttack.value = useRunAttack();
@@ -90,20 +92,27 @@ onMounted(async () => {
   dataLoading.value = true;
   applicationError.value = null;
 
-  await $fetch(`${runtimeConfig.public.serverUrl}/api/game`, {
-      method: 'GET',
-    })
-    .then((response) => {
-      useStoredGameInstance(response as GameInstance);
-      socket = useSocket(currentGame.value.id);
-    })
-    .catch(error => {
-      applicationError.value = 'Nepodařilo se načíst bitvu s tímto ID.<br />' + error
-    })
-    .finally(() => dataLoading.value = false);
-  if (intervalRunAttack.value !== null) {
-    clearInterval(intervalRunAttack.value);
-  }
+  try {
+    const [gameResponse, settingsResponse] = await Promise.all([
+      $fetch(`${runtimeConfig.public.serverUrl}/api/game`, {
+        method: 'GET',
+      }),
+      $fetch(`${runtimeConfig.public.serverUrl}/api/game/settings`, {
+        method: 'GET',
+      })
+    ]);
+
+    useStoredGameInstance(gameResponse as GameInstance);
+    useStoredGameSettings(settingsResponse as Settings);
+    socket = useSocket(currentGame.value.id);
+
+    if (intervalRunAttack.value !== null) {
+      clearInterval(intervalRunAttack.value);
+    }
+  } catch (error) {
+    applicationError.value = 'Nepodařilo se načíst bitvu s tímto ID.<br />' + error
+  } finally {dataLoading.value = false}
+
   currentPlayer.value.insideZone = keyOfIntersectedArea.value; // manually setting zone where player is when opening the game lobby
   await useReleaseWakeLockScreen();
 })

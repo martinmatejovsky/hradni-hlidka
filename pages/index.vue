@@ -20,8 +20,8 @@ const accuracyClass = computed(() => {
   }
 });
 const selectedLocationKey = ref<string | null>('Loket Sportovní')
-const selectedGameTempo = ref<number | null>(1000)
-const selectedLadderLength = ref<number | null>(30)
+const selectedGameTempo = ref<number | null>(5000)
+const selectedLadderLength = ref<number | null>(20)
 const selectWaveVolume = ref<number | null>(4)
 const selectAssemblyCountdown = ref<number | null>(5)
 const selectWavesDelay = ref<number | null>(5)
@@ -94,6 +94,7 @@ const joinGame = async () => {
     navigateTo('/game');
   }
 }
+
 const createNewBattle = async () => {
   dataLoading.value = true;
   const alreadyCreated = await checkGameCreated();
@@ -111,7 +112,7 @@ const createNewBattle = async () => {
     },
     body: JSON.stringify({
       gameLocation: gameLocations.find(location => location.locationName === selectedLocationKey.value),
-      constants: {
+      settings: {
         gameTempo: selectedGameTempo.value,
         ladderLength: selectedLadderLength.value,
         assaultWaveVolume: selectWaveVolume.value,
@@ -130,6 +131,7 @@ const createNewBattle = async () => {
     pageError.value = 'Nepodařilo se spojit se serverem <br />' + error
   }).finally(() => dataLoading.value = false);
 }
+
 const fetchGameLocations = async () => {
   dataLoading.value = true;
   pageError.value = null;

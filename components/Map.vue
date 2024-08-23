@@ -119,7 +119,7 @@ function updateInvadersOnMap(index: number) {
       newCoordinates = zone.assaultLadder.steps[invader.ladderStep];
     } else return;
 
-    if (newCoordinates.lat && newCoordinates.lng) {
+    if (newCoordinates?.lat && newCoordinates?.lng) {
       marker.setLatLng([newCoordinates.lat, newCoordinates.lng]);
     } else {
       console.warn(`No valid coordinates found for invader ${invader.id}.`);

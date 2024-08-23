@@ -1,7 +1,8 @@
 <script setup lang="ts">
-const pageError = useStoredApplicationError()
+import {useStoredCurrentPlayer, useStoredApplicationError, useStoredGeolocationWatcher} from "~/composables/states";
 
 // STATE INITIAL VALUES
+const pageError = useStoredApplicationError()
 const storedGeolocationWatcher = useStoredGeolocationWatcher();
 
 // LIFECYCLE HOOKS
@@ -26,7 +27,7 @@ onUnmounted(() => {
           <v-alert type="error" class="mb-4" dismissible v-html="pageError"></v-alert>
         </div>
 
-        <NuxtPage/>
+        <NuxtPage />
       </v-main>
     </v-container>
   </v-app>
