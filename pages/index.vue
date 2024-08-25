@@ -22,6 +22,7 @@ const accuracyClass = computed(() => {
 const selectedLocationKey = ref<string | null>('Loket Sportovní')
 const selectedGameTempo = ref<number | null>(5000)
 const selectedLadderLength = ref<number | null>(20)
+const selectedGameLength = ref<number | null>(10)
 const selectWaveVolume = ref<number | null>(4)
 const selectAssemblyCountdown = ref<number | null>(5)
 const selectWavesDelay = ref<number | null>(5)
@@ -52,8 +53,12 @@ const gameTemposOptions: ComputedRef<number[]> = computed(() => {
 const ladderLengthOptions: ComputedRef<number[]> = computed(() => {
   return selectedGameLocation.value?.ladderLengthChoices ?? [];
 });
+// TODO: should be defined on server, but after testing. Testing will show if it should be configurable at all.
 const waveVolumeOptions: ComputedRef<number[]> = computed(() => {
   return [4, 8, 12];
+});
+const gameLengthOptions: ComputedRef<number[]> = computed(() => {
+  return [10, 20, 30];
 });
 const assemblyCountdown: ComputedRef<number[]> = computed(() => {
   return [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
@@ -114,6 +119,7 @@ const createNewBattle = async () => {
       gameLocation: gameLocations.find(location => location.locationName === selectedLocationKey.value),
       settings: {
         gameTempo: selectedGameTempo.value,
+        gameLength: selectedGameLength.value,
         ladderLength: selectedLadderLength.value,
         assaultWaveVolume: selectWaveVolume.value,
         assemblyCountdown: selectAssemblyCountdown.value,
@@ -222,6 +228,13 @@ onBeforeMount(() => {
                     :items="waveVolumeOptions"
                     class="mb-2"
                     label="Početnost ve vlně"
+                    required
+                ></v-select>
+                <v-select
+                    v-model="selectedGameLength"
+                    :items="gameLengthOptions"
+                    class="mb-2"
+                    label="Délka hry"
                     required
                 ></v-select>
                 <v-select

@@ -31,5 +31,9 @@ export function useSocket(gameId: string) {
         useEventBus('updateLiveOfInvaders', true)
     })
 
+    socket.on('lastWaveIncoming', () => {
+        useEventBus('lastWaveIncoming', true)
+    })
+
     return socket;
 }

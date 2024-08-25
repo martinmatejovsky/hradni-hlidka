@@ -40,7 +40,6 @@ export interface BattleZone {
     conquered: boolean,
     guardians: PlayerData[],
     invaders: Invader[],
-    assembledInvaders: Invader[],
     assemblyArea: Coordinates[],
     assemblyCountdown: number,
     assaultLadder: AssaultLadder,
@@ -65,6 +64,7 @@ export type Invader = {
 }
 export type Settings = {
     gameTempo: number,
+    gameLength: number,
     ladderLength: number,
     assaultWaveVolume: number,
     assemblyCountdown: number,

@@ -19,7 +19,6 @@ useHead({
   ]
 });
 
-import { ref, onMounted, watch, reactive } from 'vue';
 import { useState } from 'nuxt/app';
 import type {BattleZone, Invader, PlayerData, Coordinates} from '~/types/CustomTypes';
 import { STORE_CURRENT_PLAYER } from '~/constants';

@@ -10,6 +10,7 @@ import type {Socket} from "socket.io-client";
 import Map from "~/components/Map.vue";
 import {useFilterInvadersAssembled, useFilterInvadersOnLadder} from "~/composables/useUtilsFilterZone";
 import {useIntersectedAreaKey} from "~/composables/useIntersectedAreaKey";
+import {useListenBus} from "~/composables/useEventBus";
 
 // DATA
 const runtimeConfig = useRuntimeConfig()
@@ -22,6 +23,7 @@ const currentPlayerIsLeader = useGetterCurrentPlayerIsLeader
 const dataLoading = ref<boolean>(false);
 const applicationError = useState(STORE_APPLICATION_ERROR)
 let socket: Socket;
+const lastWaveIncomingWarning = ref<boolean>(false);
 
 // COMPUTED
 const connectedPlayers = computed((): PlayerData[] => {
@@ -32,6 +34,7 @@ const connectedPlayers = computed((): PlayerData[] => {
 const getBack = (): void => {
   navigateTo('/');
 }
+
 const startAttack = async (): Promise<void> => {
   await useRequestWakeLockScreen();
 
@@ -50,6 +53,7 @@ const startAttack = async (): Promise<void> => {
     applicationError.value = 'Nepodařilo se zahájit útok.<br />' + error
   });
 };
+
 const geolocationWarning = computed(() => {
   if (!currentPlayer?.value.location) {
     return 'Pozice hráče není k dispozici';
@@ -59,6 +63,7 @@ const geolocationWarning = computed(() => {
     return '';
   }
 })
+
 const keyOfIntersectedArea = computed((): string => {
   if (currentPlayer?.value.location && useGetterBattleZones.value) {
     return useIntersectedAreaKey(currentPlayer.value.location);
@@ -66,9 +71,14 @@ const keyOfIntersectedArea = computed((): string => {
     return '';
   }
 })
+
 const currentPlayerMark = ((player: PlayerData) => {
   return currentPlayer.value?.key === player.key ? '(Já)' : '';
 })
+
+const showNoticeLastWaveIncoming = (value: Boolean): void => {
+  lastWaveIncomingWarning.value = value;
+}
 
 // WATCHERS
 watch(keyOfIntersectedArea, (): void => {
@@ -91,6 +101,8 @@ watch(gameState, (newValue): void => {
 onMounted(async () => {
   dataLoading.value = true;
   applicationError.value = null;
+
+  useListenBus('lastWaveIncoming', showNoticeLastWaveIncoming)
 
   try {
     const [gameResponse, settingsResponse] = await Promise.all([
@@ -186,6 +198,8 @@ onBeforeUnmount(async () => {
             </p>
           </div>
         </div>
+
+        <v-alert v-if="lastWaveIncomingWarning" title="Blíží se poslední vlna" type="warning"></v-alert>
 
         <Map :connectedPlayers="connectedPlayers"></Map>
       </div>
