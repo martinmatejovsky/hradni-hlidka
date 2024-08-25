@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {STORE_GAME_INSTANCE, STORE_CURRENT_PLAYER, STORE_APPLICATION_ERROR, STORE_GAME_SETTINGS} from "~/constants";
+import {STORE_GAME_INSTANCE, STORE_CURRENT_PLAYER, STORE_APPLICATION_ERROR} from "~/constants";
 import type {GameInstance, PlayerData, Settings} from "~/types/CustomTypes";
 import {computed, watch} from "vue";
 import {useState} from "nuxt/app";
@@ -201,7 +201,7 @@ onBeforeUnmount(async () => {
 
         <v-alert v-if="lastWaveIncomingWarning" title="Blíží se poslední vlna" type="warning"></v-alert>
 
-        <Map :connectedPlayers="connectedPlayers"></Map>
+        <Map :connectedPlayers="connectedPlayers" :mapCenter="currentGame.gameLocation.mapCenter"></Map>
       </div>
 
       <!-- LOST OR WON-->

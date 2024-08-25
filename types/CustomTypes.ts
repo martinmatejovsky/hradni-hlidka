@@ -17,11 +17,13 @@ export interface BasePolygon {
     key: string,
     polygonType: PolygonType,
     cornerCoordinates: Coordinates[],
+    assemblyArea: Coordinates[],
     assaultLadder: AssaultLadder,
 }
 export interface GameLocation {
     locationName: string,
     key: string,
+    mapCenter: Coordinates,
     polygons: BasePolygon[],
     speedChoices: number[],
     ladderLengthChoices: number[],

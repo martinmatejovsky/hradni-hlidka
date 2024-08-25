@@ -1,8 +1,5 @@
 <script setup lang="ts">
 
-import type {LatLngExpression} from "leaflet";
-import {useGetterBattleZones} from "~/composables/getters";
-
 useHead({
   script: [
     {
@@ -19,6 +16,8 @@ useHead({
   ]
 });
 
+import type {LatLngExpression} from "leaflet";
+import {useGetterBattleZones} from "~/composables/getters";
 import { useState } from 'nuxt/app';
 import type {BattleZone, Invader, PlayerData, Coordinates} from '~/types/CustomTypes';
 import { STORE_CURRENT_PLAYER } from '~/constants';
@@ -38,6 +37,10 @@ const props = defineProps({
     type: Array as PropType<PlayerData[]>,
     required: true
   },
+  mapCenter: {
+    type: Object as PropType<Coordinates>,
+    required: true
+  }
 });
 
 let map: L.Map;
@@ -201,7 +204,7 @@ watch(() => props.connectedPlayers, (updatedConnectedPlayers) => {
 onMounted(async () => {
   useListenBus('updateLiveOfInvaders', handleUpdateInvadersIcons)
 
-  map = L.map('map').setView([50.1910336, 12.7435078], zoom.value[0]);
+  map = L.map('map').setView(props.mapCenter, zoom.value[0]);
   let currentPlayerIcon = L.divIcon(useIconLeaflet({ label: currentPlayer.value.name }));
 
   L.TileLayer.Battlefield = L.TileLayer.extend({
@@ -217,6 +220,7 @@ onMounted(async () => {
     options: {
       minZoom: zoom.value[0],
       maxZoom: zoom.value[zoom.value.length - 1],
+      errorTileUrl: '/map-layers/fog-of-war.png'
     }
   });
 
