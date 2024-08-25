@@ -150,7 +150,7 @@ function createInvaderIcon(id: number, zoneKey: string) {
   if (assemblyCoordinate.lat && assemblyCoordinate.lng) {
     // Create a Leaflet divIcon
     const invaderDivIcon = L.divIcon({
-      className: 'hh-invader-icon',
+      className: `hh-invader-icon is-${invader.type}`,
       html: `${id}`,
       iconSize: [20, 20], // Set the size of the icon
     });

@@ -1,5 +1,6 @@
 import {useState} from "nuxt/app";
 import {STORE_WAKE_LOCK} from "~/constants";
+import {useWakeLock} from "~/composables/states";
 
 export const useRequestWakeLockScreen = async (): Promise<void> => {
     const wakeLockScreen = useState(STORE_WAKE_LOCK);

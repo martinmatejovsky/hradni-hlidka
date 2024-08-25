@@ -8,7 +8,6 @@ import {useStoredGameInstance, useStoredGameSettings} from "~/composables/states
 import {useReleaseWakeLockScreen, useRequestWakeLockScreen} from "~/composables/useWakeLockScreen";
 import type {Socket} from "socket.io-client";
 import Map from "~/components/Map.vue";
-import {useFilterInvadersAssembled, useFilterInvadersOnLadder} from "~/composables/useUtilsFilterZone";
 import {useIntersectedAreaKey} from "~/composables/useIntersectedAreaKey";
 import {useListenBus} from "~/composables/useEventBus";
 
@@ -180,28 +179,10 @@ onBeforeUnmount(async () => {
         <p v-if="!getterBattleZones">Žádná data o útoku.</p>
 
         <div v-else>
-          <div v-for="{ key, zoneName, guardians, invaders } in getterBattleZones" :key="key" class="mb-3">
-            <h4 class="text-amber">{{ zoneName }}</h4>
-            <p>strážce:
-              <template v-if="!guardians.length">--</template>
-              <template v-else>
-                <span v-for="guardian in guardians" :key="guardian.name"  class="text-green mr-2">{{ guardian.name || '--' }}</span>
-              </template>
-            </p>
-            <p>Shromáždění útočníci:
-              <v-icon v-for="invader in useFilterInvadersAssembled(invaders)" :key="invader.id" icon="mdi-sword"></v-icon>
-            </p>
-            <p>Na příčce žebřiku <v-icon icon="mdi-arrow-right-bold-outline"></v-icon>
-              <span v-for="(invader) in useFilterInvadersOnLadder(invaders)" :key="invader.id">
-                {{ invader.ladderStep}} ({{invader.health}} živ.),
-              </span>
-            </p>
-          </div>
+          <v-alert v-if="lastWaveIncomingWarning" title="Blíží se poslední vlna" type="warning"></v-alert>
+
+          <Map :connectedPlayers="connectedPlayers" :mapCenter="currentGame.gameLocation.mapCenter"></Map>
         </div>
-
-        <v-alert v-if="lastWaveIncomingWarning" title="Blíží se poslední vlna" type="warning"></v-alert>
-
-        <Map :connectedPlayers="connectedPlayers" :mapCenter="currentGame.gameLocation.mapCenter"></Map>
       </div>
 
       <!-- LOST OR WON-->

@@ -56,7 +56,7 @@ export interface GameInstance {
     gameTempo: number,
     ladderLength: number,
 }
-export type InvaderType = "normal"
+export type InvaderType = "regular" | "captain"
 export type Invader = {
     id: number,
     type: InvaderType,
