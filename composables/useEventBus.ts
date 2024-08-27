@@ -1,10 +1,6 @@
 import mitt from 'mitt'
 
-type ApplicationEvents = {
-    'updateLiveOfInvaders': Boolean
-};
-
-const emitter = mitt<ApplicationEvents>()
+const emitter = mitt()
 
 export const useEventBus = emitter.emit
 export const useListenBus = emitter.on

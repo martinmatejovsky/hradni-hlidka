@@ -79,7 +79,7 @@ const checkGameCreated = async (): Promise<boolean> => {
 
     const gameStatusResponse = response as { gameStatus: GameState };
 
-    if (gameStatusResponse.gameStatus === "none") {
+    if (gameStatusResponse.gameStatus !== "ready") {
       gameNotYetCreated.value = true;
       return false;
     } else {

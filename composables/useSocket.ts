@@ -1,7 +1,7 @@
 // tutorial on https://socket.io/how-to/use-with-vue
 
 import { io } from "socket.io-client"
-import type { GameInstance } from "~/types/CustomTypes"
+import type {GameInstance, LastWaveNotice} from "~/types/CustomTypes"
 import * as CONST from "~/constants";
 import {useEventBus} from "~/composables/useEventBus";
 
@@ -28,11 +28,11 @@ export function useSocket(gameId: string) {
 
     socket.on('gameUpdated', (game: GameInstance) => {
         useState<GameInstance>(CONST.STORE_GAME_INSTANCE).value = game;
-        useEventBus('updateLiveOfInvaders', true)
+        useEventBus('updateLifeOfInvaders')
     })
 
-    socket.on('lastWaveIncoming', () => {
-        useEventBus('lastWaveIncoming', true)
+    socket.on('lastWaveNotice', (status: LastWaveNotice) => {
+        useEventBus('lastWaveNotice', status)
     })
 
     return socket;

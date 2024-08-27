@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import {STORE_GAME_INSTANCE, STORE_CURRENT_PLAYER, STORE_APPLICATION_ERROR} from "~/constants";
-import type {GameInstance, PlayerData, Settings} from "~/types/CustomTypes";
+import type {GameInstance, LastWaveNotice, PlayerData, Settings} from "~/types/CustomTypes";
 import {computed, watch} from "vue";
 import {useState} from "nuxt/app";
 import {useGetterCurrentPlayerIsLeader, useGetterGameState} from "~/composables/getters";
@@ -22,7 +22,7 @@ const currentPlayerIsLeader = useGetterCurrentPlayerIsLeader
 const dataLoading = ref<boolean>(false);
 const applicationError = useState(STORE_APPLICATION_ERROR)
 let socket: Socket;
-const lastWaveIncomingWarning = ref<boolean>(false);
+let lastWaveIncomingWarning = ref<LastWaveNotice>('none');
 
 // COMPUTED
 const connectedPlayers = computed((): PlayerData[] => {
@@ -75,10 +75,6 @@ const currentPlayerMark = ((player: PlayerData) => {
   return currentPlayer.value?.key === player.key ? '(Já)' : '';
 })
 
-const showNoticeLastWaveIncoming = (value: Boolean): void => {
-  lastWaveIncomingWarning.value = value;
-}
-
 // WATCHERS
 watch(keyOfIntersectedArea, (): void => {
   if (getterBattleZones && currentPlayer.value.key) {
@@ -101,7 +97,9 @@ onMounted(async () => {
   dataLoading.value = true;
   applicationError.value = null;
 
-  useListenBus('lastWaveIncoming', showNoticeLastWaveIncoming)
+  useListenBus('lastWaveNotice', (value: LastWaveNotice): void => {
+    lastWaveIncomingWarning.value = value;
+  });
 
   try {
     const [gameResponse, settingsResponse] = await Promise.all([
@@ -179,7 +177,8 @@ onBeforeUnmount(async () => {
         <p v-if="!getterBattleZones">Žádná data o útoku.</p>
 
         <div v-else>
-          <v-alert v-if="lastWaveIncomingWarning" title="Blíží se poslední vlna" type="warning"></v-alert>
+          <v-alert v-if="lastWaveIncomingWarning === 'incoming'" title="Blíží se poslední vlna" type="warning"></v-alert>
+          <v-alert v-if="lastWaveIncomingWarning === 'running'" title="Poslední vlna" type="info"></v-alert>
 
           <Map :connectedPlayers="connectedPlayers" :mapCenter="currentGame.gameLocation.mapCenter"></Map>
         </div>

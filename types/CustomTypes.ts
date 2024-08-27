@@ -73,3 +73,4 @@ export type Settings = {
     wavesMinDelay: number,
     defendersHitStrength: number,
 }
+export type LastWaveNotice = 'none' | 'incoming' | 'running'

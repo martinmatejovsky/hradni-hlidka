@@ -123,6 +123,12 @@ function updateInvadersOnMap(index: number) {
 
     if (newCoordinates?.lat && newCoordinates?.lng) {
       marker.setLatLng([newCoordinates.lat, newCoordinates.lng]);
+
+      const element = marker.getElement();
+
+      if (element) {
+        element.innerHTML = `${invader.health}`;
+      }
     } else {
       console.warn(`No valid coordinates found for invader ${invader.id}.`);
     }
@@ -151,7 +157,7 @@ function createInvaderIcon(id: number, zoneKey: string) {
     // Create a Leaflet divIcon
     const invaderDivIcon = L.divIcon({
       className: `hh-invader-icon is-${invader.type}`,
-      html: `${id}`,
+      html: `${invader.health}`,
       iconSize: [20, 20], // Set the size of the icon
     });
 
@@ -202,7 +208,7 @@ watch(() => props.connectedPlayers, (updatedConnectedPlayers) => {
 
 // LIFECYCLE
 onMounted(async () => {
-  useListenBus('updateLiveOfInvaders', handleUpdateInvadersIcons)
+  useListenBus('updateLifeOfInvaders', handleUpdateInvadersIcons)
 
   map = L.map('map').setView(props.mapCenter, zoom.value[0]);
   let currentPlayerIcon = L.divIcon(useIconLeaflet({ label: currentPlayer.value.name }));
