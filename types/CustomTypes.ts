@@ -11,14 +11,14 @@ export type PlayerData = {
     strength: number,
 }
 export type GameState = "none" | "ready" | "running" | "won" | "lost"
-type PolygonType = "battleZone" | "smithy" | "barracks"
+type PolygonType = "battleZone" | "smithy"
 export interface BasePolygon {
     polygonName: string,
     key: string,
     polygonType: PolygonType,
     cornerCoordinates: Coordinates[],
-    assemblyArea: Coordinates[],
-    assaultLadder: AssaultLadder,
+    assemblyArea?: Coordinates[],
+    assaultLadder?: AssaultLadder,
 }
 export interface GameLocation {
     locationName: string,

@@ -255,6 +255,13 @@ onMounted(async () => {
     L.polygon(corners, { color: "#ff7800", weight: 1 }).addTo(map);
   });
 
+  // Přidání orientacnich obdélníků pro každou utilityZone. Testovací účely.
+  utilityZones.value.forEach(utilityZone => {
+    const corners = utilityZone.cornerCoordinates as LatLngExpression[]
+
+    L.polygon(corners, { color: "rgba(89,163,68,0.58)", weight: 1 }).addTo(map);
+  });
+
   // vykreslit ikonky utocniku, pokud uz nejaci maji byt na mape
   handleUpdateInvadersIcons();
 
