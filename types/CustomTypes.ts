@@ -11,7 +11,7 @@ export type PlayerData = {
     strength: number,
 }
 export type GameState = "none" | "ready" | "running" | "won" | "lost"
-type PolygonType = "battleZone" | "smithy"
+type PolygonType = "assaultZone" | "smithy"
 export interface BasePolygon {
     polygonName: string,
     key: string,
@@ -38,6 +38,7 @@ export interface AssaultLadder {
 export interface BattleZone {
     zoneName: string,
     key: string,
+    polygonType: PolygonType,
     cornerCoordinates: Coordinates[],
     conquered: boolean,
     guardians: PlayerData[],
@@ -47,11 +48,19 @@ export interface BattleZone {
     assaultLadder: AssaultLadder,
     waveCooldown: number,
 }
+export interface UtilityZone {
+    zoneName: string,
+    key: string,
+    polygonType: PolygonType,
+    cornerCoordinates: Coordinates[],
+    guardians: PlayerData[],
+}
 export interface GameInstance {
     id: string,
     gameState: GameState,
     gameLocation: GameLocation,
     battleZones: BattleZone[],
+    utilityZones: UtilityZone[],
     players: PlayerData[],
     gameTempo: number,
     ladderLength: number,
@@ -72,5 +81,6 @@ export type Settings = {
     assemblyCountdown: number,
     wavesMinDelay: number,
     defendersHitStrength: number,
+    smithyUpgradeWaiting: number,
 }
 export type LastWaveNotice = 'none' | 'incoming' | 'running'

@@ -104,38 +104,44 @@ const createNewBattle = async () => {
   dataLoading.value = true;
   const alreadyCreated = await checkGameCreated();
 
-  if (alreadyCreated) {
-    gameAlreadyCreated.value = true
-    dataLoading.value = false;
-    return
-  }
+  try {
+    if (alreadyCreated) {
+      gameAlreadyCreated.value = true
+      dataLoading.value = false;
+      return
+    }
 
-  await $fetch( `${runtimeConfig.public.serverUrl}/api/game/createGame`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      gameLocation: gameLocations.find(location => location.locationName === selectedLocationKey.value),
-      settings: {
-        gameTempo: selectedGameTempo.value,
-        gameLength: selectedGameLength.value,
-        ladderLength: selectedLadderLength.value,
-        assaultWaveVolume: selectWaveVolume.value,
-        assemblyCountdown: selectAssemblyCountdown.value,
-        wavesMinDelay: selectWavesDelay.value,
-        defendersHitStrength: selectDefendersHitStrength.value,
-      }
+    const response = await $fetch( `${runtimeConfig.public.serverUrl}/api/game/createGame`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        gameLocation: gameLocations.find(location => location.locationName === selectedLocationKey.value),
+        settings: {
+          gameTempo: selectedGameTempo.value,
+          gameLength: selectedGameLength.value,
+          ladderLength: selectedLadderLength.value,
+          assaultWaveVolume: selectWaveVolume.value,
+          assemblyCountdown: selectAssemblyCountdown.value,
+          wavesMinDelay: selectWavesDelay.value,
+          defendersHitStrength: selectDefendersHitStrength.value,
+        }
+      })
     })
-  }).then((response: any) => {
+
     if (response.statusCode === 200) {
       gameAlreadyCreated.value = true
     } else if (response.statusCode === 201) {
-      navigateTo('/game')
+      await navigateTo('/game')
     }
-  }).catch((error) => {
+  }
+
+  catch(error) {
     pageError.value = 'Nepodařilo se spojit se serverem <br />' + error
-  }).finally(() => dataLoading.value = false);
+  }
+
+  finally{ dataLoading.value = false }
 }
 
 const fetchGameLocations = async () => {

@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import {STORE_GAME_INSTANCE, STORE_CURRENT_PLAYER, STORE_APPLICATION_ERROR} from "~/constants";
+import {STORE_GAME_INSTANCE, STORE_CURRENT_PLAYER, STORE_APPLICATION_ERROR, STORE_GAME_SETTINGS} from "~/constants";
 import type {GameInstance, LastWaveNotice, PlayerData, Settings} from "~/types/CustomTypes";
 import {computed, watch} from "vue";
 import {useState} from "nuxt/app";
-import {useGetterCurrentPlayerIsLeader, useGetterGameState} from "~/composables/getters";
+import {useGetterCurrentPlayerIsLeader, useGetterGameState, useGetterUtilityZones} from "~/composables/getters";
 import {useStoredGameInstance, useStoredGameSettings} from "~/composables/states";
 import {useReleaseWakeLockScreen, useRequestWakeLockScreen} from "~/composables/useWakeLockScreen";
 import type {Socket} from "socket.io-client";
@@ -16,13 +16,17 @@ const runtimeConfig = useRuntimeConfig()
 const intervalRunAttack = ref<NodeJS.Timeout | null>(null);
 const currentPlayer = useState<PlayerData>(STORE_CURRENT_PLAYER);
 const currentGame = useState<GameInstance>(STORE_GAME_INSTANCE)
+const gameSettings = useState<Settings>(STORE_GAME_SETTINGS)
 const gameState = useGetterGameState;
 const getterBattleZones = useGetterBattleZones;
+const utilityZones = ref(useGetterUtilityZones)
 const currentPlayerIsLeader = useGetterCurrentPlayerIsLeader
 const dataLoading = ref<boolean>(false);
 const applicationError = useState(STORE_APPLICATION_ERROR)
 let socket: Socket;
 let lastWaveIncomingWarning = ref<LastWaveNotice>('none');
+const smithyUpgradeActive = ref(false);
+const zoneTimer = ref<NodeJS.Timeout | null>(null);
 
 // COMPUTED
 const connectedPlayers = computed((): PlayerData[] => {
@@ -75,13 +79,44 @@ const currentPlayerMark = ((player: PlayerData) => {
   return currentPlayer.value?.key === player.key ? '(Já)' : '';
 })
 
+const isSmithyArea = (key: string): boolean => {
+  const area = utilityZones.value.find(zone => zone.key === key);
+  return area?.polygonType === 'smithy';
+}
+
+const startZoneTimer = () => {
+  if (zoneTimer.value !== null) {
+    clearTimeout(zoneTimer.value);
+  }
+
+  zoneTimer.value = setTimeout(() => {
+    smithyUpgradeActive.value = true; // Set to true if still in the zone for defined time in seconds
+  }, gameSettings.value.smithyUpgradeWaiting);
+}
+
+// Function to stop the timer
+const clearZoneTimer = () => {
+  if (zoneTimer.value !== null) {
+    clearTimeout(zoneTimer.value);
+    zoneTimer.value = null;
+  }
+}
+
 // WATCHERS
-watch(keyOfIntersectedArea, (): void => {
+
+watch(keyOfIntersectedArea, (newKey): void => {
   if (getterBattleZones && currentPlayer.value.key) {
     currentPlayer.value.insideZone = keyOfIntersectedArea.value;
     socket.emit('playerRelocatedToZone', {gameId: currentGame.value.id, player: currentPlayer.value})
   }
+
+  if (isSmithyArea(newKey)) {
+    startZoneTimer();
+  } else {
+    clearZoneTimer();
+  }
 });
+
 watch(gameState, (newValue): void => {
   if (newValue === 'lost' || newValue === 'won') {
     if (intervalRunAttack.value !== null) {
@@ -177,6 +212,7 @@ onBeforeUnmount(async () => {
         <p v-if="!getterBattleZones">Žádná data o útoku.</p>
 
         <div v-else>
+          <p>Smithy upgrade: {{ smithyUpgradeActive }}</p>
           <v-alert v-if="lastWaveIncomingWarning === 'incoming'" title="Blíží se poslední vlna" type="warning"></v-alert>
           <v-alert v-if="lastWaveIncomingWarning === 'running'" title="Poslední vlna" type="info"></v-alert>
 

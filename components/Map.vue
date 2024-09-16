@@ -17,7 +17,7 @@ useHead({
 });
 
 import type {LatLngExpression} from "leaflet";
-import {useGetterBattleZones} from "~/composables/getters";
+import {useGetterBattleZones, useGetterUtilityZones} from "~/composables/getters";
 import { useState } from 'nuxt/app';
 import type {BattleZone, Invader, PlayerData, Coordinates} from '~/types/CustomTypes';
 import { STORE_CURRENT_PLAYER } from '~/constants';
@@ -27,6 +27,7 @@ import * as L from 'leaflet';
 
 const currentPlayer = useState<PlayerData>(STORE_CURRENT_PLAYER);
 const battleZones = ref(useGetterBattleZones)
+const utilityZones = ref(useGetterUtilityZones)
 const zoom = ref([19, 20]);
 let checkLeafletInterval: ReturnType<typeof setInterval>;
 const markers = reactive<{ [key: string]: L.Marker }>({});
@@ -259,7 +260,7 @@ onMounted(async () => {
   utilityZones.value.forEach(utilityZone => {
     const corners = utilityZone.cornerCoordinates as LatLngExpression[]
 
-    L.polygon(corners, { color: "rgba(89,163,68,0.58)", weight: 1 }).addTo(map);
+    L.polygon(corners, { color: "rgba(57,65,133,0.58)", weight: 1 }).addTo(map);
   });
 
   // vykreslit ikonky utocniku, pokud uz nejaci maji byt na mape

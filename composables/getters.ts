@@ -1,4 +1,4 @@
-import type {GameInstance, BattleZone, GameState, PlayerData} from "~/types/CustomTypes";
+import type {GameInstance, BattleZone, GameState, PlayerData, UtilityZone} from "~/types/CustomTypes";
 import {STORE_GAME_INSTANCE, STORE_CURRENT_PLAYER} from "~/constants";
 
 export const useGetterGameState = computed((): GameState => {
@@ -7,6 +7,10 @@ export const useGetterGameState = computed((): GameState => {
 
 export const useGetterBattleZones = computed((): BattleZone[] => {
     return useState<GameInstance>(STORE_GAME_INSTANCE).value?.battleZones
+})
+
+export const useGetterUtilityZones = computed((): UtilityZone[] => {
+    return useState<GameInstance>(STORE_GAME_INSTANCE).value?.utilityZones
 })
 
 export const useGetterCurrentPlayerIsLeader = computed((): Boolean => {
