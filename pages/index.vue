@@ -1,7 +1,7 @@
 <script setup lang="ts">
 // IMPORTS
 import {computed, type ComputedRef} from 'vue';
-import type {GameLocation, PlayerData, GameState} from "~/types/CustomTypes";
+import type {GameLocation, PlayerData, GameState, Settings} from "~/types/CustomTypes";
 import {STORE_APPLICATION_ERROR, STORE_CURRENT_PLAYER} from "~/constants";
 import {useState} from "nuxt/app";
 
@@ -24,9 +24,11 @@ const selectedGameTempo = ref<number | null>(5000)
 const selectedLadderLength = ref<number | null>(20)
 const selectedGameLength = ref<number | null>(10)
 const selectWaveVolume = ref<number | null>(4)
-const selectAssemblyCountdown = ref<number | null>(5)
+const selectAssemblyCountdown = ref<number | null>(1)
 const selectWavesDelay = ref<number | null>(5)
-const selectDefendersHitStrength = ref<number | null>(2)
+const selectDefendersHitStrength = ref<number | null>(1)
+const selectSmithyUpgradeWaiting = ref<number>(5000)
+const selectSmithyUpgradeDuration = ref<number>(2)
 const dataLoading = ref<boolean>(false);
 const pageError = useState(STORE_APPLICATION_ERROR);
 let gameLocations: GameLocation[]
@@ -68,6 +70,9 @@ const wavesDelay: ComputedRef<number[]> = computed(() => {
 });
 const defendersStrength: ComputedRef<number[]> = computed(() => {
   return [1, 2, 3, 4];
+});
+const smithyUpgradeStrength: ComputedRef<number[]> = computed(() => {
+  return [1, 2, 3, 4, 5, 6, 7];
 });
 
 // METHODS
@@ -111,6 +116,18 @@ const createNewBattle = async () => {
       return
     }
 
+    const data: Settings = {
+      gameTempo: selectedGameTempo.value,
+      gameLength: selectedGameLength.value,
+      ladderLength: selectedLadderLength.value,
+      assaultWaveVolume: selectWaveVolume.value,
+      assemblyCountdown: selectAssemblyCountdown.value,
+      wavesMinDelay: selectWavesDelay.value,
+      defendersHitStrength: selectDefendersHitStrength.value,
+      smithyUpgradeWaiting: selectSmithyUpgradeWaiting.value,
+      smithyUpgradeStrength: selectSmithyUpgradeDuration.value
+    }
+
     const response = await $fetch( `${runtimeConfig.public.serverUrl}/api/game/createGame`, {
       method: 'POST',
       headers: {
@@ -118,15 +135,7 @@ const createNewBattle = async () => {
       },
       body: JSON.stringify({
         gameLocation: gameLocations.find(location => location.locationName === selectedLocationKey.value),
-        settings: {
-          gameTempo: selectedGameTempo.value,
-          gameLength: selectedGameLength.value,
-          ladderLength: selectedLadderLength.value,
-          assaultWaveVolume: selectWaveVolume.value,
-          assemblyCountdown: selectAssemblyCountdown.value,
-          wavesMinDelay: selectWavesDelay.value,
-          defendersHitStrength: selectDefendersHitStrength.value,
-        }
+        settings: data
       })
     })
 
@@ -263,6 +272,20 @@ onBeforeMount(() => {
                     class="mb-2"
                     label="ÚČ obránce"
                     required
+                ></v-select>
+                <v-select
+                    v-model="selectSmithyUpgradeDuration"
+                    :items="smithyUpgradeStrength"
+                    class="mb-2"
+                    label="Výdrž vylepšení kovárny"
+                    required
+                ></v-select>
+                <v-select
+                    v-model="selectSmithyUpgradeWaiting"
+                    :items="[selectSmithyUpgradeWaiting]"
+                    class="mb-2 readonly"
+                    label="Čekání na vylepšení kovárny"
+                    readonly
                 ></v-select>
               </v-col>
             </v-row>

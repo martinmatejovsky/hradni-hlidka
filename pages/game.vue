@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import {STORE_GAME_INSTANCE, STORE_CURRENT_PLAYER, STORE_APPLICATION_ERROR, STORE_GAME_SETTINGS} from "~/constants";
 import type {GameInstance, LastWaveNotice, PlayerData, Settings} from "~/types/CustomTypes";
+import {Perks} from "~/types/CustomTypes"; // to enable enum to be defined at runtime it must be imported without "type" prefix
 import {computed, watch} from "vue";
 import {useState} from "nuxt/app";
 import {useGetterCurrentPlayerIsLeader, useGetterGameState, useGetterUtilityZones} from "~/composables/getters";
@@ -90,7 +91,11 @@ const startZoneTimer = () => {
   }
 
   zoneTimer.value = setTimeout(() => {
-    smithyUpgradeActive.value = true; // Set to true if still in the zone for defined time in seconds
+    socket.emit('smithyUpgradeAchieved', {
+      gameId: currentGame.value.id,
+      player: currentPlayer.value,
+      perk: Perks.smithyUpgrade,
+      perkValue: gameSettings.value.smithyUpgradeStrength});
   }, gameSettings.value.smithyUpgradeWaiting);
 }
 
@@ -212,7 +217,7 @@ onBeforeUnmount(async () => {
         <p v-if="!getterBattleZones">Žádná data o útoku.</p>
 
         <div v-else>
-          <p>Smithy upgrade: {{ smithyUpgradeActive }}</p>
+          <p>Smithy upgrade duration: {{ currentPlayer.perks.smithyUpgrade }}</p>
           <v-alert v-if="lastWaveIncomingWarning === 'incoming'" title="Blíží se poslední vlna" type="warning"></v-alert>
           <v-alert v-if="lastWaveIncomingWarning === 'running'" title="Poslední vlna" type="info"></v-alert>
 

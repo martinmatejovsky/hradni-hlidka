@@ -18,6 +18,9 @@ export const useStoredCurrentPlayer = () => useState<PlayerData>(CONST.STORE_CUR
         },
         insideZone: '',
         strength: 0,
+        perks: {
+            smithyUpgrade: 0,
+        }
     }
 })
 export const useStoredGameInstance = (game: GameInstance | Ref<GameInstance>) => useState<GameInstance>(CONST.STORE_GAME_INSTANCE, () => game)
