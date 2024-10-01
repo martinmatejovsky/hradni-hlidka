@@ -9,8 +9,8 @@ export function useInitializePlayerGeolocationWatcher(): void {
     if ('geolocation' in navigator) {
         useState(STORE_GEOLOCATION_WATCHER).value = navigator.geolocation.watchPosition( position => {
             useState<PlayerData>(STORE_CURRENT_PLAYER).value.location = {
-                latitude: position.coords.latitude,
-                longitude: position.coords.longitude,
+                lat: position.coords.latitude,
+                lng: position.coords.longitude,
                 accuracy: position.coords.accuracy
             }
         },

@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import type {GameInstance, PlayerData} from "~/types/CustomTypes";
+import type {GameInstance, PlayerData, Settings} from "~/types/CustomTypes";
 import {useState} from "nuxt/app";
-import {STORE_APPLICATION_ERROR, STORE_CURRENT_PLAYER, STORE_GAME_INSTANCE} from "~/constants";
+import {STORE_APPLICATION_ERROR, STORE_CURRENT_PLAYER, STORE_GAME_SETTINGS, STORE_GAME_INSTANCE} from "~/constants";
 import type {Socket} from 'socket.io-client'
 
 // PROPS
@@ -16,6 +16,7 @@ const isFormValid = computed(() => {
 const selectedPlayerName = ref<string>('Test Beolf')
 const currentPlayer = useState<PlayerData>(STORE_CURRENT_PLAYER);
 const currentGame = useState<GameInstance>(STORE_GAME_INSTANCE);
+const gameSettings = useState<Settings>(STORE_GAME_SETTINGS)
 
 // METHODS
 const submitForm = async () => {
@@ -26,6 +27,7 @@ const submitForm = async () => {
 
   currentPlayer.value.name = selectedPlayerName.value;
   currentPlayer.value.key = props.socket.id as string;
+  currentPlayer.value.strength = gameSettings.value.defendersHitStrength;
 
   props.socket.emit('joinGame', {gameId: currentGame.value.id, player: currentPlayer.value}, (response: string) => {
     if (response === 'ok') {

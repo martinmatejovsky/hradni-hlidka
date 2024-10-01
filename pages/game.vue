@@ -1,22 +1,33 @@
 <script setup lang="ts">
-import {STORE_GAME_INSTANCE, STORE_CURRENT_PLAYER, STORE_APPLICATION_ERROR} from "~/constants";
-import type {BattleZone, GameInstance, PlayerData} from "~/types/CustomTypes";
+import {STORE_GAME_INSTANCE, STORE_CURRENT_PLAYER, STORE_APPLICATION_ERROR, STORE_GAME_SETTINGS} from "~/constants";
+import type {GameInstance, LastWaveNotice, PlayerData, Settings} from "~/types/CustomTypes";
+import {Perks} from "~/types/CustomTypes"; // to enable enum to be defined at runtime it must be imported without "type" prefix
 import {computed, watch} from "vue";
 import {useState} from "nuxt/app";
-import {useGetterCurrentPlayerIsLeader, useGetterGameState} from "~/composables/getters";
+import {useGetterCurrentPlayerIsLeader, useGetterGameState, useGetterUtilityZones} from "~/composables/getters";
+import {useStoredGameInstance, useStoredGameSettings} from "~/composables/states";
+import {useReleaseWakeLockScreen, useRequestWakeLockScreen} from "~/composables/useWakeLockScreen";
 import type {Socket} from "socket.io-client";
+import Map from "~/components/Map.vue";
+import {useIntersectedAreaKey} from "~/composables/useIntersectedAreaKey";
+import {useListenBus} from "~/composables/useEventBus";
 
 // DATA
 const runtimeConfig = useRuntimeConfig()
 const intervalRunAttack = ref<NodeJS.Timeout | null>(null);
 const currentPlayer = useState<PlayerData>(STORE_CURRENT_PLAYER);
 const currentGame = useState<GameInstance>(STORE_GAME_INSTANCE)
+const gameSettings = useState<Settings>(STORE_GAME_SETTINGS)
 const gameState = useGetterGameState;
 const getterBattleZones = useGetterBattleZones;
+const utilityZones = ref(useGetterUtilityZones)
 const currentPlayerIsLeader = useGetterCurrentPlayerIsLeader
 const dataLoading = ref<boolean>(false);
 const applicationError = useState(STORE_APPLICATION_ERROR)
 let socket: Socket;
+let lastWaveIncomingWarning = ref<LastWaveNotice>('none');
+const smithyUpgradeActive = ref(false);
+const zoneTimer = ref<NodeJS.Timeout | null>(null);
 
 // COMPUTED
 const connectedPlayers = computed((): PlayerData[] => {
@@ -27,10 +38,11 @@ const connectedPlayers = computed((): PlayerData[] => {
 const getBack = (): void => {
   navigateTo('/');
 }
-const startAttack = async (): Promise<void> => {
-  useRequestWakeLockScreen();
 
-  // TODO: send to server that game has started. On response start the game also on client side
+const startAttack = async (): Promise<void> => {
+  await useRequestWakeLockScreen();
+
+  // TODO: send to server that game has started. After response start also the game on client side,
   // like for example with intervalRunAttack.value = useRunAttack();
 
   await $fetch(`${runtimeConfig.public.serverUrl}/api/game/start`, {
@@ -45,6 +57,7 @@ const startAttack = async (): Promise<void> => {
     applicationError.value = 'Nepodařilo se zahájit útok.<br />' + error
   });
 };
+
 const geolocationWarning = computed(() => {
   if (!currentPlayer?.value.location) {
     return 'Pozice hráče není k dispozici';
@@ -54,6 +67,7 @@ const geolocationWarning = computed(() => {
     return '';
   }
 })
+
 const keyOfIntersectedArea = computed((): string => {
   if (currentPlayer?.value.location && useGetterBattleZones.value) {
     return useIntersectedAreaKey(currentPlayer.value.location);
@@ -61,24 +75,53 @@ const keyOfIntersectedArea = computed((): string => {
     return '';
   }
 })
-const nameOfIntersectedArea = computed(() => {
-  if (keyOfIntersectedArea.value.length > 0) {
-    return getterBattleZones.value.find((zone: BattleZone) => zone.key === keyOfIntersectedArea.value)?.zoneName;
-  } else {
-    return '--';
-  }
-});
+
 const currentPlayerMark = ((player: PlayerData) => {
   return currentPlayer.value?.key === player.key ? '(Já)' : '';
 })
 
+const isSmithyArea = (key: string): boolean => {
+  const area = utilityZones.value.find(zone => zone.key === key);
+  return area?.polygonType === 'smithy';
+}
+
+const startZoneTimer = () => {
+  if (zoneTimer.value !== null) {
+    clearTimeout(zoneTimer.value);
+  }
+
+  zoneTimer.value = setTimeout(() => {
+    socket.emit('smithyUpgradeAchieved', {
+      gameId: currentGame.value.id,
+      player: currentPlayer.value,
+      perk: Perks.smithyUpgrade,
+      perkValue: gameSettings.value.smithyUpgradeStrength});
+  }, gameSettings.value.smithyUpgradeWaiting);
+}
+
+// Function to stop the timer
+const clearZoneTimer = () => {
+  if (zoneTimer.value !== null) {
+    clearTimeout(zoneTimer.value);
+    zoneTimer.value = null;
+  }
+}
+
 // WATCHERS
-watch(keyOfIntersectedArea, (): void => {
-  if (getterBattleZones) {
+
+watch(keyOfIntersectedArea, (newKey): void => {
+  if (getterBattleZones && currentPlayer.value.key) {
     currentPlayer.value.insideZone = keyOfIntersectedArea.value;
-    socket.emit('playerRelocated', {gameId: currentGame.value.id, player: currentPlayer.value})
+    socket.emit('playerRelocatedToZone', {gameId: currentGame.value.id, player: currentPlayer.value})
+  }
+
+  if (isSmithyArea(newKey)) {
+    startZoneTimer();
+  } else {
+    clearZoneTimer();
   }
 });
+
 watch(gameState, (newValue): void => {
   if (newValue === 'lost' || newValue === 'won') {
     if (intervalRunAttack.value !== null) {
@@ -94,20 +137,31 @@ onMounted(async () => {
   dataLoading.value = true;
   applicationError.value = null;
 
-  await $fetch(`${runtimeConfig.public.serverUrl}/api/game`, {
-      method: 'GET',
-    })
-    .then((response) => {
-      useStoredGameInstance(response as GameInstance);
-      socket = useSocket(currentGame.value.id);
-    })
-    .catch(error => {
-      applicationError.value = 'Nepodařilo se načíst bitvu s tímto ID.<br />' + error
-    })
-    .finally(() => dataLoading.value = false);
-  if (intervalRunAttack.value !== null) {
-    clearInterval(intervalRunAttack.value);
-  }
+  useListenBus('lastWaveNotice', (value: LastWaveNotice): void => {
+    lastWaveIncomingWarning.value = value;
+  });
+
+  try {
+    const [gameResponse, settingsResponse] = await Promise.all([
+      $fetch(`${runtimeConfig.public.serverUrl}/api/game`, {
+        method: 'GET',
+      }),
+      $fetch(`${runtimeConfig.public.serverUrl}/api/game/settings`, {
+        method: 'GET',
+      })
+    ]);
+
+    useStoredGameInstance(gameResponse as GameInstance);
+    useStoredGameSettings(settingsResponse as Settings);
+    socket = useSocket(currentGame.value.id);
+
+    if (intervalRunAttack.value !== null) {
+      clearInterval(intervalRunAttack.value);
+    }
+  } catch (error) {
+    applicationError.value = 'Nepodařilo se načíst bitvu s tímto ID.<br />' + error
+  } finally {dataLoading.value = false}
+
   currentPlayer.value.insideZone = keyOfIntersectedArea.value; // manually setting zone where player is when opening the game lobby
   await useReleaseWakeLockScreen();
 })
@@ -160,24 +214,14 @@ onBeforeUnmount(async () => {
 
       <!-- RUNNING -->
       <div v-else-if="gameState === 'running'">
-        <p class="mb-4">Jsem uvnitř? <span class="text-h4 text-indigo-lighten-4">{{ nameOfIntersectedArea }}</span></p>
-        <h3 class="mb-3">Postup útoku</h3>
         <p v-if="!getterBattleZones">Žádná data o útoku.</p>
+
         <div v-else>
-          <div v-for="{ key, zoneName, guardians, assembledInvaders, assaultLadder } in getterBattleZones" :key="key" class="mb-3">
-            <h4 class="text-amber">{{ zoneName }}</h4>
-            <p>strážce:
-              <template v-if="!guardians.length">--</template>
-              <template v-else>
-                <span v-for="guardian in guardians" :key="guardian.name"  class="text-green mr-2">{{ guardian.name || '--' }}</span>
-              </template>
-            </p>
-            <p>Shromáždění útočníci:
-              <v-icon v-for="n in assembledInvaders" :key="n" icon="mdi-sword"></v-icon>
-            </p>
-            <p>Žebřik <v-icon icon="mdi-arrow-right-bold-outline"></v-icon></p>
-            <ClimbingLadder :climbingInvaders="assaultLadder" />
-          </div>
+          <p>Smithy upgrade duration: {{ currentPlayer.perks.smithyUpgrade }}</p>
+          <v-alert v-if="lastWaveIncomingWarning === 'incoming'" title="Blíží se poslední vlna" type="warning"></v-alert>
+          <v-alert v-if="lastWaveIncomingWarning === 'running'" title="Poslední vlna" type="info"></v-alert>
+
+          <Map :connectedPlayers="connectedPlayers" :mapCenter="currentGame.gameLocation.mapCenter"></Map>
         </div>
       </div>
 
@@ -186,7 +230,6 @@ onBeforeUnmount(async () => {
         <h4 class="text-h4 mb-4" :class="[gameState === 'won' ? 'text-green' : 'text-red']">
           {{ gameState === 'won' ? 'Vítězství' : 'Prohráli jste' }}
         </h4>
-        <v-btn rounded="xs" class="mb-6">Znovu na ně!</v-btn>
       </div>
     </template>
 

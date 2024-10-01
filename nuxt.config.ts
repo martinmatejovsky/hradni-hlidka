@@ -2,29 +2,33 @@
 import vuetify, { transformAssetUrls } from 'vite-plugin-vuetify'
 
 export default defineNuxtConfig({
-  devtools: { enabled: true },
+  devtools: { enabled: false },
+
   build: {
     transpile: ['vuetify'],
   },
+
+  css: [
+    '~/assets/styles/main.scss',
+  ],
+
   runtimeConfig: {
     public: {
       serverUrl: process.env.SERVER_URL,
       socketIoUrl: process.env.SOCKET_IO_SERVER_URL,
     }
   },
+
   modules: [
-    async (options, nuxt) => {
-      nuxt.hooks.hook('vite:extendConfig', config => config.plugins.push(
-        vuetify()
-      ))
-    },
     (_options, nuxt) => {
       nuxt.hooks.hook('vite:extendConfig', (config) => {
         // @ts-expect-error
         config.plugins.push(vuetify({ autoImport: true }))
       })
     },
+    'nuxt3-leaflet',
   ],
+
   app: {
     head: {
         title: 'Hradní hlídka',
@@ -34,6 +38,7 @@ export default defineNuxtConfig({
         ],
       },
   },
+
   vite: {
     vue: {
       template: {
@@ -41,4 +46,6 @@ export default defineNuxtConfig({
       },
     },
   },
+
+  compatibilityDate: '2024-09-16',
 })

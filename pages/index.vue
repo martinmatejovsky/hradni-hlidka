@@ -1,14 +1,13 @@
 <script setup lang="ts">
 // IMPORTS
 import {computed, type ComputedRef} from 'vue';
-import type {GameLocation, PlayerData, GameState, GameInstance} from "~/types/CustomTypes";
-import {STORE_APPLICATION_ERROR, STORE_CURRENT_PLAYER, STORE_GAME_INSTANCE} from "~/constants";
+import type {GameLocation, PlayerData, GameState, Settings} from "~/types/CustomTypes";
+import {STORE_APPLICATION_ERROR, STORE_CURRENT_PLAYER} from "~/constants";
 import {useState} from "nuxt/app";
 
 // DATA
 const tab = ref<string>('join');
 const currentPlayer = useState<PlayerData>(STORE_CURRENT_PLAYER);
-const currentGame = useState<GameInstance>(STORE_GAME_INSTANCE)
 const runtimeConfig = useRuntimeConfig()
 const playerAccuracy = computed(() => Math.round(currentPlayer.value?.location.accuracy || 0));
 const accuracyClass = computed(() => {
@@ -20,9 +19,16 @@ const accuracyClass = computed(() => {
     return 'text-red';
   }
 });
-const selectedLocationKey = ref<string | null>(null)
-const selectedGameTempo = ref<number | null>(2000)
+const selectedLocationKey = ref<string | null>('Loket Sportovní')
+const selectedGameTempo = ref<number | null>(5000)
 const selectedLadderLength = ref<number | null>(20)
+const selectedGameLength = ref<number | null>(10)
+const selectWaveVolume = ref<number | null>(4)
+const selectAssemblyCountdown = ref<number | null>(1)
+const selectWavesDelay = ref<number | null>(5)
+const selectDefendersHitStrength = ref<number | null>(1)
+const selectSmithyUpgradeWaiting = ref<number>(5000)
+const selectSmithyUpgradeDuration = ref<number>(2)
 const dataLoading = ref<boolean>(false);
 const pageError = useState(STORE_APPLICATION_ERROR);
 let gameLocations: GameLocation[]
@@ -49,6 +55,25 @@ const gameTemposOptions: ComputedRef<number[]> = computed(() => {
 const ladderLengthOptions: ComputedRef<number[]> = computed(() => {
   return selectedGameLocation.value?.ladderLengthChoices ?? [];
 });
+// TODO: should be defined on server, but after testing. Testing will show if it should be configurable at all.
+const waveVolumeOptions: ComputedRef<number[]> = computed(() => {
+  return [4, 8, 12];
+});
+const gameLengthOptions: ComputedRef<number[]> = computed(() => {
+  return [10, 20, 30];
+});
+const assemblyCountdown: ComputedRef<number[]> = computed(() => {
+  return [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+});
+const wavesDelay: ComputedRef<number[]> = computed(() => {
+  return [5, 10, 15, 20, 25, 30];
+});
+const defendersStrength: ComputedRef<number[]> = computed(() => {
+  return [1, 2, 3, 4];
+});
+const smithyUpgradeStrength: ComputedRef<number[]> = computed(() => {
+  return [1, 2, 3, 4, 5, 6, 7];
+});
 
 // METHODS
 const checkGameCreated = async (): Promise<boolean> => {
@@ -59,7 +84,7 @@ const checkGameCreated = async (): Promise<boolean> => {
 
     const gameStatusResponse = response as { gameStatus: GameState };
 
-    if (gameStatusResponse.gameStatus === "none") {
+    if (gameStatusResponse.gameStatus !== "ready") {
       gameNotYetCreated.value = true;
       return false;
     } else {
@@ -79,36 +104,55 @@ const joinGame = async () => {
     navigateTo('/game');
   }
 }
+
 const createNewBattle = async () => {
   dataLoading.value = true;
   const alreadyCreated = await checkGameCreated();
 
-  if (alreadyCreated) {
-    gameAlreadyCreated.value = true
-    dataLoading.value = false;
-    return
-  }
+  try {
+    if (alreadyCreated) {
+      gameAlreadyCreated.value = true
+      dataLoading.value = false;
+      return
+    }
 
-  await $fetch( `${runtimeConfig.public.serverUrl}/api/game/createGame`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      gameLocation: gameLocations.find(location => location.locationName === selectedLocationKey.value),
+    const data: Settings = {
       gameTempo: selectedGameTempo.value,
+      gameLength: selectedGameLength.value,
       ladderLength: selectedLadderLength.value,
+      assaultWaveVolume: selectWaveVolume.value,
+      assemblyCountdown: selectAssemblyCountdown.value,
+      wavesMinDelay: selectWavesDelay.value,
+      defendersHitStrength: selectDefendersHitStrength.value,
+      smithyUpgradeWaiting: selectSmithyUpgradeWaiting.value,
+      smithyUpgradeStrength: selectSmithyUpgradeDuration.value
+    }
+
+    const response = await $fetch( `${runtimeConfig.public.serverUrl}/api/game/createGame`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        gameLocation: gameLocations.find(location => location.locationName === selectedLocationKey.value),
+        settings: data
+      })
     })
-  }).then((response: any) => {
+
     if (response.statusCode === 200) {
       gameAlreadyCreated.value = true
     } else if (response.statusCode === 201) {
-      navigateTo('/game')
+      await navigateTo('/game')
     }
-  }).catch((error) => {
+  }
+
+  catch(error) {
     pageError.value = 'Nepodařilo se spojit se serverem <br />' + error
-  }).finally(() => dataLoading.value = false);
+  }
+
+  finally{ dataLoading.value = false }
 }
+
 const fetchGameLocations = async () => {
   dataLoading.value = true;
   pageError.value = null;
@@ -163,14 +207,15 @@ onBeforeMount(() => {
               <v-btn @click="joinGame" type="button" rounded="xs">Přidat se do bitvy</v-btn>
             </v-col>
           </v-row>
-          <v-row v-else>
-            <v-col cols="12" sm="6" md="4">
-              <v-form :fast-fail="true" @submit.prevent="createNewBattle">
+          <v-form v-else :fast-fail="true" @submit.prevent="createNewBattle">
+            <v-row>
+              <v-col cols="12" sm="6" md="4">
                 <v-select
                     v-model="selectedLocationKey"
                     :items="locationOptions"
                     class="mb-2"
                     label="Vyberte bitevní pole"
+                    value="loketSportovni"
                     required
                 ></v-select>
                 <v-select
@@ -178,7 +223,7 @@ onBeforeMount(() => {
                     :items="gameTemposOptions"
                     class="mb-2"
                     label="Tempo hry"
-                    value="2000"
+                    value="5000"
                     required
                 ></v-select>
                 <v-select
@@ -189,15 +234,68 @@ onBeforeMount(() => {
                     required
                 ></v-select>
                 <v-btn type="submit" :disabled="!isFormValid" :block="true" rounded="xs" class="mb-2">Založit novou bitvu</v-btn>
-              </v-form>
-            </v-col>
-          </v-row>
+              </v-col>
+
+              <v-col cols="12" sm="6" md="4">
+                Herní konstanty:
+                <v-select
+                    v-model="selectWaveVolume"
+                    :items="waveVolumeOptions"
+                    class="mb-2"
+                    label="Početnost ve vlně"
+                    required
+                ></v-select>
+                <v-select
+                    v-model="selectedGameLength"
+                    :items="gameLengthOptions"
+                    class="mb-2"
+                    label="Délka hry"
+                    required
+                ></v-select>
+                <v-select
+                    v-model="selectAssemblyCountdown"
+                    :items="assemblyCountdown"
+                    class="mb-2"
+                    label="Čekání před žebříkem"
+                    required
+                ></v-select>
+                <v-select
+                    v-model="selectWavesDelay"
+                    :items="wavesDelay"
+                    class="mb-2"
+                    label="Pauza mezi vlnami"
+                    required
+                ></v-select>
+                <v-select
+                    v-model="selectDefendersHitStrength"
+                    :items="defendersStrength"
+                    class="mb-2"
+                    label="ÚČ obránce"
+                    required
+                ></v-select>
+                <v-select
+                    v-model="selectSmithyUpgradeDuration"
+                    :items="smithyUpgradeStrength"
+                    class="mb-2"
+                    label="Výdrž vylepšení kovárny"
+                    required
+                ></v-select>
+                <v-select
+                    v-model="selectSmithyUpgradeWaiting"
+                    :items="[selectSmithyUpgradeWaiting]"
+                    class="mb-2 readonly"
+                    label="Čekání na vylepšení kovárny"
+                    readonly
+                ></v-select>
+              </v-col>
+            </v-row>
+          </v-form>
         </v-window-item>
       </v-window>
     </v-card-text>
   </v-card>
 
-  <p>Souřadnice: {{ currentPlayer?.location.latitude }} {{ currentPlayer?.location.longitude }}</p>
+  <p>Souřadnice: {{ currentPlayer?.location.lat}} {{ currentPlayer?.location.lng }}</p>
   <p>Přesnost: <span :class="[accuracyClass, 'font-weight-bold']">{{ playerAccuracy }}</span> m</p>
 </template>
 
