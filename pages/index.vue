@@ -97,7 +97,7 @@ const checkGameCreated = async (): Promise<boolean> => {
   }
 }
 
-const joinGame = async () => {
+const joinGame = async (): Promise => {
   const alreadyCreated = await checkGameCreated();
 
   if (alreadyCreated) {
@@ -105,14 +105,14 @@ const joinGame = async () => {
   }
 }
 
-const createNewBattle = async () => {
+const createNewBattle = async (): Promise => {
   dataLoading.value = true;
-  const alreadyCreated = await checkGameCreated();
 
   try {
+    const alreadyCreated = await checkGameCreated();
+
     if (alreadyCreated) {
       gameAlreadyCreated.value = true
-      dataLoading.value = false;
       return
     }
 
@@ -144,19 +144,16 @@ const createNewBattle = async () => {
     } else if (response.statusCode === 201) {
       await navigateTo('/game')
     }
-  }
-
-  catch(error) {
-    pageError.value = 'Nepodařilo se spojit se serverem <br />' + error
-  }
-
-  finally{ dataLoading.value = false }
+  } catch(error) {
+    pageError.value = `Nepodařilo se spojit se serverem <br />${error.message || error}`
+  } finally{ dataLoading.value = false }
 }
 
-const fetchGameLocations = async () => {
+const fetchGameLocations = (): void => {
   dataLoading.value = true;
   pageError.value = null;
-  await $fetch(`${runtimeConfig.public.serverUrl}/api/game-locations`)
+
+  $fetch(`${runtimeConfig.public.serverUrl}/api/game-locations`)
     .then(response => {
       gameLocations = response as GameLocation[];
     })
