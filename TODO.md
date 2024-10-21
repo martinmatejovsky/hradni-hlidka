@@ -1,5 +1,16 @@
 # TODO
 
+## akce
+na mobilu využít sledování gyroskopu na pohyb prásknutí bičem. Mohlo by se využít na simulaci házení 
+oštěpem nebo vroucí smůly.
+Podívat se na jiné hry, které dělají s mobilem nějaké interaktivní pohyby.
+
+## Grindění, vylepšování
+jak zmínil TOmáš Štěpánek, možnost vylepšování je chytlavá a udrží hráče u hry. Sám potvrzuji ze hry
+na vydělávání peněz, kde se klikáním vydělaly peníze za prodej limonády, pak se za to koupilo něco většího,
+ale pořád to byl jen princip klikání na tu provozovnu, a tak dále. 
+
+
 ## Canvas, SVG background?
 Mapu, co má být na pozadí, zkusit testovat na velikost 375 x 667 px. Zdá se, že je to velmi
 rozšířený rozměr pro menší, a tudíž náročnější zařízení.

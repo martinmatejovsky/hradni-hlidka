@@ -298,13 +298,3 @@ onBeforeMount(() => {
   <p>Souřadnice: {{ currentPlayer?.location.lat}} {{ currentPlayer?.location.lng }}</p>
   <p>Přesnost: <span :class="[accuracyClass, 'font-weight-bold']">{{ playerAccuracy }}</span> m</p>
 </template>
-
-<style scoped>
-.hh-icon-loading {
-  animation: spin 1s linear infinite;
-}
-@keyframes spin {
-  0% { transform:rotate(0deg); }
-  100% { transform:rotate(360deg); }
-}
-</style>
