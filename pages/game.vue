@@ -236,13 +236,3 @@ onBeforeUnmount(async () => {
     <v-btn @click="getBack" size="small" rounded="xs" class="mt-3 mr-4 mb-3">Zpět</v-btn>
   </template>
 </template>
-
-<style scoped>
-.hh-icon-loading {
-  animation: spin 1s linear infinite;
-}
-@keyframes spin {
-  0% { transform:rotate(0deg); }
-  100% { transform:rotate(360deg); }
-}
-</style>
