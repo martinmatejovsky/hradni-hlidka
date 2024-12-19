@@ -8,7 +8,12 @@ Podívat se na jiné hry, které dělají s mobilem nějaké interaktivní pohyb
 ## Grindění, vylepšování
 jak zmínil TOmáš Štěpánek, možnost vylepšování je chytlavá a udrží hráče u hry. Sám potvrzuji ze hry
 na vydělávání peněz, kde se klikáním vydělaly peníze za prodej limonády, pak se za to koupilo něco většího,
-ale pořád to byl jen princip klikání na tu provozovnu, a tak dále. 
+ale pořád to byl jen princip klikání na tu provozovnu, a tak dále.
+
+## Achievementy
+V rámci grindnění by bylo fajn mít achievementy, které by se daly získat za třeba i netradiční věci.
+Třeba že naběhají nějakou vzdálenost, porazí někoho neobvyklou zbraní, a tak. Hráče by pak hnalo do hry to,
+aby získali nějaký vzácný achievement.
 
 
 ## Canvas, SVG background?
