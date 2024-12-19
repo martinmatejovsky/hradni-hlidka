@@ -3,3 +3,9 @@
     to = "http://hradnihlidkaserver-env-1.eba-2dj7bphd.eu-central-1.elasticbeanstalk.com/api/:splat"
     status = 200
     force = true
+
+[[redirects]]
+    from = "/socket.io/*"
+    to = "http://hradnihlidkaserver-env-1.eba-2dj7bphd.eu-central-1.elasticbeanstalk.com/socket.io/:splat"
+    status = 200
+    force = true
