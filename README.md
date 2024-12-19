@@ -14,6 +14,9 @@ npm install
 login - mail 2
 heslo - plné herní
 
+## Netlify
+login - via github
+
 ## Development Server
 
 Start the development server on `http://localhost:3000`:
