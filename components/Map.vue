@@ -295,7 +295,5 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <p>Current player position: {{currentPlayer.location.lat}} {{currentPlayer.location.lng}}</p>
-
   <div id="map"></div>
 </template>

@@ -92,3 +92,6 @@ export type Settings = {
     smithyUpgradeStrength: number,
 }
 export type LastWaveNotice = 'none' | 'incoming' | 'running'
+export type MittEvents = {
+    lastWaveNotice: LastWaveNotice;
+};
