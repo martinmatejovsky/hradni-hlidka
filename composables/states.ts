@@ -20,7 +20,8 @@ export const useStoredCurrentPlayer = () => useState<PlayerData>(CONST.STORE_CUR
         strength: 0,
         perks: {
             smithyUpgrade: 0,
-        }
+        },
+        socketId: '',
     }
 })
 export const useStoredGameInstance = (game: GameInstance | Ref<GameInstance>) => useState<GameInstance>(CONST.STORE_GAME_INSTANCE, () => game)

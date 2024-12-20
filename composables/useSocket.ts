@@ -28,9 +28,18 @@ export function useSocket(gameId: string) {
     })
 
     socket.on('gameUpdated', (game: GameInstance) => {
-        useState<GameInstance>(CONST.STORE_GAME_INSTANCE).value = game;
-        useState<PlayerData>(STORE_CURRENT_PLAYER).value.perks = game.players.find(p => p.key === useState<PlayerData>(STORE_CURRENT_PLAYER).value.key).perks
-        useEventBus('updateLifeOfInvaders')
+        const gameState = useState<GameInstance>(CONST.STORE_GAME_INSTANCE);
+        const currentPlayerState = useState<PlayerData>(STORE_CURRENT_PLAYER);
+
+        gameState.value = game;
+
+        if (game && game.players && currentPlayerState.value) {
+            const player = game.players.find(p => p.key === currentPlayerState.value.key);
+            if (player) {
+                currentPlayerState.value.perks = player.perks;
+            }
+        }
+        useEventBus('updateLifeOfInvaders');
     })
 
     socket.on('lastWaveNotice', (status: LastWaveNotice) => {

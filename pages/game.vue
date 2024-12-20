@@ -39,6 +39,17 @@ const getBack = (): void => {
   navigateTo('/');
 }
 
+const useEnsureSocketDisconnect = async () => {
+  if (socket.connected) {
+    // await to prevent closing socket connection before 'leaveGame' is for sure sent. Or else it sometimes disconnects before custom event 'leaveGame'
+    await new Promise<void>((resolve) => {
+      socket.emit('leaveGame', {gameId: currentGame.value.id, player: currentPlayer.value}, () => {
+        resolve();
+      });
+    });
+  }
+}
+
 const startAttack = async (): Promise<void> => {
   await useRequestWakeLockScreen();
 
@@ -162,18 +173,19 @@ onMounted(async () => {
     applicationError.value = 'Nepodařilo se načíst bitvu s tímto ID.<br />' + error
   } finally {dataLoading.value = false}
 
+  // disconnection handled on Window object, but alo in onBeforeUnmount hook, to be sure
+  window.addEventListener('beforeunload', () => {
+    useEnsureSocketDisconnect();
+  });
+
   currentPlayer.value.insideZone = keyOfIntersectedArea.value; // manually setting zone where player is when opening the game lobby
   await useReleaseWakeLockScreen();
 })
 
-onBeforeUnmount(async () => {
+onBeforeUnmount(() => {
   currentPlayer.value.insideZone = '';
-  // await to prevent closing socket connection before 'leaveGame' is for sure sent. Or else it sometimes disconnects before custom event 'leaveGame'
-  await new Promise<void>((resolve) => {
-    socket.emit('leaveGame', { gameId: currentGame.value.id, player: currentPlayer.value }, () => {
-      resolve();
-    });
-  });
+  // disconnection handled on onBeforeUnmount hook, but alo in Window object, to be sure
+  useEnsureSocketDisconnect();
   socket.disconnect();
   currentPlayer.value.name = '';
   currentPlayer.value.key = '';
