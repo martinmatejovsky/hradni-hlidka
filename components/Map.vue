@@ -24,6 +24,7 @@ import { STORE_CURRENT_PLAYER } from '~/constants';
 import {useListenBus} from "~/composables/useEventBus";
 import ladderImage from '~/assets/icons/ladder.svg';
 import * as L from 'leaflet';
+import {useCalculateSquareCorner} from "~/composables/useCoordinatesUtils";
 
 const currentPlayer = useState<PlayerData>(STORE_CURRENT_PLAYER);
 const battleZones = ref(useGetterBattleZones)

@@ -97,7 +97,7 @@ const checkGameCreated = async (): Promise<boolean> => {
   }
 }
 
-const joinGame = async (): Promise => {
+const joinGame = async (): Promise<void> => {
   const alreadyCreated = await checkGameCreated();
 
   if (alreadyCreated) {
@@ -105,7 +105,7 @@ const joinGame = async (): Promise => {
   }
 }
 
-const createNewBattle = async (): Promise => {
+const createNewBattle = async (): Promise<void> => {
   dataLoading.value = true;
 
   try {
