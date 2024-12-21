@@ -94,4 +94,5 @@ export type Settings = {
 export type LastWaveNotice = 'none' | 'incoming' | 'running'
 export type MittEvents = {
     lastWaveNotice: LastWaveNotice;
+    updateLifeOfInvaders: void;
 };
