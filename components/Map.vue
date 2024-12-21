@@ -13,7 +13,7 @@ useHead({
       integrity: "sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=",
       crossorigin: ""
     }
-  ]
+  ],
 });
 
 import type {LatLngExpression} from "leaflet";
@@ -24,6 +24,8 @@ import { STORE_CURRENT_PLAYER } from '~/constants';
 import {useListenBus} from "~/composables/useEventBus";
 import ladderImage from '~/assets/icons/ladder.svg';
 import * as L from 'leaflet';
+import 'leaflet.fullscreen';
+import 'leaflet.fullscreen/Control.FullScreen.css';
 import {useCalculateSquareCorner} from "~/composables/useCoordinatesUtils";
 
 const currentPlayer = useState<PlayerData>(STORE_CURRENT_PLAYER);
@@ -249,6 +251,19 @@ onMounted(async () => {
   }
 
   L.tileLayer.battlefield().addTo(map);
+
+  // taken from https://github.com/brunob/leaflet.fullscreen, I do not know how to run it correctly...
+  L.control
+      .fullscreen({
+        position: 'topleft',
+        title: 'Show me the fullscreen!',
+        titleCancel: 'Exit fullscreen mode',
+        content: null, // change the content of the button, can be HTML, default null
+        forceSeparateButton: true,
+        forcePseudoFullscreen: true,
+        fullscreenElement: false
+      })
+      .addTo(map);
 
   // render PLAYER ICONS
   props.connectedPlayers.forEach((player: PlayerData) => {

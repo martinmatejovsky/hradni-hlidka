@@ -33,12 +33,15 @@ export default defineNuxtConfig({
 
   app: {
     head: {
-        title: 'Hradní hlídka',
-        meta: [
-          { charset: 'utf-8' },
-          { name: 'description', content: 'Hra pod otevřeným nebem' },
-        ],
-      },
+      title: 'Hradní hlídka',
+      meta: [
+        { charset: 'utf-8' },
+        { name: 'description', content: 'Hra pod otevřeným nebem' },
+      ],
+      link: [
+        { rel: 'stylesheet', href: 'Control.FullScreen.css' },
+      ],
+    },
   },
 
   vite: {
