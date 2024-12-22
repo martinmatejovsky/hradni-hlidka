@@ -198,19 +198,20 @@ watch(() => currentPlayer.value.location, (newLocation) => {
 
 watch(() => props.connectedPlayers, (updatedConnectedPlayers) => {
   updatedConnectedPlayers.forEach((player: PlayerData) => {
-    if (player.key !== currentPlayer.value.key && player.location.lat && player.location.lng) {
-      const marker = markers[player.key];
+    let marker = markers[player.key];
+    if(!marker) return;
 
+    if (player.key !== currentPlayer.value.key && player.location.lat && player.location.lng) {
       if (marker) {
         marker.setLatLng([player.location.lat, player.location.lng]);
       } else {
         let otherPlayerIcon = L.divIcon(useIconLeaflet({ label: player.name }));
-        markers[player.key] = L.marker([player.location.lat, player.location.lng], { icon: otherPlayerIcon }).addTo(map);
+        marker = L.marker([player.location.lat, player.location.lng], { icon: otherPlayerIcon }).addTo(map);
       }
     }
 
     // add class if smithy upgrade is active
-    const element = markers[player.key].getElement();
+    const element = marker.getElement();
 
     if (element) {
       if (player.perks.smithyUpgrade > 0) {
