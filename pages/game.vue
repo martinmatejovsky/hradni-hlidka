@@ -234,7 +234,10 @@ onBeforeUnmount(() => {
           <v-alert v-if="lastWaveIncomingWarning === 'incoming'" title="Blíží se poslední vlna" type="warning"></v-alert>
           <v-alert v-if="lastWaveIncomingWarning === 'running'" title="Poslední vlna" type="info"></v-alert>
 
-          <Map :connectedPlayers="connectedPlayers" :mapCenter="currentGame.gameLocation.mapCenter"></Map>
+          <Map
+            :connectedPlayers="connectedPlayers"
+            :mapCenter="currentGame.gameLocation.mapCenter"
+            :nameOfIntersectedArea="keyOfIntersectedArea"></Map>
         </div>
       </template>
 

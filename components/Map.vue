@@ -36,6 +36,8 @@ let checkLeafletInterval: ReturnType<typeof setInterval>;
 const markers = reactive<{ [key: string]: L.Marker }>({});
 const invaderIcons = reactive<{ [key: number]: L.Marker }>({});
 const loadingLocation = ref<boolean>(false);
+const battleZonePolygons = ref<L.Polygon[]>([]);
+const utilityZonePolygons = ref<L.Polygon[]>([]);
 
 const props = defineProps({
   connectedPlayers: {
@@ -45,6 +47,9 @@ const props = defineProps({
   mapCenter: {
     type: Object as PropType<Coordinates>,
     required: true
+  },
+  nameOfIntersectedArea: {
+    type: String as PropType<string>,
   }
 });
 
@@ -52,6 +57,12 @@ let map: L.Map;
 let keepAutoCentering = ref<boolean>(true)
 let timeoutMapCentring: ReturnType<typeof setTimeout>;
 let timeoutLocatingUser: ReturnType<typeof setTimeout>;
+const polygonColors = {
+  battleZone: '255,120,0,0.4',
+  battleZoneHighlighted: '255,120,0,0.7',
+  utilityZone: '57,65,133,0.1',
+  utilityZoneHighlighted: '57,65,133,0.2',
+}
 
 // Simplified comparison function for Invader objects
 function simpleEqual (obj1: Invader, obj2: Invader): boolean {
@@ -201,6 +212,36 @@ function stopAutoCentering() {
 }
 // WATCHERS
 
+// change color of polygon where currentUser is
+watch(
+  () => props.nameOfIntersectedArea,
+  (newAreaKey) => {
+  // Reset all polygons to default colors
+  battleZonePolygons.value.forEach(polygon => {
+    const zoneKey = polygon.getTooltip()?.getContent();
+    const isInside = zoneKey === newAreaKey;
+
+    polygon.setStyle({
+      color: zoneKey === newAreaKey
+        ? `rgba(${polygonColors.battleZoneHighlighted})`
+        : `rgba(${polygonColors.battleZone})`,
+      fillOpacity: isInside ? 0.9 : 0.3
+    });
+  });
+
+  utilityZonePolygons.value.forEach(polygon => {
+    const zoneKey = polygon.getTooltip()?.getContent();
+    const isInside = zoneKey === newAreaKey;
+
+    polygon.setStyle({
+      color: zoneKey === newAreaKey
+        ? `rgba(${polygonColors.utilityZoneHighlighted})`
+        : `rgba(${polygonColors.utilityZone})`,
+      fillOpacity: isInside ? 0.6 : 0.3
+    });
+  });
+});
+
 // watch changes in invaders
 watch(
   () => battleZones.value.map(zone => zone.invaders),
@@ -323,18 +364,26 @@ onMounted(async () => {
     markers[currentPlayer.value.key] = L.marker([currentPlayer.value.location.lat, currentPlayer.value.location.lng], { icon: currentPlayerIcon }).addTo(map);
   }
 
-  // Přidání orientacnich obdélníků pro každou battleZone. Testovací účely.
+  // Přidání orientacnich obdélníků pro každou battleZone
   battleZones.value.forEach(battleZone => {
-    const corners = battleZone.cornerCoordinates as LatLngExpression[]
+    const corners = battleZone.cornerCoordinates as LatLngExpression[];
+    const polygon = L.polygon(corners, {
+      color: `rgba(${polygonColors.battleZone})`,
+    }).addTo(map);
 
-    L.polygon(corners, { color: "#ff7800", weight: 1 }).addTo(map);
+    polygon.bindTooltip(battleZone.key);
+    battleZonePolygons.value.push(polygon);
   });
 
   // Přidání orientacnich obdélníků pro každou utilityZone. Testovací účely.
   utilityZones.value.forEach(utilityZone => {
-    const corners = utilityZone.cornerCoordinates as LatLngExpression[]
+    const corners = utilityZone.cornerCoordinates as LatLngExpression[];
+    const polygon = L.polygon(corners, {
+      color: `rgba(${polygonColors.utilityZone}`,
+    }).addTo(map);
 
-    L.polygon(corners, { color: "rgba(57,65,133,0.58)", weight: 1 }).addTo(map);
+    polygon.bindTooltip(utilityZone.key);
+    utilityZonePolygons.value.push(polygon);
   });
 
   // vykreslit ikonky utocniku, pokud uz nejaci maji byt na mape
@@ -366,34 +415,3 @@ onBeforeUnmount(() => {
     <div id="map"></div>
   </div>
 </template>
-
-<style lang="scss">
-@keyframes pulse-bg {
-  0% {
-    background-color: #fff
-  }
-  50% {
-    background-color: #e3e3e3;
-  }
-  100% {
-    background-color: #fff;
-  }
-}
-
-.hh-battle-map {
-  .leaflet-control-zoom-fullscreen {
-    &:not(.leaflet-fullscreen-on) {
-      animation: pulse-bg 2s infinite;
-    }
-  }
-
-  .hh-map-loader-overlay {
-    z-index: 1001;
-    background-color: rgba(255, 255, 255, 0.5);
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-  }
-}
-</style>
