@@ -35,6 +35,7 @@ const zoom = ref([19, 20]);
 let checkLeafletInterval: ReturnType<typeof setInterval>;
 const markers = reactive<{ [key: string]: L.Marker }>({});
 const invaderIcons = reactive<{ [key: number]: L.Marker }>({});
+const loadingLocation = ref<boolean>(false);
 
 const props = defineProps({
   connectedPlayers: {
@@ -48,6 +49,9 @@ const props = defineProps({
 });
 
 let map: L.Map;
+let keepAutoCentering = ref<boolean>(true)
+let timeoutMapCentring: ReturnType<typeof setTimeout>;
+let timeoutLocatingUser: ReturnType<typeof setTimeout>;
 
 // Simplified comparison function for Invader objects
 function simpleEqual (obj1: Invader, obj2: Invader): boolean {
@@ -172,6 +176,29 @@ function createInvaderIcon(id: number, zoneKey: string) {
   }
 }
 
+function onLocationError() {
+  // if users location is not available, set map center to default
+  console.warn('not possible to center on users position. Using default map center.');
+  map.setView(props.mapCenter, zoom.value[0]);
+  clearTimeout(timeoutLocatingUser);
+  loadingLocation.value = false;
+}
+
+function onLocationFound(e: L.LocationEvent) {
+  map.panTo(e.latlng);
+  clearTimeout(timeoutLocatingUser);
+  loadingLocation.value = false;
+}
+
+function stopAutoCentering() {
+  keepAutoCentering.value = false;
+  clearTimeout(timeoutMapCentring);
+
+  timeoutMapCentring = setTimeout(() => {
+    keepAutoCentering.value = true;
+    map.panTo(currentPlayer.value.location);
+  }, 10000);
+}
 // WATCHERS
 
 // watch changes in invaders
@@ -227,7 +254,25 @@ watch(() => props.connectedPlayers, (updatedConnectedPlayers) => {
 onMounted(async () => {
   useListenBus('updateLifeOfInvaders', handleUpdateInvadersIcons)
 
-  map = L.map('map').setView(props.mapCenter, zoom.value[0]);
+  map = L.map('map')
+
+  // locating user and deciding how to center map
+  loadingLocation.value = true;
+  map.locate({ watch: true, setView: true, maxZoom: 20, enableHighAccuracy: true});
+
+  // function map.locate takes some time. Wait max. 20 s, then set map center to default
+  timeoutLocatingUser = setTimeout(() => {
+    loadingLocation.value = false;
+    console.warn('Location timed out. Setting to default map center.');
+    map.setView(props.mapCenter, zoom.value[0]);
+  }, 20000);
+
+  map.on('locationerror', onLocationError);
+  map.on('locationfound', onLocationFound);
+  map.on('dragstart', () => stopAutoCentering());
+  map.on('movestart', () => stopAutoCentering());
+
+  // create icon of recent player
   let currentPlayerIcon = L.divIcon(useIconLeaflet({ label: currentPlayer.value.name }));
 
   L.TileLayer.Battlefield = L.TileLayer.extend({
@@ -255,16 +300,16 @@ onMounted(async () => {
 
   // taken from https://github.com/brunob/leaflet.fullscreen, I do not know how to run it correctly...
   L.control
-      .fullscreen({
-        position: 'topleft',
-        title: 'Show me the fullscreen!',
-        titleCancel: 'Exit fullscreen mode',
-        content: null, // change the content of the button, can be HTML, default null
-        forceSeparateButton: true,
-        forcePseudoFullscreen: true,
-        fullscreenElement: false
-      })
-      .addTo(map);
+    .fullscreen({
+      position: 'topleft',
+      title: 'Show me the fullscreen!',
+      titleCancel: 'Exit fullscreen mode',
+      content: null, // change the content of the button, can be HTML, default null
+      forceSeparateButton: true,
+      forcePseudoFullscreen: true,
+      fullscreenElement: false
+    })
+    .addTo(map);
 
   // render PLAYER ICONS
   props.connectedPlayers.forEach((player: PlayerData) => {
@@ -306,10 +351,49 @@ onMounted(async () => {
 
 onBeforeUnmount(() => {
   clearInterval(checkLeafletInterval)
+  clearTimeout(timeoutMapCentring);
+  clearTimeout(timeoutLocatingUser);
 })
-
 </script>
 
 <template>
-  <div id="map"></div>
+  <div class="hh-battle-map position-relative">
+    <div v-if="loadingLocation" class="hh-map-loader-overlay position-absolute d-flex justify-center align-center text-black">
+      <v-icon icon="mdi-loading" class="hh-icon-loading"></v-icon>
+      načítám mapu...
+    </div>
+
+    <div id="map"></div>
+  </div>
 </template>
+
+<style lang="scss">
+@keyframes pulse-bg {
+  0% {
+    background-color: #fff
+  }
+  50% {
+    background-color: #e3e3e3;
+  }
+  100% {
+    background-color: #fff;
+  }
+}
+
+.hh-battle-map {
+  .leaflet-control-zoom-fullscreen {
+    &:not(.leaflet-fullscreen-on) {
+      animation: pulse-bg 2s infinite;
+    }
+  }
+
+  .hh-map-loader-overlay {
+    z-index: 1001;
+    background-color: rgba(255, 255, 255, 0.5);
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+  }
+}
+</style>

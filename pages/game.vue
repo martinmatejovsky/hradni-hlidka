@@ -247,7 +247,7 @@ onBeforeUnmount(() => {
     </section>
 
     <v-btn @click="getBack" size="small" rounded="xs" class="mt-3 mr-4 mb-3">
-      {{ gameStateRunning ? 'Zpět' : 'Opustit bitvu' }}
+      {{ gameStateRunning ? 'Opustit bitvu' : 'Zpět' }}
     </v-btn>
   </template>
 </template>
