@@ -24,7 +24,7 @@ import { STORE_CURRENT_PLAYER } from '~/constants';
 import {useListenBus} from "~/composables/useEventBus";
 import ladderImage from '~/assets/icons/ladder.svg';
 import * as L from 'leaflet';
-import 'leaflet.fullscreen';
+import 'leaflet.fullscreen/Control.FullScreen.js';
 import 'leaflet.fullscreen/Control.FullScreen.css';
 import {useCalculateSquareCorner} from "~/composables/useCoordinatesUtils";
 
@@ -35,7 +35,6 @@ const zoom = ref([19, 20]);
 let checkLeafletInterval: ReturnType<typeof setInterval>;
 const markers = reactive<{ [key: string]: L.Marker }>({});
 const invaderIcons = reactive<{ [key: number]: L.Marker }>({});
-const loadingLocation = ref<boolean>(false);
 const battleZonePolygons = ref<L.Polygon[]>([]);
 const utilityZonePolygons = ref<L.Polygon[]>([]);
 
@@ -60,8 +59,8 @@ let timeoutLocatingUser: ReturnType<typeof setTimeout>;
 const polygonColors = {
   battleZone: '255,120,0,0.4',
   battleZoneHighlighted: '255,120,0,0.7',
-  utilityZone: '57,65,133,0.1',
-  utilityZoneHighlighted: '57,65,133,0.2',
+  utilityZone: '57,65,133,0.3',
+  utilityZoneHighlighted: '57,65,133,0.5',
 }
 
 // Simplified comparison function for Invader objects
@@ -192,13 +191,11 @@ function onLocationError() {
   console.warn('not possible to center on users position. Using default map center.');
   map.setView(props.mapCenter, zoom.value[0]);
   clearTimeout(timeoutLocatingUser);
-  loadingLocation.value = false;
 }
 
 function onLocationFound(e: L.LocationEvent) {
   map.panTo(e.latlng);
   clearTimeout(timeoutLocatingUser);
-  loadingLocation.value = false;
 }
 
 function stopAutoCentering() {
@@ -210,37 +207,44 @@ function stopAutoCentering() {
     map.panTo(currentPlayer.value.location);
   }, 10000);
 }
+
+function highlightOccupiedPolygon(polygonKey: string | undefined) {
+  // Reset all polygons to default colors
+  battleZonePolygons.value.forEach(polygon => {
+    const zoneKey = polygon.getTooltip()?.getContent();
+    const isInside = zoneKey === polygonKey;
+
+    polygon.setStyle({
+      color: zoneKey === polygonKey
+          ? `rgba(${polygonColors.battleZoneHighlighted})`
+          : `rgba(${polygonColors.battleZone})`,
+      fillOpacity: isInside ? 0.9 : 0.3
+    });
+  });
+
+
+  utilityZonePolygons.value.forEach(polygon => {
+    const zoneKey = polygon.getTooltip()?.getContent();
+    const isInside = zoneKey === polygonKey;
+
+    polygon.setStyle({
+      color: zoneKey === polygonKey
+          ? `rgba(${polygonColors.utilityZoneHighlighted})`
+          : `rgba(${polygonColors.utilityZone})`,
+      fillOpacity: isInside ? 0.6 : 0.3
+    });
+  });
+}
+
 // WATCHERS
 
 // change color of polygon where currentUser is
 watch(
   () => props.nameOfIntersectedArea,
   (newAreaKey) => {
-  // Reset all polygons to default colors
-  battleZonePolygons.value.forEach(polygon => {
-    const zoneKey = polygon.getTooltip()?.getContent();
-    const isInside = zoneKey === newAreaKey;
-
-    polygon.setStyle({
-      color: zoneKey === newAreaKey
-        ? `rgba(${polygonColors.battleZoneHighlighted})`
-        : `rgba(${polygonColors.battleZone})`,
-      fillOpacity: isInside ? 0.9 : 0.3
-    });
-  });
-
-  utilityZonePolygons.value.forEach(polygon => {
-    const zoneKey = polygon.getTooltip()?.getContent();
-    const isInside = zoneKey === newAreaKey;
-
-    polygon.setStyle({
-      color: zoneKey === newAreaKey
-        ? `rgba(${polygonColors.utilityZoneHighlighted})`
-        : `rgba(${polygonColors.utilityZone})`,
-      fillOpacity: isInside ? 0.6 : 0.3
-    });
-  });
-});
+    highlightOccupiedPolygon(newAreaKey)
+  }
+);
 
 // watch changes in invaders
 watch(
@@ -295,15 +299,13 @@ watch(() => props.connectedPlayers, (updatedConnectedPlayers) => {
 onMounted(async () => {
   useListenBus('updateLifeOfInvaders', handleUpdateInvadersIcons)
 
-  map = L.map('map')
+  map = L.map('map').setView(props.mapCenter, zoom.value[0]);
 
-  // locating user and deciding how to center map
-  loadingLocation.value = true;
+  // locating user and centering map on it
   map.locate({ watch: true, setView: true, maxZoom: 20, enableHighAccuracy: true});
 
   // function map.locate takes some time. Wait max. 20 s, then set map center to default
   timeoutLocatingUser = setTimeout(() => {
-    loadingLocation.value = false;
     console.warn('Location timed out. Setting to default map center.');
     map.setView(props.mapCenter, zoom.value[0]);
   }, 20000);
@@ -407,11 +409,6 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="hh-battle-map position-relative">
-    <div v-if="loadingLocation" class="hh-map-loader-overlay position-absolute d-flex justify-center align-center text-black">
-      <v-icon icon="mdi-loading" class="hh-icon-loading"></v-icon>
-      načítám mapu...
-    </div>
-
     <div id="map"></div>
   </div>
 </template>
