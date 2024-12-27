@@ -13,7 +13,7 @@ useHead({
       integrity: "sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=",
       crossorigin: ""
     }
-  ]
+  ],
 });
 
 import type {LatLngExpression} from "leaflet";
@@ -24,6 +24,8 @@ import { STORE_CURRENT_PLAYER } from '~/constants';
 import {useListenBus} from "~/composables/useEventBus";
 import ladderImage from '~/assets/icons/ladder.svg';
 import * as L from 'leaflet';
+import 'leaflet.fullscreen/Control.FullScreen.js';
+import 'leaflet.fullscreen/Control.FullScreen.css';
 import {useCalculateSquareCorner} from "~/composables/useCoordinatesUtils";
 
 const currentPlayer = useState<PlayerData>(STORE_CURRENT_PLAYER);
@@ -33,6 +35,8 @@ const zoom = ref([19, 20]);
 let checkLeafletInterval: ReturnType<typeof setInterval>;
 const markers = reactive<{ [key: string]: L.Marker }>({});
 const invaderIcons = reactive<{ [key: number]: L.Marker }>({});
+const battleZonePolygons = ref<L.Polygon[]>([]);
+const utilityZonePolygons = ref<L.Polygon[]>([]);
 
 const props = defineProps({
   connectedPlayers: {
@@ -42,10 +46,22 @@ const props = defineProps({
   mapCenter: {
     type: Object as PropType<Coordinates>,
     required: true
+  },
+  nameOfIntersectedArea: {
+    type: String as PropType<string>,
   }
 });
 
 let map: L.Map;
+let keepAutoCentering = ref<boolean>(true)
+let timeoutMapCentring: ReturnType<typeof setTimeout>;
+let timeoutLocatingUser: ReturnType<typeof setTimeout>;
+const polygonColors = {
+  battleZone: '255,120,0,0.4',
+  battleZoneHighlighted: '255,120,0,0.7',
+  utilityZone: '57,65,133,0.3',
+  utilityZoneHighlighted: '57,65,133,0.5',
+}
 
 // Simplified comparison function for Invader objects
 function simpleEqual (obj1: Invader, obj2: Invader): boolean {
@@ -170,7 +186,65 @@ function createInvaderIcon(id: number, zoneKey: string) {
   }
 }
 
+function onLocationError() {
+  // if users location is not available, set map center to default
+  console.warn('not possible to center on users position. Using default map center.');
+  map.setView(props.mapCenter, zoom.value[0]);
+  clearTimeout(timeoutLocatingUser);
+}
+
+function onLocationFound(e: L.LocationEvent) {
+  map.panTo(e.latlng);
+  clearTimeout(timeoutLocatingUser);
+}
+
+function stopAutoCentering() {
+  keepAutoCentering.value = false;
+  clearTimeout(timeoutMapCentring);
+
+  timeoutMapCentring = setTimeout(() => {
+    keepAutoCentering.value = true;
+    map.panTo(currentPlayer.value.location);
+  }, 10000);
+}
+
+function highlightOccupiedPolygon(polygonKey: string | undefined) {
+  // Reset all polygons to default colors
+  battleZonePolygons.value.forEach(polygon => {
+    const zoneKey = polygon.getTooltip()?.getContent();
+    const isInside = zoneKey === polygonKey;
+
+    polygon.setStyle({
+      color: zoneKey === polygonKey
+          ? `rgba(${polygonColors.battleZoneHighlighted})`
+          : `rgba(${polygonColors.battleZone})`,
+      fillOpacity: isInside ? 0.9 : 0.3
+    });
+  });
+
+
+  utilityZonePolygons.value.forEach(polygon => {
+    const zoneKey = polygon.getTooltip()?.getContent();
+    const isInside = zoneKey === polygonKey;
+
+    polygon.setStyle({
+      color: zoneKey === polygonKey
+          ? `rgba(${polygonColors.utilityZoneHighlighted})`
+          : `rgba(${polygonColors.utilityZone})`,
+      fillOpacity: isInside ? 0.6 : 0.3
+    });
+  });
+}
+
 // WATCHERS
+
+// change color of polygon where currentUser is
+watch(
+  () => props.nameOfIntersectedArea,
+  (newAreaKey) => {
+    highlightOccupiedPolygon(newAreaKey)
+  }
+);
 
 // watch changes in invaders
 watch(
@@ -196,19 +270,20 @@ watch(() => currentPlayer.value.location, (newLocation) => {
 
 watch(() => props.connectedPlayers, (updatedConnectedPlayers) => {
   updatedConnectedPlayers.forEach((player: PlayerData) => {
-    if (player.key !== currentPlayer.value.key && player.location.lat && player.location.lng) {
-      const marker = markers[player.key];
+    let marker = markers[player.key];
+    if(!marker) return;
 
+    if (player.key !== currentPlayer.value.key && player.location.lat && player.location.lng) {
       if (marker) {
         marker.setLatLng([player.location.lat, player.location.lng]);
       } else {
         let otherPlayerIcon = L.divIcon(useIconLeaflet({ label: player.name }));
-        markers[player.key] = L.marker([player.location.lat, player.location.lng], { icon: otherPlayerIcon }).addTo(map);
+        marker = L.marker([player.location.lat, player.location.lng], { icon: otherPlayerIcon }).addTo(map);
       }
     }
 
     // add class if smithy upgrade is active
-    const element = markers[player.key].getElement();
+    const element = marker.getElement();
 
     if (element) {
       if (player.perks.smithyUpgrade > 0) {
@@ -225,6 +300,22 @@ onMounted(async () => {
   useListenBus('updateLifeOfInvaders', handleUpdateInvadersIcons)
 
   map = L.map('map').setView(props.mapCenter, zoom.value[0]);
+
+  // locating user and centering map on it
+  map.locate({ watch: true, setView: true, maxZoom: 20, enableHighAccuracy: true});
+
+  // function map.locate takes some time. Wait max. 20 s, then set map center to default
+  timeoutLocatingUser = setTimeout(() => {
+    console.warn('Location timed out. Setting to default map center.');
+    map.setView(props.mapCenter, zoom.value[0]);
+  }, 20000);
+
+  map.on('locationerror', onLocationError);
+  map.on('locationfound', onLocationFound);
+  map.on('dragstart', () => stopAutoCentering());
+  map.on('movestart', () => stopAutoCentering());
+
+  // create icon of recent player
   let currentPlayerIcon = L.divIcon(useIconLeaflet({ label: currentPlayer.value.name }));
 
   L.TileLayer.Battlefield = L.TileLayer.extend({
@@ -250,6 +341,19 @@ onMounted(async () => {
 
   L.tileLayer.battlefield().addTo(map);
 
+  // taken from https://github.com/brunob/leaflet.fullscreen, I do not know how to run it correctly...
+  L.control
+    .fullscreen({
+      position: 'topleft',
+      title: 'Show me the fullscreen!',
+      titleCancel: 'Exit fullscreen mode',
+      content: null, // change the content of the button, can be HTML, default null
+      forceSeparateButton: true,
+      forcePseudoFullscreen: true,
+      fullscreenElement: false
+    })
+    .addTo(map);
+
   // render PLAYER ICONS
   props.connectedPlayers.forEach((player: PlayerData) => {
     if (player.key !== currentPlayer.value.key && player.location.lat && player.location.lng) {
@@ -262,18 +366,26 @@ onMounted(async () => {
     markers[currentPlayer.value.key] = L.marker([currentPlayer.value.location.lat, currentPlayer.value.location.lng], { icon: currentPlayerIcon }).addTo(map);
   }
 
-  // Přidání orientacnich obdélníků pro každou battleZone. Testovací účely.
+  // Přidání orientacnich obdélníků pro každou battleZone
   battleZones.value.forEach(battleZone => {
-    const corners = battleZone.cornerCoordinates as LatLngExpression[]
+    const corners = battleZone.cornerCoordinates as LatLngExpression[];
+    const polygon = L.polygon(corners, {
+      color: `rgba(${polygonColors.battleZone})`,
+    }).addTo(map);
 
-    L.polygon(corners, { color: "#ff7800", weight: 1 }).addTo(map);
+    polygon.bindTooltip(battleZone.key);
+    battleZonePolygons.value.push(polygon);
   });
 
   // Přidání orientacnich obdélníků pro každou utilityZone. Testovací účely.
   utilityZones.value.forEach(utilityZone => {
-    const corners = utilityZone.cornerCoordinates as LatLngExpression[]
+    const corners = utilityZone.cornerCoordinates as LatLngExpression[];
+    const polygon = L.polygon(corners, {
+      color: `rgba(${polygonColors.utilityZone}`,
+    }).addTo(map);
 
-    L.polygon(corners, { color: "rgba(57,65,133,0.58)", weight: 1 }).addTo(map);
+    polygon.bindTooltip(utilityZone.key);
+    utilityZonePolygons.value.push(polygon);
   });
 
   // vykreslit ikonky utocniku, pokud uz nejaci maji byt na mape
@@ -290,12 +402,13 @@ onMounted(async () => {
 
 onBeforeUnmount(() => {
   clearInterval(checkLeafletInterval)
+  clearTimeout(timeoutMapCentring);
+  clearTimeout(timeoutLocatingUser);
 })
-
 </script>
 
 <template>
-  <p>Current player position: {{currentPlayer.location.lat}} {{currentPlayer.location.lng}}</p>
-
-  <div id="map"></div>
+  <div class="hh-battle-map position-relative">
+    <div id="map"></div>
+  </div>
 </template>

@@ -1,6 +1,7 @@
 import type { GameInstance, PlayerCoordinates} from "~/types/CustomTypes";
-import {useState} from "nuxt/app";
-import {STORE_GAME_INSTANCE} from "~/constants";
+import { useState } from "nuxt/app";
+import { STORE_GAME_INSTANCE } from "~/constants";
+import { useIsPositionInsidePolygon } from "~/composables/useIsInsidePolygon";
 
 const currentGame = useState<GameInstance>(STORE_GAME_INSTANCE)
 

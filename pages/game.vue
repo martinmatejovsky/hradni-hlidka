@@ -70,8 +70,8 @@ const startAttack = async (): Promise<void> => {
 };
 
 const geolocationWarning = computed(() => {
-  if (!currentPlayer?.value.location) {
-    return 'Pozice hráče není k dispozici';
+  if (!currentPlayer?.value.location.lat) {
+    return 'Pozice hráče není k dispozici. Máte zapnutou geolokaci ve vašem zařízení?';
   } else if (!useGetterBattleZones.value) {
     return 'Herní zóna není k dispozici';
   } else {
@@ -90,6 +90,11 @@ const keyOfIntersectedArea = computed((): string => {
 const currentPlayerMark = ((player: PlayerData) => {
   return currentPlayer.value?.key === player.key ? '(Já)' : '';
 })
+
+const gameStateReady = computed(() => gameState.value === 'ready')
+const gameStateRunning = computed(() => gameState.value === 'running')
+const gameStateLost = computed(() => gameState.value === 'lost')
+const gameStateWon = computed(() => gameState.value === 'won')
 
 const isSmithyArea = (key: string): boolean => {
   const area = utilityZones.value.find(zone => zone.key === key);
@@ -119,7 +124,6 @@ const clearZoneTimer = () => {
 }
 
 // WATCHERS
-
 watch(keyOfIntersectedArea, (newKey): void => {
   if (getterBattleZones && currentPlayer.value.key) {
     currentPlayer.value.insideZone = keyOfIntersectedArea.value;
@@ -194,12 +198,11 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <h1 class="mb-4">Bitva</h1>
+  <h1>Bitva</h1>
 
   <v-alert v-if="geolocationWarning" type="warning" class="mb-4" dismissible>{{geolocationWarning}}</v-alert>
 
   <template v-if="!applicationError">
-    <p>Místo: {{ currentGame?.gameLocation?.locationName }}</p>
     <p>V zóně: {{ currentPlayer.insideZone || '--'}}</p>
 
     <div v-if="dataLoading">
@@ -208,13 +211,11 @@ onBeforeUnmount(() => {
     </div>
 
     <!-- REGISTER PLAYER -->
-    <div v-else-if="!currentPlayer?.key">
-      <FormRegisterPlayer :socket="socket" />
-    </div>
+    <FormRegisterPlayer v-else-if="!currentPlayer?.key" :socket="socket" />
 
-    <template v-else>
+    <section v-else>
       <!-- READY? -->
-      <div v-if="gameState === 'ready'">
+      <template v-if="gameStateReady">
         <h2>Ke hře připraveni:</h2>
         <p v-if="connectedPlayers.length === 0">Nikdo se zatím nepřipojil.</p>
         <ul v-else>
@@ -222,10 +223,10 @@ onBeforeUnmount(() => {
         </ul>
         <v-btn v-if="currentPlayerIsLeader" @click="startAttack" rounded="xs" class="mt-3 mb-3">Zahájit útok</v-btn>
         <p v-else>Útok může zahájit první hráč seznamu.</p>
-      </div>
+      </template>
 
       <!-- RUNNING -->
-      <div v-else-if="gameState === 'running'">
+      <template v-else-if="gameStateRunning">
         <p v-if="!getterBattleZones">Žádná data o útoku.</p>
 
         <div v-else>
@@ -233,18 +234,23 @@ onBeforeUnmount(() => {
           <v-alert v-if="lastWaveIncomingWarning === 'incoming'" title="Blíží se poslední vlna" type="warning"></v-alert>
           <v-alert v-if="lastWaveIncomingWarning === 'running'" title="Poslední vlna" type="info"></v-alert>
 
-          <Map :connectedPlayers="connectedPlayers" :mapCenter="currentGame.gameLocation.mapCenter"></Map>
+          <Map
+            :connectedPlayers="connectedPlayers"
+            :mapCenter="currentGame.gameLocation.mapCenter"
+            :nameOfIntersectedArea="keyOfIntersectedArea"></Map>
         </div>
-      </div>
+      </template>
 
       <!-- LOST OR WON-->
-      <div v-else-if="gameState === 'lost' || gameState === 'won'">
-        <h4 class="text-h4 mb-4" :class="[gameState === 'won' ? 'text-green' : 'text-red']">
-          {{ gameState === 'won' ? 'Vítězství' : 'Prohráli jste' }}
+      <div v-else-if="gameStateLost || gameStateWon">
+        <h4 class="text-h4 mb-4" :class="[gameStateWon ? 'text-green' : 'text-red']">
+          {{ gameStateWon ? 'Vítězství' : 'Prohráli jste' }}
         </h4>
       </div>
-    </template>
+    </section>
 
-    <v-btn @click="getBack" size="small" rounded="xs" class="mt-3 mr-4 mb-3">Zpět</v-btn>
+    <v-btn @click="getBack" size="small" rounded="xs" class="mt-3 mr-4 mb-3">
+      {{ gameStateRunning ? 'Opustit bitvu' : 'Zpět' }}
+    </v-btn>
   </template>
 </template>
