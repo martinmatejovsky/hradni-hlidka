@@ -31,7 +31,7 @@ import {useCalculateSquareCorner} from "~/composables/useCoordinatesUtils";
 const currentPlayer = useState<PlayerData>(STORE_CURRENT_PLAYER);
 const battleZones = ref(useGetterBattleZones)
 const utilityZones = ref(useGetterUtilityZones)
-const zoom = ref([19, 20]);
+const zoom = ref([18, 19, 20]);
 let checkLeafletInterval: ReturnType<typeof setInterval>;
 const markers = reactive<{ [key: string]: L.Marker }>({});
 const invaderIcons = reactive<{ [key: number]: L.Marker }>({});
@@ -59,8 +59,8 @@ let timeoutLocatingUser: ReturnType<typeof setTimeout>;
 const polygonColors = {
   battleZone: '255,120,0,0.4',
   battleZoneHighlighted: '255,120,0,0.7',
-  utilityZone: '57,65,133,0.3',
-  utilityZoneHighlighted: '57,65,133,0.5',
+  utilityZone: '57,65,133,0.4',
+  utilityZoneHighlighted: '57,65,133,0.8',
 }
 
 // Simplified comparison function for Invader objects
@@ -299,7 +299,7 @@ watch(() => props.connectedPlayers, (updatedConnectedPlayers) => {
 onMounted(async () => {
   useListenBus('updateLifeOfInvaders', handleUpdateInvadersIcons)
 
-  map = L.map('map').setView(props.mapCenter, zoom.value[0]);
+  map = L.map('map').setView(props.mapCenter, zoom.value[1]);
 
   // locating user and centering map on it
   map.locate({ watch: true, setView: true, maxZoom: 20, enableHighAccuracy: true});
@@ -307,7 +307,7 @@ onMounted(async () => {
   // function map.locate takes some time. Wait max. 20 s, then set map center to default
   timeoutLocatingUser = setTimeout(() => {
     console.warn('Location timed out. Setting to default map center.');
-    map.setView(props.mapCenter, zoom.value[0]);
+    map.setView(props.mapCenter);
   }, 20000);
 
   map.on('locationerror', onLocationError);
