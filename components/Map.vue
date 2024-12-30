@@ -31,12 +31,15 @@ import {useCalculateSquareCorner} from "~/composables/useCoordinatesUtils";
 const currentPlayer = useState<PlayerData>(STORE_CURRENT_PLAYER);
 const battleZones = ref(useGetterBattleZones)
 const utilityZones = ref(useGetterUtilityZones)
-const zoom = ref([19, 20]);
+const zoom = ref([18, 19, 20]);
 let checkLeafletInterval: ReturnType<typeof setInterval>;
+let trackingTimeout: ReturnType<typeof setTimeout>;
 const markers = reactive<{ [key: string]: L.Marker }>({});
 const invaderIcons = reactive<{ [key: number]: L.Marker }>({});
 const battleZonePolygons = ref<L.Polygon[]>([]);
 const utilityZonePolygons = ref<L.Polygon[]>([]);
+const TRACKING_DELAY = 10000;
+let map: L.Map;
 
 const props = defineProps({
   connectedPlayers: {
@@ -52,15 +55,11 @@ const props = defineProps({
   }
 });
 
-let map: L.Map;
-let keepAutoCentering = ref<boolean>(true)
-let timeoutMapCentring: ReturnType<typeof setTimeout>;
-let timeoutLocatingUser: ReturnType<typeof setTimeout>;
 const polygonColors = {
   battleZone: '255,120,0,0.4',
   battleZoneHighlighted: '255,120,0,0.7',
-  utilityZone: '57,65,133,0.3',
-  utilityZoneHighlighted: '57,65,133,0.5',
+  utilityZone: '57,65,133,0.4',
+  utilityZoneHighlighted: '57,65,133,0.8',
 }
 
 // Simplified comparison function for Invader objects
@@ -186,28 +185,6 @@ function createInvaderIcon(id: number, zoneKey: string) {
   }
 }
 
-function onLocationError() {
-  // if users location is not available, set map center to default
-  console.warn('not possible to center on users position. Using default map center.');
-  map.setView(props.mapCenter, zoom.value[0]);
-  clearTimeout(timeoutLocatingUser);
-}
-
-function onLocationFound(e: L.LocationEvent) {
-  map.panTo(e.latlng);
-  clearTimeout(timeoutLocatingUser);
-}
-
-function stopAutoCentering() {
-  keepAutoCentering.value = false;
-  clearTimeout(timeoutMapCentring);
-
-  timeoutMapCentring = setTimeout(() => {
-    keepAutoCentering.value = true;
-    map.panTo(currentPlayer.value.location);
-  }, 10000);
-}
-
 function highlightOccupiedPolygon(polygonKey: string | undefined) {
   // Reset all polygons to default colors
   battleZonePolygons.value.forEach(polygon => {
@@ -234,6 +211,18 @@ function highlightOccupiedPolygon(polygonKey: string | undefined) {
       fillOpacity: isInside ? 0.6 : 0.3
     });
   });
+}
+
+function startTracking() {
+  map.locate({ watch: true, enableHighAccuracy: true });
+}
+
+function pauseTracking() {
+  clearTimeout(trackingTimeout);
+  map.stopLocate();
+  trackingTimeout = setTimeout(() => {
+    startTracking();
+  }, TRACKING_DELAY);
 }
 
 // WATCHERS
@@ -299,21 +288,7 @@ watch(() => props.connectedPlayers, (updatedConnectedPlayers) => {
 onMounted(async () => {
   useListenBus('updateLifeOfInvaders', handleUpdateInvadersIcons)
 
-  map = L.map('map').setView(props.mapCenter, zoom.value[0]);
-
-  // locating user and centering map on it
-  map.locate({ watch: true, setView: true, maxZoom: 20, enableHighAccuracy: true});
-
-  // function map.locate takes some time. Wait max. 20 s, then set map center to default
-  timeoutLocatingUser = setTimeout(() => {
-    console.warn('Location timed out. Setting to default map center.');
-    map.setView(props.mapCenter, zoom.value[0]);
-  }, 20000);
-
-  map.on('locationerror', onLocationError);
-  map.on('locationfound', onLocationFound);
-  map.on('dragstart', () => stopAutoCentering());
-  map.on('movestart', () => stopAutoCentering());
+  map = L.map('map').setView(props.mapCenter, zoom.value[1]);
 
   // create icon of recent player
   let currentPlayerIcon = L.divIcon(useIconLeaflet({ label: currentPlayer.value.name }));
@@ -340,6 +315,24 @@ onMounted(async () => {
   }
 
   L.tileLayer.battlefield().addTo(map);
+
+  // Center the map on default coordinates initially
+  map.setView(props.mapCenter, zoom.value[1]);
+
+  // Start locating the user and keep tracking
+  startTracking();
+
+  map.on('locationfound', (e) => {
+    map.setView(e.latlng, map.getZoom());
+  });
+
+  map.on('locationerror', (e) => {
+    console.warn('Location error:', e.message);
+  });
+
+  map.on('dragstart', () => {
+    pauseTracking();
+  });
 
   // taken from https://github.com/brunob/leaflet.fullscreen, I do not know how to run it correctly...
   L.control
@@ -402,8 +395,7 @@ onMounted(async () => {
 
 onBeforeUnmount(() => {
   clearInterval(checkLeafletInterval)
-  clearTimeout(timeoutMapCentring);
-  clearTimeout(timeoutLocatingUser);
+  clearTimeout(trackingTimeout);
 })
 </script>
 
