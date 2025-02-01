@@ -1,38 +1,37 @@
 <script setup lang="ts">
-import {STORE_GAME_INSTANCE, STORE_CURRENT_PLAYER, STORE_APPLICATION_ERROR, STORE_GAME_SETTINGS} from "~/constants";
-import type {GameInstance, LastWaveNotice, PlayerData, Settings} from "~/types/CustomTypes";
+import {STORE_GAME_INSTANCE, STORE_APPLICATION_ERROR, STORE_GAME_SETTINGS} from "~/constants";
+import type {BattleZone, LastWaveNotice, PlayerData, Settings, UtilityZone} from "~/types/CustomTypes";
 import {Perks} from "~/types/CustomTypes"; // to enable enum to be defined at runtime it must be imported without "type" prefix
 import {computed, watch} from "vue";
 import {useState} from "nuxt/app";
-import {useGetterCurrentPlayerIsLeader, useGetterGameState, useGetterUtilityZones} from "~/composables/getters";
-import {useStoredGameInstance, useStoredGameSettings} from "~/composables/states";
+import {useGetterCurrentPlayerIsLeader, useGetterGameState} from "~/composables/getters";
 import {useReleaseWakeLockScreen, useRequestWakeLockScreen} from "~/composables/useWakeLockScreen";
 import type {Socket} from "socket.io-client";
 import Map from "~/components/Map.vue";
 import {useIntersectedAreaKey} from "~/composables/useIntersectedAreaKey";
 import {useListenBus} from "~/composables/useEventBus";
+import {useGameInstanceStore} from "~/stores/gameInstanceStore";
+import {useCurrentPlayerStore} from "~/stores/currentPlayerStore";
+
+// Pinia store
+const storeGameInstance = useGameInstanceStore();
+const storeCurrentPlayer = useCurrentPlayerStore();
 
 // DATA
 const runtimeConfig = useRuntimeConfig()
 const intervalRunAttack = ref<NodeJS.Timeout | null>(null);
-const currentPlayer = useState<PlayerData>(STORE_CURRENT_PLAYER);
-const currentGame = useState<GameInstance>(STORE_GAME_INSTANCE)
+const currentPlayer = ref<PlayerData>(storeCurrentPlayer.currentPlayer);
 const gameSettings = useState<Settings>(STORE_GAME_SETTINGS)
 const gameState = useGetterGameState;
-const getterBattleZones = useGetterBattleZones;
-const utilityZones = ref(useGetterUtilityZones)
-const currentPlayerIsLeader = useGetterCurrentPlayerIsLeader
+const battleZones = ref<BattleZone[]>(storeGameInstance.gameInstance.battleZones);
+const utilityZones = ref<UtilityZone[]>(storeGameInstance.gameInstance.battleZones);
+const connectedPlayers = ref<PlayerData[]>(storeGameInstance.gameInstance.players);
+const currentPlayerIsLeader = useGetterCurrentPlayerIsLeader;
 const dataLoading = ref<boolean>(false);
-const applicationError = useState(STORE_APPLICATION_ERROR)
+const applicationError = useState(STORE_APPLICATION_ERROR);
 let socket: Socket;
 let lastWaveIncomingWarning = ref<LastWaveNotice>('none');
-const smithyUpgradeActive = ref(false);
 const zoneTimer = ref<NodeJS.Timeout | null>(null);
-
-// COMPUTED
-const connectedPlayers = computed((): PlayerData[] => {
-  return [...currentGame.value?.players];
-});
 
 // METHODS
 const getBack = (): void => {
@@ -43,7 +42,7 @@ const useEnsureSocketDisconnect = async () => {
   if (socket.connected) {
     // await to prevent closing socket connection before 'leaveGame' is for sure sent. Or else it sometimes disconnects before custom event 'leaveGame'
     await new Promise<void>((resolve) => {
-      socket.emit('leaveGame', {gameId: currentGame.value.id, player: currentPlayer.value}, () => {
+      socket.emit('leaveGame', {gameId: storeGameInstance.gameInstance.id, player: currentPlayer.value}, () => {
         resolve();
       });
     });
@@ -62,7 +61,7 @@ const startAttack = async (): Promise<void> => {
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({
-      gameId: currentGame.value.id
+      gameId: storeGameInstance.gameInstance.id
     })
   }).catch((error) => {
     applicationError.value = 'Nepodařilo se zahájit útok.<br />' + error
@@ -72,7 +71,7 @@ const startAttack = async (): Promise<void> => {
 const geolocationWarning = computed(() => {
   if (!currentPlayer?.value.location.lat) {
     return 'Pozice hráče není k dispozici. Máte zapnutou geolokaci ve vašem zařízení?';
-  } else if (!useGetterBattleZones.value) {
+  } else if (!battleZones) {
     return 'Herní zóna není k dispozici';
   } else {
     return '';
@@ -80,7 +79,7 @@ const geolocationWarning = computed(() => {
 })
 
 const keyOfIntersectedArea = computed((): string => {
-  if (currentPlayer?.value.location && useGetterBattleZones.value) {
+  if (currentPlayer?.value.location && battleZones) {
     return useIntersectedAreaKey(currentPlayer.value.location);
   } else {
     return '';
@@ -108,7 +107,7 @@ const startZoneTimer = () => {
 
   zoneTimer.value = setTimeout(() => {
     socket.emit('smithyUpgradeAchieved', {
-      gameId: currentGame.value.id,
+      gameId: storeGameInstance.gameInstance.id,
       player: currentPlayer.value,
       perk: Perks.smithyUpgrade,
       perkValue: gameSettings.value.smithyUpgradeStrength});
@@ -125,9 +124,9 @@ const clearZoneTimer = () => {
 
 // WATCHERS
 watch(keyOfIntersectedArea, (newKey): void => {
-  if (getterBattleZones && currentPlayer.value.key) {
+  if (battleZones && currentPlayer.value.key) {
     currentPlayer.value.insideZone = keyOfIntersectedArea.value;
-    socket.emit('playerRelocatedToZone', {gameId: currentGame.value.id, player: currentPlayer.value})
+    socket.emit('playerRelocatedToZone', {gameId: storeGameInstance.gameInstance.id, player: currentPlayer.value})
   }
 
   if (isSmithyArea(newKey)) {
@@ -148,7 +147,7 @@ watch(gameState, (newValue): void => {
 })
 
 // LIFECYCLE HOOKS
-onMounted(async () => {
+onBeforeMount(async () => {
   dataLoading.value = true;
   applicationError.value = null;
 
@@ -157,18 +156,13 @@ onMounted(async () => {
   });
 
   try {
-    const [gameResponse, settingsResponse] = await Promise.all([
-      $fetch(`${runtimeConfig.public.serverUrl}/api/game`, {
-        method: 'GET',
-      }),
-      $fetch(`${runtimeConfig.public.serverUrl}/api/game/settings`, {
-        method: 'GET',
-      })
-    ]);
-
-    useStoredGameInstance(gameResponse as GameInstance);
-    useStoredGameSettings(settingsResponse as Settings);
-    socket = useSocket(currentGame.value.id);
+    await Promise.all([
+      storeGameInstance.getGameInstance(),
+      storeGameInstance.getGameSettings()
+    ])
+    .then(() => {
+      socket = useSocket(storeGameInstance.gameInstance.id);
+    });
 
     if (intervalRunAttack.value !== null) {
       clearInterval(intervalRunAttack.value);
@@ -188,7 +182,7 @@ onMounted(async () => {
 
 onBeforeUnmount(() => {
   currentPlayer.value.insideZone = '';
-  // disconnection handled on onBeforeUnmount hook, but alo in Window object, to be sure
+  // disconnection handled on onBeforeUnmount hook, but also in Window object, to be sure
   useEnsureSocketDisconnect();
   socket.disconnect();
   currentPlayer.value.name = '';
@@ -227,7 +221,7 @@ onBeforeUnmount(() => {
 
       <!-- RUNNING -->
       <template v-else-if="gameStateRunning">
-        <p v-if="!getterBattleZones">Žádná data o útoku.</p>
+        <p v-if="!battleZones">Žádná data o útoku.</p>
 
         <div v-else>
           <p>Smithy upgrade duration: {{ currentPlayer.perks.smithyUpgrade }}</p>
@@ -236,7 +230,7 @@ onBeforeUnmount(() => {
 
           <Map
             :connectedPlayers="connectedPlayers"
-            :mapCenter="currentGame.gameLocation.mapCenter"
+            :mapCenter="storeGameInstance.gameInstance.gameLocation.mapCenter"
             :nameOfIntersectedArea="keyOfIntersectedArea"></Map>
         </div>
       </template>

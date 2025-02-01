@@ -1,12 +1,12 @@
-import type { GameInstance, PlayerCoordinates} from "~/types/CustomTypes";
-import { useState } from "nuxt/app";
-import { STORE_GAME_INSTANCE } from "~/constants";
+import type {PlayerCoordinates} from "~/types/CustomTypes";
 import { useIsPositionInsidePolygon } from "~/composables/useIsInsidePolygon";
+import {useGameInstanceStore} from "~/stores/gameInstanceStore";
 
-const currentGame = useState<GameInstance>(STORE_GAME_INSTANCE)
+// Pinia store
+const storeGameInstance = useGameInstanceStore()
 
 export function useIntersectedAreaKey(playerLocationValue: PlayerCoordinates): string {
-    let zones = [...currentGame.value.battleZones, ...currentGame.value.utilityZones];
+    let zones = [...storeGameInstance.gameInstance.battleZones, ...storeGameInstance.gameInstance.utilityZones];
 
     const foundAreas = zones.find(zone => {
         return useIsPositionInsidePolygon(playerLocationValue, zone.cornerCoordinates);

@@ -1,18 +1,23 @@
 import {useState} from "nuxt/app";
-import type {PlayerData} from "~/types/CustomTypes";
-import {STORE_GEOLOCATION_WATCHER, STORE_CURRENT_PLAYER, STORE_APPLICATION_ERROR} from "~/constants";
+import {STORE_APPLICATION_ERROR} from "~/constants";
+import {useCurrentPlayerStore} from "~/stores/currentPlayerStore";
+
 
 export function useInitializePlayerGeolocationWatcher(): void {
     const geolocationOptions = {
         enableHighAccuracy: true,
+        timeout: 10000,
     }
+
     if ('geolocation' in navigator) {
-        useState(STORE_GEOLOCATION_WATCHER).value = navigator.geolocation.watchPosition( position => {
-            useState<PlayerData>(STORE_CURRENT_PLAYER).value.location = {
-                lat: position.coords.latitude,
-                lng: position.coords.longitude,
-                accuracy: position.coords.accuracy
-            }
+        const storeCurrentPlayer = useCurrentPlayerStore()
+
+        storeCurrentPlayer.geolocationWatcher = navigator.geolocation.watchPosition( position => {
+            storeCurrentPlayer.setCurrentPlayerGeolocation({
+              lat: position.coords.latitude,
+              lng: position.coords.longitude,
+              accuracy: position.coords.accuracy
+          })
         },
         function() {},
         geolocationOptions);

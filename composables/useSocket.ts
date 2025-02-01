@@ -2,9 +2,12 @@
 
 import { io } from "socket.io-client"
 import type {GameInstance, LastWaveNotice, PlayerData} from "~/types/CustomTypes"
-import * as CONST from "~/constants";
 import {useEventBus} from "~/composables/useEventBus";
 import {STORE_CURRENT_PLAYER} from "~/constants";
+import {useGameInstanceStore} from "~/stores/gameInstanceStore";
+
+// Pinia store
+const storeGameInstance = useGameInstanceStore()
 
 export function useSocket(gameId: string) {
     const runtimeConfig = useRuntimeConfig();
@@ -16,22 +19,23 @@ export function useSocket(gameId: string) {
     })
 
     socket.on('newPlayerJoined', (game: GameInstance): void => {
-        useState<GameInstance>(CONST.STORE_GAME_INSTANCE).value = game;
+        storeGameInstance.setGameInstance(game);
     })
 
     socket.on('playerLeftGame', (game: GameInstance): void => {
-        useState<GameInstance>(CONST.STORE_GAME_INSTANCE).value = game;
+        storeGameInstance.setGameInstance(game);
     })
 
     socket.on('gameStarted', (game: GameInstance): void => {
-        useState<GameInstance>(CONST.STORE_GAME_INSTANCE).value = game;
+        storeGameInstance.setGameInstance(game);
     })
 
     socket.on('gameUpdated', (game: GameInstance) => {
-        const gameState = useState<GameInstance>(CONST.STORE_GAME_INSTANCE);
+        // const gameState = useState<GameInstance>(CONST.STORE_GAME_INSTANCE);
         const currentPlayerState = useState<PlayerData>(STORE_CURRENT_PLAYER);
 
-        gameState.value = game;
+        storeGameInstance.setGameInstance(game);
+        // gameState.value = game;
 
         if (game && game.players && currentPlayerState.value) {
             const player = game.players.find(p => p.key === currentPlayerState.value.key);

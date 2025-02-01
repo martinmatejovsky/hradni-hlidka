@@ -2,12 +2,20 @@
 // IMPORTS
 import {computed, type ComputedRef} from 'vue';
 import type {GameLocation, PlayerData, GameState, Settings} from "~/types/CustomTypes";
-import {STORE_APPLICATION_ERROR, STORE_CURRENT_PLAYER} from "~/constants";
+import {STORE_APPLICATION_ERROR} from "~/constants";
 import {useState} from "nuxt/app";
+import {useStoreZones} from "~/stores/zonesStore";
+import {useGameInstanceStore} from "~/stores/gameInstanceStore";
+import {useCurrentPlayerStore} from "~/stores/currentPlayerStore";
+
+// Pinia store
+const storeZones = useStoreZones();
+const storeGameInstance = useGameInstanceStore();
+const storeCurrentPlayer = useCurrentPlayerStore();
 
 // DATA
 const tab = ref<string>('join');
-const currentPlayer = useState<PlayerData>(STORE_CURRENT_PLAYER);
+const currentPlayer = ref<PlayerData | null>(storeCurrentPlayer.currentPlayer);
 const runtimeConfig = useRuntimeConfig()
 const playerAccuracy = computed(() => Math.round(currentPlayer.value?.location.accuracy || 0));
 const accuracyClass = computed(() => {
@@ -19,19 +27,18 @@ const accuracyClass = computed(() => {
     return 'text-red';
   }
 });
-const selectedLocationKey = ref<string | null>('Loket Sportovní')
-const selectedGameTempo = ref<number | null>(5000)
-const selectedLadderLength = ref<number | null>(20)
-const selectedGameLength = ref<number | null>(10)
-const selectWaveVolume = ref<number | null>(4)
-const selectAssemblyCountdown = ref<number | null>(1)
-const selectWavesDelay = ref<number | null>(5)
-const selectDefendersHitStrength = ref<number | null>(1)
+const selectedLocationKey = ref<string>('Loket Sportovní')
+const selectedGameTempo = ref<number>(5000)
+const selectedLadderLength = ref<number>(20)
+const selectedGameLength = ref<number>(10)
+const selectWaveVolume = ref<number>(4)
+const selectAssemblyCountdown = ref<number>(1)
+const selectWavesDelay = ref<number>(5)
+const selectDefendersHitStrength = ref<number>(1)
 const selectSmithyUpgradeWaiting = ref<number>(5000)
 const selectSmithyUpgradeDuration = ref<number>(2)
 const dataLoading = ref<boolean>(false);
 const pageError = useState(STORE_APPLICATION_ERROR);
-let gameLocations: GameLocation[]
 const gameAlreadyCreated = ref(false)
 const gameNotYetCreated = ref(false)
 
@@ -40,14 +47,14 @@ const isFormValid = computed(() => {
   return selectedLocationKey.value !== null && selectedGameTempo.value !== null && selectedLadderLength.value !== null;
 })
 const locationOptions: ComputedRef<string[]> = computed(() => {
-  if (gameLocations) {
-    return gameLocations.map(location => location.locationName);
+  if (storeZones.gameLocations.length > 0) {
+    return storeZones.gameLocations.map(location => location.locationName);
   } else {
     return [];
   }
 });
 const selectedGameLocation = computed(() => {
-  return gameLocations?.find(location => location.locationName === selectedLocationKey.value) ?? null;
+  return storeZones.gameLocations.find(location => location.locationName === selectedLocationKey.value) ?? null;
 });
 const gameTemposOptions: ComputedRef<number[]> = computed(() => {
   return selectedGameLocation.value?.speedChoices ?? [];
@@ -128,44 +135,26 @@ const createNewBattle = async (): Promise<void> => {
       smithyUpgradeStrength: selectSmithyUpgradeDuration.value
     }
 
-    const response = await $fetch( `${runtimeConfig.public.serverUrl}/api/game/createGame`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        gameLocation: gameLocations.find(location => location.locationName === selectedLocationKey.value),
-        settings: data
-      })
-    })
+    const gameLocation = storeZones.gameLocations.find(location => location.locationName === selectedLocationKey.value) as GameLocation;
+    const responseStatusCode = await storeGameInstance.postCreateNewGame(gameLocation, data);
 
-    if (response.statusCode === 200) {
+    if (responseStatusCode === 200) {
       gameAlreadyCreated.value = true
-    } else if (response.statusCode === 201) {
+    } else if (responseStatusCode === 201) {
       await navigateTo('/game')
     }
-  } catch(error) {
+  } catch(error: any) {
     pageError.value = `Nepodařilo se spojit se serverem <br />${error.message || error}`
   } finally{ dataLoading.value = false }
 }
 
-const fetchGameLocations = (): void => {
+// LIFECYCLE HOOKS
+onBeforeMount(async () => {
   dataLoading.value = true;
   pageError.value = null;
 
-  $fetch(`${runtimeConfig.public.serverUrl}/api/game-locations`)
-    .then(response => {
-      gameLocations = response as GameLocation[];
-    })
-    .catch((error) => {
-      pageError.value = 'Nepodařilo se načíst seznam bitevních míst <br>' + error
-    })
-    .finally(() => dataLoading.value = false);
-}
-
-// LIFECYCLE HOOKS
-onBeforeMount(() => {
-  fetchGameLocations();
+  storeZones.getGameLocations();
+  dataLoading.value = false;
 });
 </script>
 
@@ -292,6 +281,5 @@ onBeforeMount(() => {
     </v-card-text>
   </v-card>
 
-  <p>Souřadnice: {{ currentPlayer?.location.lat}} {{ currentPlayer?.location.lng }}</p>
   <p>Přesnost: <span :class="[accuracyClass, 'font-weight-bold']">{{ playerAccuracy }}</span> m</p>
 </template>
