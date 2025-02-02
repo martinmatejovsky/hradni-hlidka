@@ -46,6 +46,7 @@ export interface BattleZone {
     zoneName: string,
     key: string,
     polygonType: PolygonType,
+    areaOfAcceptedPresence: Coordinates[],
     areaPresentational: Coordinates[],
     conquered: boolean,
     guardians: string[],
@@ -59,6 +60,7 @@ export interface UtilityZone {
     zoneName: string,
     key: string,
     polygonType: PolygonType,
+    areaOfAcceptedPresence: Coordinates[],
     areaPresentational: Coordinates[],
     guardians: string[],
 }

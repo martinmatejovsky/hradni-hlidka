@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import {STORE_GAME_INSTANCE, STORE_APPLICATION_ERROR} from "~/constants";
-import type {BattleZone, LastWaveNotice, PlayerData, Settings, UtilityZone} from "~/types/CustomTypes";
+import type {BattleZone, LastWaveNotice, PlayerData, UtilityZone} from "~/types/CustomTypes";
 import {Perks} from "~/types/CustomTypes"; // to enable enum to be defined at runtime it must be imported without "type" prefix
 import {computed, watch} from "vue";
 import {useState} from "nuxt/app";
@@ -19,7 +19,6 @@ const storeCurrentPlayer = useCurrentPlayerStore();
 // DATA
 const runtimeConfig = useRuntimeConfig()
 const intervalRunAttack = ref<NodeJS.Timeout | null>(null);
-const gameSettings = storeGameInstance.gameSettings as Settings;
 const dataLoading = ref<boolean>(false);
 const applicationError = useState(STORE_APPLICATION_ERROR);
 let socket: Socket;
@@ -31,6 +30,7 @@ const zoneTimer = ref<NodeJS.Timeout | null>(null);
 const currentPlayerIsLeader = computed(() => {
   return storeGameInstance.gameInstance?.players[0]?.key === storeCurrentPlayer.currentPlayer.key;
 });
+const gameSettings = computed(() => storeGameInstance.gameSettings);
 const gameState = computed((): string => storeGameInstance.gameInstance.gameState);
 const currentPlayer = computed((): PlayerData => storeCurrentPlayer.currentPlayer);
 const connectedPlayers = computed((): PlayerData[] => storeGameInstance.gameInstance.players);
@@ -114,8 +114,8 @@ const startZoneTimer = () => {
       gameId: storeGameInstance.gameInstance.id,
       player: currentPlayer.value,
       perk: Perks.smithyUpgrade,
-      perkValue: gameSettings.smithyUpgradeStrength});
-  }, gameSettings.smithyUpgradeWaiting);
+      perkValue: gameSettings.value.smithyUpgradeStrength});
+  }, gameSettings.value.smithyUpgradeWaiting);
 }
 
 // Function to stop the timer
