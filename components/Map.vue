@@ -17,20 +17,20 @@ useHead({
 });
 
 import type {LatLngExpression} from "leaflet";
-import {useGetterBattleZones, useGetterUtilityZones} from "~/composables/getters";
-import { useState } from 'nuxt/app';
-import type {BattleZone, Invader, PlayerData, Coordinates} from '~/types/CustomTypes';
-import { STORE_CURRENT_PLAYER } from '~/constants';
+import type {BattleZone, Invader, PlayerData, Coordinates, UtilityZone} from '~/types/CustomTypes';
 import {useListenBus} from "~/composables/useEventBus";
 import ladderImage from '~/assets/icons/ladder.svg';
 import * as L from 'leaflet';
 import 'leaflet.fullscreen/Control.FullScreen.js';
 import 'leaflet.fullscreen/Control.FullScreen.css';
 import {useCalculateSquareCorner} from "~/composables/useCoordinatesUtils";
+import {useGameInstanceStore} from "~/stores/gameInstanceStore";
+import {useCurrentPlayerStore} from "~/stores/currentPlayerStore";
 
-const currentPlayer = useState<PlayerData>(STORE_CURRENT_PLAYER);
-const battleZones = ref(useGetterBattleZones)
-const utilityZones = ref(useGetterUtilityZones)
+// Pinia store
+const storeGameInstance = useGameInstanceStore();
+const storeCurrentPlayer = useCurrentPlayerStore();
+
 const zoom = ref([18, 19, 20]);
 let checkLeafletInterval: ReturnType<typeof setInterval>;
 let trackingTimeout: ReturnType<typeof setTimeout>;
@@ -40,6 +40,10 @@ const battleZonePolygons = ref<L.Polygon[]>([]);
 const utilityZonePolygons = ref<L.Polygon[]>([]);
 const TRACKING_DELAY = 10000;
 let map: L.Map;
+
+const currentPlayer = computed(() => storeCurrentPlayer.currentPlayer);
+const battleZones = computed((): BattleZone[] => storeGameInstance.gameInstance.battleZones);
+const utilityZones = computed((): UtilityZone[] => storeGameInstance.gameInstance.utilityZones);
 
 const props = defineProps({
   connectedPlayers: {
@@ -361,7 +365,7 @@ onMounted(async () => {
 
   // Přidání orientacnich obdélníků pro každou battleZone
   battleZones.value.forEach(battleZone => {
-    const corners = battleZone.cornerCoordinates as LatLngExpression[];
+    const corners = battleZone.areaPresentational as LatLngExpression[];
     const polygon = L.polygon(corners, {
       color: `rgba(${polygonColors.battleZone})`,
     }).addTo(map);
@@ -372,7 +376,7 @@ onMounted(async () => {
 
   // Přidání orientacnich obdélníků pro každou utilityZone. Testovací účely.
   utilityZones.value.forEach(utilityZone => {
-    const corners = utilityZone.cornerCoordinates as LatLngExpression[];
+    const corners = utilityZone.areaPresentational as LatLngExpression[];
     const polygon = L.polygon(corners, {
       color: `rgba(${polygonColors.utilityZone}`,
     }).addTo(map);

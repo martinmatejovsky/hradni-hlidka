@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import type {Settings} from "~/types/CustomTypes";
 import {useState} from "nuxt/app";
-import {STORE_APPLICATION_ERROR, STORE_GAME_SETTINGS} from "~/constants";
+import {STORE_APPLICATION_ERROR} from "~/constants";
 import type {Socket} from 'socket.io-client'
 import {useCurrentPlayerStore} from "~/stores/currentPlayerStore";
 import {useGameInstanceStore} from "~/stores/gameInstanceStore";
@@ -20,7 +19,6 @@ const isFormValid = computed(() => {
   return selectedPlayerName.value
 })
 const selectedPlayerName = ref<string>('Test Beolf')
-const gameSettings = useState<Settings>(STORE_GAME_SETTINGS)
 
 // METHODS
 const submitForm = async () => {

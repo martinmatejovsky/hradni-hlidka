@@ -1,5 +1,5 @@
 import {useState} from "nuxt/app";
-import type {PlayerData, GameInstance, Settings} from "~/types/CustomTypes";
+import type {PlayerData} from "~/types/CustomTypes";
 import * as CONST from "../constants";
 
 // TODO - when initializing from server use this tutorial on
@@ -24,10 +24,4 @@ export const useStoredCurrentPlayer = () => useState<PlayerData>(CONST.STORE_CUR
         socketId: '',
     }
 })
-export const useStoredGameInstance = (game: GameInstance | Ref<GameInstance>) => useState<GameInstance>(CONST.STORE_GAME_INSTANCE, () => game)
 export const useStoredApplicationError = () => useState<string | null>(CONST.STORE_APPLICATION_ERROR, () => null)
-export const useStoredGameSettings = (settings: Settings) => {
-    // this approach allows to either set initíal value or rewrite it by calling the same and only function
-    const storedSettings = useState<Settings>(CONST.STORE_GAME_SETTINGS);
-    storedSettings.value = settings;
-};
