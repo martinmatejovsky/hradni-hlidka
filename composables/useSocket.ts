@@ -6,10 +6,8 @@ import {useEventBus} from "~/composables/useEventBus";
 import {STORE_CURRENT_PLAYER} from "~/constants";
 import {useGameInstanceStore} from "~/stores/gameInstanceStore";
 
-// Pinia store
-const storeGameInstance = useGameInstanceStore()
-
 export function useSocket(gameId: string) {
+    const storeGameInstance = useGameInstanceStore()
     const runtimeConfig = useRuntimeConfig();
     const URL = runtimeConfig.public.socketIoUrl as string;
     const socket = io(URL, {query: {gameId}})

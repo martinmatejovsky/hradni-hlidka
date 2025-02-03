@@ -57,7 +57,6 @@ export interface BattleZone {
     waveCooldown: number,
 }
 export interface UtilityZone {
-    zoneName: string,
     key: string,
     polygonType: PolygonType,
     areaOfAcceptedPresence: Coordinates[],

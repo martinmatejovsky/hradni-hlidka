@@ -83,6 +83,40 @@ function arraysEqual (arr1: Invader[], arr2: Invader[]): boolean {
   return true;
 }
 
+function addLabelsToPolygons(polygons: L.Polygon[]) {
+  polygons.forEach(polygon => {
+    const zoneKey = polygon.getTooltip()?.getContent() || '' ;
+    if (!zoneKey) return;
+
+    const bounds = polygon.getBounds();
+    const center = bounds.getCenter();
+    const label = new L.Marker(center, {
+      icon: L.divIcon({
+        className: 'hh-zone-label',
+        html: zoneKey,
+        iconSize: [100, 20],
+        iconAnchor: [50, 10],
+        css
+      })
+    });
+
+    label.addTo(map);
+
+
+    // polygons.forEach(polygon => {
+    //   const zoneKey = polygon.getTooltip()?.getContent();
+    //
+    //   polygon
+    //       .bindTooltip(zoneKey, {
+    //         permanent: true, // The label remains visible
+    //         direction: "center", // Center the text inside the polygon
+    //         className: "custom-polygon-label", // Custom styling
+    //         offset: [0, 0]
+    //       })
+    //       .openTooltip();
+    // });
+  });
+}
 function addLadders() {
   battleZones.value.forEach(battleZone => {
     const ladder = battleZone.assaultLadder.location
@@ -370,7 +404,7 @@ onMounted(async () => {
       color: `rgba(${polygonColors.battleZone})`,
     }).addTo(map);
 
-    polygon.bindTooltip(battleZone.key);
+    polygon.bindTooltip(battleZone.zoneName);
     battleZonePolygons.value.push(polygon);
   });
 
@@ -381,9 +415,13 @@ onMounted(async () => {
       color: `rgba(${polygonColors.utilityZone}`,
     }).addTo(map);
 
-    polygon.bindTooltip(utilityZone.key);
+    polygon.bindTooltip(utilityZone.zoneName);
     utilityZonePolygons.value.push(polygon);
   });
+
+  // labels for battleZones
+  addLabelsToPolygons(battleZonePolygons.value);
+  addLabelsToPolygons(utilityZonePolygons.value);
 
   // vykreslit ikonky utocniku, pokud uz nejaci maji byt na mape
   handleUpdateInvadersIcons();
