@@ -76,3 +76,10 @@
     background-color: #fa1458;
   }
 }
+
+// to override Leaflet style
+[role=button].hh-zone-label {
+  font-weight: bold;
+  font-size: 14px;
+  color: rgba(86, 98, 229, 0.74);
+}

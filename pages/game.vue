@@ -89,6 +89,15 @@ const keyOfIntersectedArea = computed((): string => {
     return '';
   }
 })
+const nameOfIntersectedArea = computed((): string => {
+  if (battleZones) {
+    const allAreas = [...battleZones.value, ...utilityZones.value];
+    const area = allAreas.find(zone => zone.key === keyOfIntersectedArea.value);
+    return area?.zoneName || '';
+  } else {
+    return '';
+  }
+})
 
 const currentPlayerMark = ((player: PlayerData) => {
   return currentPlayer.value?.key === player.key ? '(Já)' : '';
@@ -235,7 +244,7 @@ onBeforeUnmount(() => {
           <Map
             :connectedPlayers="connectedPlayers"
             :mapCenter="storeGameInstance.gameInstance.gameLocation.mapCenter"
-            :nameOfIntersectedArea="keyOfIntersectedArea"></Map>
+            :nameOfIntersectedArea="nameOfIntersectedArea"></Map>
         </div>
       </template>
 

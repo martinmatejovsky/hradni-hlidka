@@ -96,25 +96,10 @@ function addLabelsToPolygons(polygons: L.Polygon[]) {
         html: zoneKey,
         iconSize: [100, 20],
         iconAnchor: [50, 10],
-        css
       })
     });
 
     label.addTo(map);
-
-
-    // polygons.forEach(polygon => {
-    //   const zoneKey = polygon.getTooltip()?.getContent();
-    //
-    //   polygon
-    //       .bindTooltip(zoneKey, {
-    //         permanent: true, // The label remains visible
-    //         direction: "center", // Center the text inside the polygon
-    //         className: "custom-polygon-label", // Custom styling
-    //         offset: [0, 0]
-    //       })
-    //       .openTooltip();
-    // });
   });
 }
 function addLadders() {
