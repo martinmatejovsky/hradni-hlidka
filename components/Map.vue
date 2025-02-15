@@ -19,13 +19,14 @@ useHead({
 import type {LatLngExpression} from "leaflet";
 import type {BattleZone, Invader, PlayerData, Coordinates, UtilityZone} from '~/types/CustomTypes';
 import {useListenBus} from "~/composables/useEventBus";
-import ladderImage from '~/assets/icons/ladder.svg';
 import * as L from 'leaflet';
 import 'leaflet.fullscreen/Control.FullScreen.js';
 import 'leaflet.fullscreen/Control.FullScreen.css';
-import {useCalculateSquareCorner} from "~/composables/useCoordinatesUtils";
 import {useGameInstanceStore} from "~/stores/gameInstanceStore";
 import {useCurrentPlayerStore} from "~/stores/currentPlayerStore";
+import { useMapLabels } from "@/composables/useLeafletMapMethods";
+
+const {addLabelsToPolygons, addLadders, handleUpdateInvadersIcons} = useMapLabels();
 
 // Pinia store
 const storeGameInstance = useGameInstanceStore();
@@ -83,66 +84,6 @@ function arraysEqual (arr1: Invader[], arr2: Invader[]): boolean {
   return true;
 }
 
-function addLabelsToPolygons(polygons: L.Polygon[]) {
-  polygons.forEach(polygon => {
-    const zoneKey = polygon.getTooltip()?.getContent() || '' ;
-    if (!zoneKey) return;
-
-    const bounds = polygon.getBounds();
-    const center = bounds.getCenter();
-    const label = new L.Marker(center, {
-      icon: L.divIcon({
-        className: 'hh-zone-label',
-        html: zoneKey,
-        iconSize: [100, 20],
-        iconAnchor: [50, 10],
-      })
-    });
-
-    label.addTo(map);
-  });
-}
-function addLadders() {
-  battleZones.value.forEach(battleZone => {
-    const ladder = battleZone.assaultLadder.location
-
-    const ladderCorner = useCalculateSquareCorner(battleZone.assaultLadder);
-
-    L.imageOverlay.rotated(ladderImage, ladderCorner, ladder.end, ladder.start, {
-      interactive: false,
-      id: 'ladder-' + battleZone.key,
-      className: "hh-ladder-image"
-    }).addTo(map);
-  })
-}
-
-function handleUpdateInvadersIcons() {
-  const currentInvaders: Invader[] = battleZones.value.flatMap((zone: BattleZone) => zone.invaders);
-
-  // 1. Add new icons for invaders that don't have an icon yet
-  battleZones.value.forEach((zone: BattleZone) => {
-    zone.invaders.forEach(invader => {
-      if (!invaderIcons[invader.id]) {
-        createInvaderIcon(invader.id, zone.key)
-      }
-    });
-  });
-
-  // 2. Remove icons for invaders that no longer exist in currentInvaders
-  Object.keys(invaderIcons).forEach(id => {
-    const invaderId = parseInt(id);
-    const invaderStillExists = currentInvaders.some(invader => invader.id === invaderId);
-
-    if (!invaderStillExists) {
-      const markerToRemove = invaderIcons[invaderId];
-      if (markerToRemove) {
-        markerToRemove.remove();
-      }
-      delete invaderIcons[invaderId];
-    }
-  });
-}
-
 function updateInvadersOnMap(index: number) {
   let zone = battleZones.value[index];
 
@@ -173,39 +114,6 @@ function updateInvadersOnMap(index: number) {
       console.warn(`No valid coordinates found for invader ${invader.id}.`);
     }
   });
-}
-
-function createInvaderIcon(id: number, zoneKey: string) {
-  const battleZone = battleZones.value.find(zone => zone.key === zoneKey);
-  if (!battleZone) {
-    console.warn(`BattleZone with key ${zoneKey} not found`);
-    return;
-  }
-
-  // Find the invader in the battleZone
-  const invader = battleZone.invaders.find(invader => invader.id === id);
-  if (!invader) {
-    console.warn(`Invader with id ${id} not found in zone ${zoneKey}`);
-    return;
-  }
-
-  // Get the coordinate for the invader's assembly area
-  const assemblyAreaIndex = invader.assemblyArea ? invader.assemblyArea: 0;
-  const assemblyCoordinate = battleZone.assemblyArea[assemblyAreaIndex];
-
-  if (assemblyCoordinate.lat && assemblyCoordinate.lng) {
-    // Create a Leaflet divIcon
-    const invaderDivIcon = L.divIcon({
-      className: `hh-invader-icon is-${invader.type}`,
-      html: `${invader.health}`,
-      iconSize: [20, 20], // Set the size of the icon
-    });
-
-    invaderIcons[id] = L.marker([assemblyCoordinate.lat, assemblyCoordinate.lng], { icon: invaderDivIcon }).addTo(map);
-  } else {
-    console.warn(`No coordinate found for assemblyArea index ${assemblyAreaIndex} in zone ${zoneKey}`);
-    return;
-  }
 }
 
 function highlightOccupiedPolygon(polygonKey: string | undefined) {
@@ -309,7 +217,7 @@ watch(() => props.connectedPlayers, (updatedConnectedPlayers) => {
 
 // LIFECYCLE
 onMounted(async () => {
-  useListenBus('updateLifeOfInvaders', handleUpdateInvadersIcons)
+  useListenBus('updateLifeOfInvaders', () => handleUpdateInvadersIcons(map, battleZones.value, invaderIcons));
 
   map = L.map('map').setView(props.mapCenter, zoom.value[1]);
 
@@ -405,17 +313,17 @@ onMounted(async () => {
   });
 
   // labels for battleZones
-  addLabelsToPolygons(battleZonePolygons.value);
-  addLabelsToPolygons(utilityZonePolygons.value);
+  addLabelsToPolygons(map, battleZonePolygons.value);
+  addLabelsToPolygons(map, utilityZonePolygons.value);
 
   // vykreslit ikonky utocniku, pokud uz nejaci maji byt na mape
-  handleUpdateInvadersIcons();
+  handleUpdateInvadersIcons(map, battleZones.value, invaderIcons);
 
   // Počkejme, až se leafletRotated.js načte
   checkLeafletInterval = setInterval(() => {
     if (L.imageOverlay && typeof L.imageOverlay.rotated === "function") {
       clearInterval(checkLeafletInterval);
-      addLadders();
+      addLadders(map, battleZones.value);
     }
   }, 200);
 });
