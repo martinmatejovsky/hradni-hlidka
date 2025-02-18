@@ -26,7 +26,6 @@ let lastWaveIncomingWarning = ref<LastWaveNotice>('none');
 const zoneTimer = ref<NodeJS.Timeout | null>(null);
 
 // COMPUTED
-
 const currentPlayerIsLeader = computed(() => {
   return storeGameInstance.gameInstance?.players[0]?.key === storeCurrentPlayer.currentPlayer.key;
 });
@@ -122,7 +121,7 @@ const startZoneTimer = () => {
     socket.emit('smithyUpgradeAchieved', {
       gameId: storeGameInstance.gameInstance.id,
       player: currentPlayer.value,
-      perk: Perks.smithyUpgrade,
+      perk: Perks.sharpSword,
       perkValue: gameSettings.value.smithyUpgradeStrength});
   }, gameSettings.value.smithyUpgradeWaiting);
 }
@@ -237,7 +236,7 @@ onBeforeUnmount(() => {
         <p v-if="!battleZones">Žádná data o útoku.</p>
 
         <div v-else>
-          <p>Smithy upgrade duration: {{ currentPlayer.perks.smithyUpgrade }}</p>
+          <p>Smithy upgrade duration: {{ currentPlayer.perks.sharpSword }}</p>
           <v-alert v-if="lastWaveIncomingWarning === 'incoming'" title="Blíží se poslední vlna" type="warning"></v-alert>
           <v-alert v-if="lastWaveIncomingWarning === 'running'" title="Poslední vlna" type="info"></v-alert>
 

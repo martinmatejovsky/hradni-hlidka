@@ -19,7 +19,7 @@ export const useStoredCurrentPlayer = () => useState<PlayerData>(CONST.STORE_CUR
         insideZone: '',
         strength: 0,
         perks: {
-            smithyUpgrade: 0,
+            sharpSword: 0,
         },
         socketId: '',
     }

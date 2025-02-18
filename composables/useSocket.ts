@@ -1,13 +1,14 @@
 // tutorial on https://socket.io/how-to/use-with-vue
 
 import { io } from "socket.io-client"
-import type {GameInstance, LastWaveNotice, PlayerData} from "~/types/CustomTypes"
+import type {GameInstance, LastWaveNotice} from "~/types/CustomTypes"
 import {useEventBus} from "~/composables/useEventBus";
-import {STORE_CURRENT_PLAYER} from "~/constants";
 import {useGameInstanceStore} from "~/stores/gameInstanceStore";
+import {useCurrentPlayerStore} from "~/stores/currentPlayerStore";
 
 export function useSocket(gameId: string) {
     const storeGameInstance = useGameInstanceStore()
+    const storeCurrentPlayer = useCurrentPlayerStore();
     const runtimeConfig = useRuntimeConfig();
     const URL = runtimeConfig.public.socketIoUrl as string;
     const socket = io(URL, {query: {gameId}})
@@ -29,16 +30,12 @@ export function useSocket(gameId: string) {
     })
 
     socket.on('gameUpdated', (game: GameInstance) => {
-        // const gameState = useState<GameInstance>(CONST.STORE_GAME_INSTANCE);
-        const currentPlayerState = useState<PlayerData>(STORE_CURRENT_PLAYER);
-
         storeGameInstance.setGameInstance(game);
-        // gameState.value = game;
 
-        if (game && game.players && currentPlayerState.value) {
-            const player = game.players.find(p => p.key === currentPlayerState.value.key);
+        if (game && game.players) {
+            const player = game.players.find(p => p.key === storeCurrentPlayer.currentPlayer.key);
             if (player) {
-                currentPlayerState.value.perks = player.perks;
+                storeCurrentPlayer.currentPlayer.perks = player.perks;
             }
         }
         useEventBus('updateLifeOfInvaders');

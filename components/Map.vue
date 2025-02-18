@@ -40,6 +40,7 @@ const invaderIcons = reactive<{ [key: number]: L.Marker }>({});
 const battleZonePolygons = ref<L.Polygon[]>([]);
 const utilityZonePolygons = ref<L.Polygon[]>([]);
 const TRACKING_DELAY = 10000;
+const mapFullScreen = ref(false);
 let map: L.Map;
 
 const currentPlayer = computed(() => storeCurrentPlayer.currentPlayer);
@@ -206,7 +207,7 @@ watch(() => props.connectedPlayers, (updatedConnectedPlayers) => {
     const element = marker.getElement();
 
     if (element) {
-      if (player.perks.smithyUpgrade > 0) {
+      if (player.perks.sharpSword > 0) {
         element.classList.add('has-upgrade-smithy');
       } else {
         element.classList.remove('has-upgrade-smithy');
@@ -278,6 +279,14 @@ onMounted(async () => {
     })
     .addTo(map);
 
+  map.on('enterFullscreen', function () {
+    mapFullScreen.value = true;
+  });
+
+  map.on('exitFullscreen', function () {
+    mapFullScreen.value = false;
+  });
+
   // render PLAYER ICONS
   props.connectedPlayers.forEach((player: PlayerData) => {
     if (player.key !== currentPlayer.value.key && player.location.lat && player.location.lng) {
@@ -335,7 +344,13 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="hh-battle-map position-relative">
+  <div class="hh-battle-map position-relative" :class="mapFullScreen ? 'is-full-screen' : 'is-minimized'">
     <div id="map"></div>
+
+    <div class="hh-badges pa-3">
+      <div v-if="storeCurrentPlayer.currentPlayer.perks.sharpSword > 0" class="hh-badge is-sharp-sword">
+        <v-icon icon="mdi-sword" color="black"></v-icon>
+      </div>
+    </div>
   </div>
 </template>

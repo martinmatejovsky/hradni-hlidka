@@ -15,7 +15,7 @@ export const useCurrentPlayerStore = defineStore('currentPlayer', {
       insideZone: '',
       strength: 0,
       perks: {
-        smithyUpgrade: 0,
+        sharpSword: 0,
       },
       socketId: '',
     } as PlayerData,

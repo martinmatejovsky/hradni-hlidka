@@ -25,6 +25,13 @@
     bottom: 0;
     left: 0;
   }
+
+  &.is-full-screen {
+    .hh-badges {
+      position: fixed;
+      z-index: 100000;
+    }
+  }
 }
 
 #map {
@@ -46,7 +53,7 @@
 .h-rider-icon {
   &.has-upgrade-smithy {
     .h-icon-image {
-      box-shadow: 0 0 10px 8px #f0a500;
+      box-shadow: $box-shadow-badge-active;
       border-radius: 20px;
     }
   }
@@ -82,4 +89,22 @@
   font-weight: bold;
   font-size: 14px;
   color: rgba(86, 98, 229, 0.74);
+}
+
+.hh-badges {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 400; // over Leaflet map
+}
+
+.hh-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background-color: rgba($col-golden-shine, 0.46);
+  box-shadow: $box-shadow-badge-active;
+  border-radius: 50%;
 }
