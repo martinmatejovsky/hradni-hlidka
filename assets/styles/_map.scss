@@ -27,9 +27,16 @@
   }
 
   &.is-full-screen {
+    .hh-area-switchers,
     .hh-badges {
       position: fixed;
       z-index: 100000;
+    }
+    .hh-area-switchers {
+      position: fixed;
+      bottom: 0;
+      right: 0;
+      left: 0;
     }
   }
 }

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {STORE_GAME_INSTANCE, STORE_APPLICATION_ERROR} from "~/constants";
+import {STORE_APPLICATION_ERROR} from "~/constants";
 import type {BattleZone, LastWaveNotice, PlayerData, UtilityZone} from "~/types/CustomTypes";
 import {Perks} from "~/types/CustomTypes"; // to enable enum to be defined at runtime it must be imported without "type" prefix
 import {computed, watch} from "vue";
@@ -193,13 +193,15 @@ onBeforeMount(async () => {
 })
 
 onBeforeUnmount(() => {
-  currentPlayer.value.insideZone = '';
   // disconnection handled on onBeforeUnmount hook, but also in Window object, to be sure
   useEnsureSocketDisconnect();
   socket.disconnect();
+  currentPlayer.value.insideZone = '';
   currentPlayer.value.name = '';
   currentPlayer.value.key = '';
-  clearNuxtState(STORE_GAME_INSTANCE);
+  currentPlayer.value.perks = {
+    sharpSword: 0,
+  };
 })
 </script>
 
@@ -209,8 +211,6 @@ onBeforeUnmount(() => {
   <v-alert v-if="geolocationWarning" type="warning" class="mb-4" dismissible>{{geolocationWarning}}</v-alert>
 
   <template v-if="!applicationError">
-    <p>V zóně: {{ currentPlayer.insideZone || '--'}}</p>
-
     <div v-if="dataLoading">
       <v-icon icon="mdi-loading" class="hh-icon-loading"></v-icon>
       načítám data...
@@ -236,7 +236,6 @@ onBeforeUnmount(() => {
         <p v-if="!battleZones">Žádná data o útoku.</p>
 
         <div v-else>
-          <p>Smithy upgrade duration: {{ currentPlayer.perks.sharpSword }}</p>
           <v-alert v-if="lastWaveIncomingWarning === 'incoming'" title="Blíží se poslední vlna" type="warning"></v-alert>
           <v-alert v-if="lastWaveIncomingWarning === 'running'" title="Poslední vlna" type="info"></v-alert>
 

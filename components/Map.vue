@@ -232,9 +232,6 @@ onMounted(async () => {
           .replace('{x}', coords.x)
           .replace('{y}', coords.y);
     },
-    getAttribution: function () {
-      return '&copy; Martin Matějovský, bejby';
-    },
     options: {
       minZoom: zoom.value[0],
       maxZoom: zoom.value[zoom.value.length - 1],
@@ -351,6 +348,22 @@ onBeforeUnmount(() => {
       <div v-if="storeCurrentPlayer.currentPlayer.perks.sharpSword > 0" class="hh-badge is-sharp-sword">
         <v-icon icon="mdi-sword" color="black"></v-icon>
       </div>
+    </div>
+
+    <div class="hh-area-switchers pa-2 flex justify-space-between">
+      <v-row align="center" justify="center">
+        <v-col cols="auto" v-for="zone in battleZones" :key="zone.zoneName">
+          <v-btn
+              rounded="xs"
+              size="small"
+              @click="map.setView(zone.assaultLadder.steps[5], zoom[1])"
+              class="hh-area-switcher-btn"
+              :text="zone.zoneName"
+          >
+            {{ zone.zoneName }}
+          </v-btn>
+        </v-col>
+      </v-row>
     </div>
   </div>
 </template>
