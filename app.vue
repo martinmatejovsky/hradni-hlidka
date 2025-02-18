@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {useStoredCurrentPlayer, useStoredApplicationError, useStoredGeolocationWatcher} from "~/composables/states";
+import {useStoredApplicationError, useStoredGeolocationWatcher} from "~/composables/states";
 
 // STATE INITIAL VALUES
 const pageError = useStoredApplicationError()
@@ -7,7 +7,6 @@ const storedGeolocationWatcher = useStoredGeolocationWatcher();
 
 // LIFECYCLE HOOKS
 onBeforeMount(() => {
-  useStoredCurrentPlayer()
   useInitializePlayerGeolocationWatcher();
 })
 
