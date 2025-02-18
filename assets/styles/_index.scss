@@ -1,3 +1,8 @@
+@mixin above-fullscreen-leaflet {
+  position: fixed;
+  z-index: 100000;
+}
+
 .hh-icon-loading {
   animation: spin 1s linear infinite;
 }

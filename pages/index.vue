@@ -108,7 +108,7 @@ const joinGame = async (): Promise<void> => {
   const alreadyCreated = await checkGameCreated();
 
   if (alreadyCreated) {
-    navigateTo('/game');
+    navigateTo('/game-page');
   }
 }
 
@@ -141,7 +141,7 @@ const createNewBattle = async (): Promise<void> => {
     if (responseStatusCode === 200) {
       gameAlreadyCreated.value = true
     } else if (responseStatusCode === 201) {
-      await navigateTo('/game')
+      await navigateTo('/game-page');
     }
   } catch(error: any) {
     pageError.value = `Nepodařilo se spojit se serverem <br />${error.message || error}`

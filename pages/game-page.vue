@@ -22,7 +22,9 @@ const intervalRunAttack = ref<NodeJS.Timeout | null>(null);
 const dataLoading = ref<boolean>(false);
 const applicationError = useState(STORE_APPLICATION_ERROR);
 let socket: Socket;
-let lastWaveIncomingWarning = ref<LastWaveNotice>('none');
+const lastWaveIncomingWarning = ref<LastWaveNotice>('none');
+const leafletIsFullscreen = ref<boolean>(false);
+
 const zoneTimer = ref<NodeJS.Timeout | null>(null);
 
 // COMPUTED
@@ -167,6 +169,10 @@ onBeforeMount(async () => {
     lastWaveIncomingWarning.value = value;
   });
 
+  useListenBus('leafletFullscreen', (value: boolean): void => {
+    leafletIsFullscreen.value = value;
+  });
+
   try {
     await Promise.all([
       storeGameInstance.getGameInstance(),
@@ -235,9 +241,11 @@ onBeforeUnmount(() => {
       <template v-else-if="gameStateRunning">
         <p v-if="!battleZones">Žádná data o útoku.</p>
 
-        <div v-else>
-          <v-alert v-if="lastWaveIncomingWarning === 'incoming'" title="Blíží se poslední vlna" type="warning"></v-alert>
-          <v-alert v-if="lastWaveIncomingWarning === 'running'" title="Poslední vlna" type="info"></v-alert>
+        <div v-else class="hh-leaflet-container" :class="leafletIsFullscreen ? 'is-full-screen' : 'is-minimized'">
+          <div class="hh-alert-wave-container">
+            <v-alert v-if="lastWaveIncomingWarning === 'incoming'" density="compact" variant="tonal" type="warning" title="Blíží se poslední vlna"></v-alert>
+            <v-alert v-if="lastWaveIncomingWarning === 'running'" density="compact" variant="tonal" type="info" title="Poslední vlna"></v-alert>
+          </div>
 
           <Map
             :connectedPlayers="connectedPlayers"

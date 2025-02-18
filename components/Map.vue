@@ -18,7 +18,7 @@ useHead({
 
 import type {LatLngExpression} from "leaflet";
 import type {BattleZone, Invader, PlayerData, Coordinates, UtilityZone} from '~/types/CustomTypes';
-import {useListenBus} from "~/composables/useEventBus";
+import {useEventBus, useListenBus} from "~/composables/useEventBus";
 import * as L from 'leaflet';
 import 'leaflet.fullscreen/Control.FullScreen.js';
 import 'leaflet.fullscreen/Control.FullScreen.css';
@@ -277,11 +277,11 @@ onMounted(async () => {
     .addTo(map);
 
   map.on('enterFullscreen', function () {
-    mapFullScreen.value = true;
+    useEventBus('leafletFullscreen', true);
   });
 
   map.on('exitFullscreen', function () {
-    mapFullScreen.value = false;
+    useEventBus('leafletFullscreen', false);
   });
 
   // render PLAYER ICONS
@@ -341,16 +341,16 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="hh-battle-map position-relative" :class="mapFullScreen ? 'is-full-screen' : 'is-minimized'">
+  <div class="hh-battle-map position-relative">
     <div id="map"></div>
 
-    <div class="hh-badges pa-3">
+    <div class="hh-badges hh-above-fullscreen-leaflet pa-3">
       <div v-if="storeCurrentPlayer.currentPlayer.perks.sharpSword > 0" class="hh-badge is-sharp-sword">
         <v-icon icon="mdi-sword" color="black"></v-icon>
       </div>
     </div>
 
-    <div class="hh-area-switchers pa-2 flex justify-space-between">
+    <div class="hh-area-switchers hh-above-fullscreen-leaflet pa-2 flex justify-space-between">
       <v-row align="center" justify="center">
         <v-col cols="auto" v-for="zone in battleZones" :key="zone.zoneName">
           <v-btn

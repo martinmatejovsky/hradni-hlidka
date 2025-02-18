@@ -1,0 +1,28 @@
+.hh-leaflet-container {
+  .hh-alert-wave-container {
+    .v-alert-title {
+      font-size: 16px
+    }
+  }
+
+  &.is-full-screen {
+    .hh-alert-wave-container,
+    .hh-area-switchers,
+    .hh-badges {
+      @include above-fullscreen-leaflet
+    }
+
+    .hh-alert-wave-container {
+        top: 0;
+        right: 15%;
+        left: 15%;
+    }
+
+    .hh-area-switchers {
+      position: fixed;
+      bottom: 0;
+      right: 0;
+      left: 0;
+    }
+  }
+}
