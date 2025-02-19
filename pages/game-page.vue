@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import {STORE_APPLICATION_ERROR} from "~/constants";
 import type {BattleZone, LastWaveNotice, PlayerData, UtilityZone} from "~/types/CustomTypes";
-import {Perks} from "~/types/CustomTypes"; // to enable enum to be defined at runtime it must be imported without "type" prefix
 import {computed, watch} from "vue";
 import {useState} from "nuxt/app";
 import {useReleaseWakeLockScreen, useRequestWakeLockScreen} from "~/composables/useWakeLockScreen";
@@ -24,6 +23,7 @@ const applicationError = useState(STORE_APPLICATION_ERROR);
 let socket: Socket;
 const lastWaveIncomingWarning = ref<LastWaveNotice>('none');
 const leafletIsFullscreen = ref<boolean>(false);
+const smithyOfferOpened = ref<boolean>(false);
 
 const zoneTimer = ref<NodeJS.Timeout | null>(null);
 
@@ -120,11 +120,7 @@ const startZoneTimer = () => {
   }
 
   zoneTimer.value = setTimeout(() => {
-    socket.emit('smithyUpgradeAchieved', {
-      gameId: storeGameInstance.gameInstance.id,
-      player: currentPlayer.value,
-      perk: Perks.sharpSword,
-      perkValue: gameSettings.value.smithyUpgradeStrength});
+    smithyOfferOpened.value = true;
   }, gameSettings.value.smithyUpgradeWaiting);
 }
 
@@ -241,7 +237,7 @@ onBeforeUnmount(() => {
       <template v-else-if="gameStateRunning">
         <p v-if="!battleZones">Žádná data o útoku.</p>
 
-        <div v-else class="hh-leaflet-container" :class="leafletIsFullscreen ? 'is-full-screen' : 'is-minimized'">
+        <div v-else class="hh-leaflet-container position-relative" :class="leafletIsFullscreen ? 'is-full-screen' : 'is-minimized'">
           <div class="hh-alert-wave-container">
             <v-alert v-if="lastWaveIncomingWarning === 'incoming'" density="compact" variant="tonal" type="warning" title="Blíží se poslední vlna"></v-alert>
             <v-alert v-if="lastWaveIncomingWarning === 'running'" density="compact" variant="tonal" type="info" title="Poslední vlna"></v-alert>
@@ -251,6 +247,11 @@ onBeforeUnmount(() => {
             :connectedPlayers="connectedPlayers"
             :mapCenter="storeGameInstance.gameInstance.gameLocation.mapCenter"
             :nameOfIntersectedArea="nameOfIntersectedArea"></Map>
+
+          <smithy-shop-offer
+              v-if="smithyOfferOpened"
+              class="position-absolute bottom-0 right-0 left-0"
+          />
         </div>
       </template>
 
