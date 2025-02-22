@@ -248,10 +248,13 @@ onBeforeUnmount(() => {
             :mapCenter="storeGameInstance.gameInstance.gameLocation.mapCenter"
             :nameOfIntersectedArea="nameOfIntersectedArea"></Map>
 
-          <smithy-shop-offer
+          <VFadeTransition>
+            <smithy-shop-offer
+              :socket="socket"
               v-if="smithyOfferOpened"
-              class="position-absolute bottom-0 right-0 left-0"
-          />
+              @perkChosen="smithyOfferOpened = false"
+            />
+          </VFadeTransition>
         </div>
       </template>
 
