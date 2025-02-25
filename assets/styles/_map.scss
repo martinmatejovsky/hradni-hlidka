@@ -32,9 +32,10 @@
   width: 100%;
 }
 
-.h-icon-leaflet {
+.hh-icon-leaflet {
   width: var(--icon-leaflet-body-size);
   transform: translate(calc(var(--icon-leaflet-body-size) / -2), -12px);
+  color: #000;
 }
 
 .h-rider-icon-description {

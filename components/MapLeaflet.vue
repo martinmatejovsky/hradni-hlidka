@@ -24,9 +24,15 @@ import 'leaflet.fullscreen/Control.FullScreen.js';
 import 'leaflet.fullscreen/Control.FullScreen.css';
 import {useGameInstanceStore} from "~/stores/gameInstanceStore";
 import {useCurrentPlayerStore} from "~/stores/currentPlayerStore";
-import { useMapLabels } from "@/composables/useLeafletMapMethods";
+import {useLeafletMapUtilities} from "@/composables/useLeafletMapMethods";
+import {useIconLeaflet} from "~/composables/useIconLeaflet";
 
-const {addLabelsToPolygons, addLadders, handleUpdateInvadersIcons} = useMapLabels();
+const {
+  addLabelsToPolygons,
+  addLadders,
+  handleUpdateInvadersIcons,
+  addBoilingOilPots
+} = useLeafletMapUtilities();
 
 // Pinia store
 const storeGameInstance = useGameInstanceStore();
@@ -40,7 +46,6 @@ const invaderIcons = reactive<{ [key: number]: L.Marker }>({});
 const battleZonePolygons = ref<L.Polygon[]>([]);
 const utilityZonePolygons = ref<L.Polygon[]>([]);
 const TRACKING_DELAY = 10000;
-const mapFullScreen = ref(false);
 let map: L.Map;
 
 const currentPlayer = computed(() => storeCurrentPlayer.currentPlayer);
@@ -198,7 +203,7 @@ watch(() => props.connectedPlayers, (updatedConnectedPlayers) => {
       if (marker) {
         marker.setLatLng([player.location.lat, player.location.lng]);
       } else {
-        let otherPlayerIcon = L.divIcon(useIconLeaflet({ label: player.name }));
+        let otherPlayerIcon = L.divIcon(useIconLeaflet({ icon: "defender-swordsman",  label: player.name }));
         marker = L.marker([player.location.lat, player.location.lng], { icon: otherPlayerIcon }).addTo(map);
       }
     }
@@ -223,7 +228,7 @@ onMounted(async () => {
   map = L.map('map').setView(props.mapCenter, zoom.value[1]);
 
   // create icon of recent player
-  let currentPlayerIcon = L.divIcon(useIconLeaflet({ label: currentPlayer.value.name }));
+  let currentPlayerIcon = L.divIcon(useIconLeaflet({ icon: "defender-swordsman",  label: currentPlayer.value.name }));
 
   L.TileLayer.Battlefield = L.TileLayer.extend({
     getTileUrl: function (coords: {x: string, y: string, z: string}) {
@@ -318,6 +323,8 @@ onMounted(async () => {
     utilityZonePolygons.value.push(polygon);
   });
 
+  addBoilingOilPots(map, utilityZones.value);
+
   // labels for battleZones
   addLabelsToPolygons(map, battleZonePolygons.value);
   addLabelsToPolygons(map, utilityZonePolygons.value);
@@ -325,7 +332,7 @@ onMounted(async () => {
   // vykreslit ikonky utocniku, pokud uz nejaci maji byt na mape
   handleUpdateInvadersIcons(map, battleZones.value, invaderIcons);
 
-  // Počkejme, až se leafletRotated.js načte
+  // Počkejme, až se leafletRotated.js načte. Jinak vyhotovení některých funkcí selže.
   checkLeafletInterval = setInterval(() => {
     if (L.imageOverlay && typeof L.imageOverlay.rotated === "function") {
       clearInterval(checkLeafletInterval);

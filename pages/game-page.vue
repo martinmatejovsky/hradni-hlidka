@@ -5,7 +5,7 @@ import {computed, watch} from "vue";
 import {useState} from "nuxt/app";
 import {useReleaseWakeLockScreen, useRequestWakeLockScreen} from "~/composables/useWakeLockScreen";
 import type {Socket} from "socket.io-client";
-import Map from "~/components/Map.vue";
+import MapLeaflet from "~/components/MapLeaflet.vue";
 import {useIntersectedAreaKey} from "~/composables/useIntersectedAreaKey";
 import {useListenBus} from "~/composables/useEventBus";
 import {useGameInstanceStore} from "~/stores/gameInstanceStore";
@@ -243,10 +243,10 @@ onBeforeUnmount(() => {
             <v-alert v-if="lastWaveIncomingWarning === 'running'" density="compact" variant="tonal" type="info" title="Poslední vlna"></v-alert>
           </div>
 
-          <Map
+          <MapLeaflet
             :connectedPlayers="connectedPlayers"
             :mapCenter="storeGameInstance.gameInstance.gameLocation.mapCenter"
-            :nameOfIntersectedArea="nameOfIntersectedArea"></Map>
+            :nameOfIntersectedArea="nameOfIntersectedArea"></MapLeaflet>
 
           <VFadeTransition>
             <smithy-shop-offer

@@ -1,9 +1,24 @@
 import L from "leaflet";
 import {useCalculateSquareCorner} from "~/composables/useCoordinatesUtils";
 import ladderImage from "assets/icons/ladder.svg";
-import type {BattleZone, Invader} from "~/types/CustomTypes";
+import type {BattleZone, Invader, UtilityZone} from "~/types/CustomTypes";
+import {useIconLeaflet} from "~/composables/useIconLeaflet";
 
-export function useMapLabels() {
+export function useLeafletMapUtilities() {
+  function addBoilingOilPots(map: L.Map, utilityZones: UtilityZone[]) {
+    const placesWithBoilingOil = utilityZones.filter(zone => zone.boilingOil);
+
+    placesWithBoilingOil.forEach(zone => {
+      const bounds = L.latLngBounds(zone.areaPresentational);
+      const center = bounds.getCenter();
+
+      // Create the icon properly
+      const boilingOilIcon = L.divIcon(useIconLeaflet({ icon: "cauldron-empty", label: "" }));
+
+      L.marker(center, { icon: boilingOilIcon }).addTo(map);
+    });
+  }
+
   function addLabelsToPolygons(map: L.Map, polygons: L.Polygon[]) {
     polygons.forEach(polygon => {
       const zoneKey = polygon.getTooltip()?.getContent() || '';
@@ -98,5 +113,5 @@ export function useMapLabels() {
     });
   }
 
-  return { addLabelsToPolygons, addLadders, handleUpdateInvadersIcons };
+  return { addLabelsToPolygons, addLadders, handleUpdateInvadersIcons, addBoilingOilPots };
 }

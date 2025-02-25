@@ -1,0 +1,21 @@
+<svg width="36" height="36" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <!-- Fat, rounded body -->
+    <ellipse cx="50" cy="55" rx="18" ry="20" stroke="black" stroke-width="3" fill="white"/>
+
+    <!-- Head with big eyes -->
+    <circle cx="50" cy="28" r="14" stroke="black" stroke-width="3" fill="white"/>
+    <circle cx="40" cy="25" r="5" stroke="black" stroke-width="3" fill="white"/>
+    <circle cx="56" cy="25" r="5"  fill="black"/>
+
+    <!-- Arms -->
+    <line x1="38" y1="55" x2="20" y2="60" stroke="black" stroke-width="4"/>
+    <line x1="62" y1="55" x2="80" y2="40" stroke="black" stroke-width="4"/>
+
+    <!-- Legs -->
+    <line x1="45" y1="75" x2="38" y2="90" stroke="black" stroke-width="4"/>
+    <line x1="55" y1="75" x2="62" y2="90" stroke="black" stroke-width="4"/>
+
+    <!-- Sword -->
+    <line x1="78" y1="45" x2="95" y2="10" stroke="black" stroke-width="8"/>
+    <line x1="72" y1="26" x2="95" y2="40" stroke="black" stroke-width="8"/>
+</svg>
