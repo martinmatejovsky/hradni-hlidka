@@ -43,6 +43,7 @@ let checkLeafletInterval: ReturnType<typeof setInterval>;
 let trackingTimeout: ReturnType<typeof setTimeout>;
 const markers = reactive<{ [key: string]: L.Marker }>({});
 const invaderIcons = reactive<{ [key: number]: L.Marker }>({});
+const boilingOilIcons: Record<string, L.Marker> = {};
 const battleZonePolygons = ref<L.Polygon[]>([]);
 const utilityZonePolygons = ref<L.Polygon[]>([]);
 const TRACKING_DELAY = 10000;
@@ -185,6 +186,14 @@ watch(
   { deep: true }
 );
 
+watch(
+    () => utilityZones.value.map(zone => zone),
+    (newUtilityZone) => {
+        addBoilingOilPots(map, newUtilityZone, boilingOilIcons);
+    },
+    { deep: true }
+)
+
 watch(() => currentPlayer.value.location, (newLocation) => {
   if (newLocation.lat && newLocation.lng) {
     const marker = markers[currentPlayer.value.key];
@@ -323,7 +332,7 @@ onMounted(async () => {
     utilityZonePolygons.value.push(polygon);
   });
 
-  addBoilingOilPots(map, utilityZones.value);
+  addBoilingOilPots(map, utilityZones.value, boilingOilIcons);
 
   // labels for battleZones
   addLabelsToPolygons(map, battleZonePolygons.value);

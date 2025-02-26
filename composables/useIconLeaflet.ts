@@ -8,6 +8,7 @@ interface IconLeafletOptions {
     className?: string;
     label?: string;
     size?: [number, number];
+    progress?: number;
 }
 
 export function useIconLeaflet(options: IconLeafletOptions = {}): L.DivIconOptions {
@@ -28,6 +29,11 @@ export function useIconLeaflet(options: IconLeafletOptions = {}): L.DivIconOptio
         className,
         html: `<div class="hh-icon-leaflet d-flex flex-column position-absolute align-center text-center">` +
           `<img class="h-icon-image ${className}-image" alt="" src="${selectedIcon.src}"/>` +
+          (options.progress !== undefined
+            ? `<div class="hh-progress-bar-container">
+             <div class="hh-progress-bar" style="width: ${options.progress}%;"></div>
+           </div>`
+            : '') +
           `<span class="${className}-description">${label}</span>` +
           `</div>`,
         iconSize: options.size || [0, 0],

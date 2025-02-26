@@ -5,17 +5,33 @@ import type {BattleZone, Invader, UtilityZone} from "~/types/CustomTypes";
 import {useIconLeaflet} from "~/composables/useIconLeaflet";
 
 export function useLeafletMapUtilities() {
-  function addBoilingOilPots(map: L.Map, utilityZones: UtilityZone[]) {
+  function addBoilingOilPots(map: L.Map, utilityZones: UtilityZone[], boilingOilIcons: Record<string, L.Marker>) {
     const placesWithBoilingOil = utilityZones.filter(zone => zone.boilingOil);
 
     placesWithBoilingOil.forEach(zone => {
       const bounds = L.latLngBounds(zone.areaPresentational);
       const center = bounds.getCenter();
 
-      // Create the icon properly
-      const boilingOilIcon = L.divIcon(useIconLeaflet({ icon: "cauldron-empty", label: "" }));
+      // Vypočítání procentuálního progressu
+      const boilingOil = zone.boilingOil!;
+      const progress = Math.min(100, (boilingOil.readiness / boilingOil.readyAt) * 100);
 
-      L.marker(center, { icon: boilingOilIcon }).addTo(map);
+      const boilingOilIcon = progress < 100 ?
+        L.divIcon(useIconLeaflet({
+          icon: "cauldron-empty",
+          label: "",
+          progress,
+        }))
+        : L.divIcon(useIconLeaflet({
+          icon: "cauldron-full",
+          label: ""
+        }));
+
+      if (boilingOilIcons[zone.key]) {
+        boilingOilIcons[zone.key].setIcon(boilingOilIcon);
+      } else {
+        boilingOilIcons[zone.key] = L.marker(center, {icon: boilingOilIcon}).addTo(map);
+      }
     });
   }
 
