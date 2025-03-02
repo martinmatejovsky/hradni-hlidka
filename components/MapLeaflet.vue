@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import cauldronFullIcon from "assets/icons/cauldron-full.svg";
 
 useHead({
   script: [
@@ -52,6 +53,21 @@ let map: L.Map;
 const currentPlayer = computed(() => storeCurrentPlayer.currentPlayer);
 const battleZones = computed((): BattleZone[] => storeGameInstance.gameInstance.battleZones);
 const utilityZones = computed((): UtilityZone[] => storeGameInstance.gameInstance.utilityZones);
+
+const partnerForBoilingOilName = computed((): string => {
+  const myCarriedPot = storeGameInstance.gameInstance.carriedOilPots.find(pot =>
+      pot.carriedBy.includes(currentPlayer.value.key)
+  );
+  if(!myCarriedPot) return '';
+
+  const otherPlayerId = myCarriedPot.carriedBy.find(id => id !== currentPlayer.value.key);
+
+  if (!otherPlayerId) return '';
+
+  const otherPlayer = storeGameInstance.gameInstance.players.find(player => player.key === otherPlayerId);
+
+  return otherPlayer ? otherPlayer.name : '';
+});
 
 const props = defineProps({
   connectedPlayers: {
@@ -362,7 +378,21 @@ onBeforeUnmount(() => {
 
     <div class="hh-badges hh-above-fullscreen-leaflet pa-3">
       <div v-if="storeCurrentPlayer.currentPlayer.perks.sharpSword > 0" class="hh-badge is-sharp-sword">
-        <v-icon icon="mdi-sword" color="black"></v-icon>
+        <v-icon icon="mdi-sword" color="black" class="hh-badge__icon" size="32px"></v-icon>
+      </div>
+
+      <div
+        v-if="storeCurrentPlayer.currentPlayer.perks.boilingOil"
+        class="hh-badge is-boiling-oil flex flex-column"
+        :class="{'is-incomplete': !partnerForBoilingOilName}">
+
+        <img :src="cauldronFullIcon" alt="Cauldron" class="custom-icon hh-badge__icon" />
+        <span class="pt-1">
+          {{ partnerForBoilingOilName
+            ? `nesete s ${partnerForBoilingOilName}`
+            : 'musí nést dva'
+          }}
+        </span>
       </div>
     </div>
 

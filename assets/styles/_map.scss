@@ -94,8 +94,13 @@
 
 .hh-badge {
   display: flex;
-  align-items: center;
-  justify-content: center;
+  align-items: flex-end;
+  justify-content: right;
+  color: #000;
+  margin-bottom: 20px;
+}
+
+.hh-badge__icon {
   width: 32px;
   height: 32px;
   background-color: rgba($col-golden-shine, 0.46);
@@ -117,4 +122,12 @@
   height: 100%;
   background: #fff137;
   transition: width 5s ease-in-out;
+}
+
+.is-boiling-oil {
+  &.is-incomplete {
+    .custom-icon {
+      // ?
+    }
+  }
 }
