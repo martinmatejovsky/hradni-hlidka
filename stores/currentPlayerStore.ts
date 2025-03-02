@@ -16,10 +16,16 @@ export const useCurrentPlayerStore = defineStore('currentPlayer', {
       strength: 0,
       perks: {
         sharpSword: 0,
+        boilingOil: false,
       },
       socketId: '',
     } as PlayerData,
   }),
+  getters: {
+    playerAlreadyCarriesOilPot(): boolean {
+      return this.currentPlayer.perks.boilingOil
+    }
+  },
   actions: {
     setCurrentPlayerGeolocation(coordinates: PlayerCoordinates): void {
       this.currentPlayer.location = coordinates

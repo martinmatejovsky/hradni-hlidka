@@ -114,35 +114,35 @@ const isSmithyArea = (key: string): boolean => {
   return area?.polygonType === 'smithy';
 }
 
-const startZoneTimer = () => {
+const enterZoneTimer = () => {
   if (zoneTimer.value !== null) {
     clearTimeout(zoneTimer.value);
   }
-
   zoneTimer.value = setTimeout(() => {
     smithyOfferOpened.value = true;
   }, gameSettings.value.smithyUpgradeWaiting);
 }
 
-// Function to stop the timer
-const clearZoneTimer = () => {
+const leaveZoneTimer = () => {
   if (zoneTimer.value !== null) {
     clearTimeout(zoneTimer.value);
-    zoneTimer.value = null;
   }
+  zoneTimer.value = setTimeout(() => {
+    smithyOfferOpened.value = false;
+  }, gameSettings.value.smithyUpgradeWaiting);
 }
 
 // WATCHERS
 watch(keyOfIntersectedArea, (newKey): void => {
   if (battleZones && currentPlayer.value.key) {
     currentPlayer.value.insideZone = keyOfIntersectedArea.value;
-    socket.emit('playerRelocatedToZone', {gameId: storeGameInstance.gameInstance.id, player: currentPlayer.value})
+    socket.emit('playerRelocatedToZone', {gameId: storeGameInstance.gameInstance.id, player: currentPlayer.value});
   }
 
   if (isSmithyArea(newKey)) {
-    startZoneTimer();
+    enterZoneTimer();
   } else {
-    clearZoneTimer();
+    leaveZoneTimer();
   }
 });
 
@@ -203,6 +203,7 @@ onBeforeUnmount(() => {
   currentPlayer.value.key = '';
   currentPlayer.value.perks = {
     sharpSword: 0,
+    boilingOil: false,
   };
 })
 </script>

@@ -28,7 +28,7 @@ const accuracyClass = computed(() => {
   }
 });
 const selectedLocationKey = ref<string>('Loket Sportovní')
-const selectedGameTempo = ref<number>(30000)
+const selectedGameTempo = ref<number>(5000)
 const selectedLadderLength = ref<number>(30)
 const selectedGameLength = ref<number>(10)
 const selectWaveVolume = ref<number>(4)
@@ -36,7 +36,7 @@ const selectAssemblyCountdown = ref<number>(1)
 const selectWavesDelay = ref<number>(5)
 const selectDefendersHitStrength = ref<number>(1)
 const selectSmithyUpgradeWaiting = ref<number>(2000)
-const oilBoilingTime = ref<number>(4)
+const oilBoilingTime = ref<number>(2)
 const selectSmithyUpgradeDuration = ref<number>(2)
 const dataLoading = ref<boolean>(false);
 const pageError = useState(STORE_APPLICATION_ERROR);

@@ -11,11 +11,13 @@ export type PlayerData = {
     strength: number,
     perks: {
         sharpSword: number,
+        boilingOil: boolean,
     }
     socketId: string,
 }
 export enum Perks {
-    sharpSword = 'sharpSword'
+    sharpSword = 'sharpSword',
+    boilingOil = 'boilingOil'
 }
 export type GameState = "none" | "ready" | "running" | "won" | "lost"
 type PolygonType = "assaultZone" | "smithy"
@@ -23,6 +25,7 @@ export interface BasePolygon {
     polygonName: string,
     key: string,
     polygonType: PolygonType,
+    areaOfAcceptedPresence: Coordinates[],
     areaPresentational: Coordinates[],
     assemblyArea?: Coordinates[],
     assaultLadder?: AssaultLadder,
@@ -68,6 +71,9 @@ export interface UtilityZone {
         readyAt: number,
     } | null,
 }
+export interface oilPot {
+    carriedBy: string[], // IDs of players
+}
 export interface GameInstance {
     id: string,
     gameState: GameState,
@@ -77,6 +83,7 @@ export interface GameInstance {
     players: PlayerData[],
     gameTempo: number,
     ladderLength: number,
+    carriedOilPots: oilPot[],
 }
 export type InvaderType = "regular" | "captain"
 export type Invader = {
