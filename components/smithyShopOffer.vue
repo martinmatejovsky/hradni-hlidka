@@ -51,17 +51,25 @@ const activatePerkBoilingOil = (smithyKey: string) => {
 
     <div class="d-flex justify-center align-center ga-5">
       <v-btn
-          variant="outlined"
-          icon="mdi-sword"
-          @click="activatePerkSharpSword"
+        variant="outlined"
+        icon="mdi-sword"
+        @click="activatePerkSharpSword"
+        density="compact"
+        size="large"
       >
       </v-btn>
 
       <v-btn
-          :disabled="!boilingOilIsReady || storeCurrentPlayer.playerAlreadyCarriesOilPot"
-          variant="outlined"
-          @click="activatePerkBoilingOil(currentSmithy?.key)">
-        <img :src="cauldronFullIcon" alt="Cauldron" class="custom-icon" />
+        :disabled="!boilingOilIsReady || storeCurrentPlayer.playerAlreadyCarriesOilPot"
+        variant="outlined"
+        @click="activatePerkBoilingOil(currentSmithy?.key)"
+      >
+        <img
+          :src="cauldronFullIcon"
+          alt="Cauldron"
+          class="custom-icon"
+          width="32px"
+          height="32px"/>
       </v-btn>
     </div>
   </div>

@@ -69,6 +69,7 @@ export interface UtilityZone {
     boilingOil: {
         readiness: number,
         readyAt: number,
+        location: Coordinates,
     } | null,
 }
 export interface oilPot {

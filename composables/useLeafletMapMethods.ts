@@ -9,8 +9,9 @@ export function useLeafletMapUtilities() {
     const placesWithBoilingOil = utilityZones.filter(zone => zone.boilingOil);
 
     placesWithBoilingOil.forEach(zone => {
-      const bounds = L.latLngBounds(zone.areaPresentational);
-      const center = bounds.getCenter();
+      if (!zone.boilingOil) return;
+
+      const iconPosition = zone.boilingOil.location;
 
       // Vypočítání procentuálního progressu
       const boilingOil = zone.boilingOil!;
@@ -30,7 +31,7 @@ export function useLeafletMapUtilities() {
       if (boilingOilIcons[zone.key]) {
         boilingOilIcons[zone.key].setIcon(boilingOilIcon);
       } else {
-        boilingOilIcons[zone.key] = L.marker(center, {icon: boilingOilIcon}).addTo(map);
+        boilingOilIcons[zone.key] = L.marker(iconPosition, {icon: boilingOilIcon}).addTo(map);
       }
     });
   }
