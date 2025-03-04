@@ -129,8 +129,15 @@ const leaveZoneTimer = () => {
   }
   zoneTimer.value = setTimeout(() => {
     smithyOfferOpened.value = false;
+    dropUnsupportedOilPot();
   }, gameSettings.value.smithyUpgradeWaiting);
 }
+
+const dropUnsupportedOilPot = () => {
+  if (!currentPlayer.value.perks.boilingOil) return;
+
+  socket.emit('dropUnsupportedOilPot', {gameId: storeGameInstance.gameInstance.id, player: currentPlayer.value})
+};
 
 // WATCHERS
 watch(keyOfIntersectedArea, (newKey): void => {
