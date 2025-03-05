@@ -89,14 +89,8 @@ export function useLeafletMapUtilities() {
     const assemblyCoordinate = battleZone.assemblyArea[assemblyAreaIndex];
 
     if (assemblyCoordinate.lat && assemblyCoordinate.lng) {
-      // Create a Leaflet divIcon
-      const invaderDivIcon = L.divIcon({
-        className: `hh-invader-icon is-${invader.type}`,
-        html: `${invader.health}`,
-        iconSize: [20, 20], // Set the size of the icon
-      });
-
-      invaderIcons[id] = L.marker([assemblyCoordinate.lat, assemblyCoordinate.lng], { icon: invaderDivIcon }).addTo(map);
+      let invaderIcon = L.divIcon(useIconLeaflet({ icon: "invader-standard", label:"" }));
+      invaderIcons[id] = L.marker([assemblyCoordinate.lat, assemblyCoordinate.lng], { icon: invaderIcon }).addTo(map);
     } else {
       console.warn(`No coordinate found for assemblyArea index ${assemblyAreaIndex} in zone ${zoneKey}`);
       return;

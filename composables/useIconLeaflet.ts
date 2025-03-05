@@ -1,10 +1,12 @@
 import horseRiderIcon from "assets/icons/horse-rider.svg";
 import cauldronEmptyIcon from "assets/icons/cauldron-empty.svg";
 import cauldronFullIcon from "assets/icons/cauldron-full.svg";
-import defenderSwordsman from "assets/icons/defender-swordsman.svg";
+import defenderSwordsmanMe from "assets/icons/defender-swordsman-me.svg";
+import defenderSwordsmanOther from "assets/icons/defender-swordsman-other.svg";
+import invaderStandard from "assets/icons/invader-standard.svg";
 
 interface IconLeafletOptions {
-    icon?: "horse-rider" | "cauldron-empty" | "cauldron-full" | "defender-swordsman";
+    icon?: "horse-rider" | "cauldron-empty" | "cauldron-full" | "defender-swordsman-me" | "defender-swordsman-other" | "invader-standard";
     className?: string;
     label?: string;
     size?: [number, number];
@@ -16,13 +18,15 @@ export function useIconLeaflet(options: IconLeafletOptions = {}): L.DivIconOptio
         "horse-rider": { src: horseRiderIcon, defaultClass: "hh-rider-icon" },
         "cauldron-empty": { src: cauldronEmptyIcon, defaultClass: "hh-cauldron-empty" },
         "cauldron-full": { src: cauldronFullIcon, defaultClass: "hh-cauldron-full" },
-        "defender-swordsman": { src: defenderSwordsman, defaultClass: "hh-defender-swordsman" },
+        "defender-swordsman-me": { src: defenderSwordsmanMe, defaultClass: "hh-defender-swordsman" },
+        "defender-swordsman-other": { src: defenderSwordsmanOther, defaultClass: "hh-defender-swordsman" },
+        "invader-standard": { src: invaderStandard, defaultClass: "hh-invader-standard" },
     };
 
     const selectedIcon = iconMap[options.icon || "horse-rider"]; // Default to horse-rider
     const {
         className = selectedIcon.defaultClass,
-        label = "Hráč",
+        label = "",
     } = options;
 
     return {
@@ -34,7 +38,7 @@ export function useIconLeaflet(options: IconLeafletOptions = {}): L.DivIconOptio
              <div class="hh-progress-bar" style="width: ${options.progress}%;"></div>
            </div>`
             : '') +
-          `<span class="${className}-description">${label}</span>` +
+          `<span v-if="label.length" class="${className}-description">${label}</span>` +
           `</div>`,
         iconSize: options.size || [0, 0],
     };

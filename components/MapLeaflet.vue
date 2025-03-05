@@ -228,7 +228,7 @@ watch(() => props.connectedPlayers, (updatedConnectedPlayers) => {
       if (marker) {
         marker.setLatLng([player.location.lat, player.location.lng]);
       } else {
-        let otherPlayerIcon = L.divIcon(useIconLeaflet({ icon: "defender-swordsman",  label: player.name }));
+        let otherPlayerIcon = L.divIcon(useIconLeaflet({ icon: "defender-swordsman-other",  label: player.name }));
         marker = L.marker([player.location.lat, player.location.lng], { icon: otherPlayerIcon }).addTo(map);
       }
     }
@@ -253,7 +253,7 @@ onMounted(async () => {
   map = L.map('map').setView(props.mapCenter, zoom.value[1]);
 
   // create icon of recent player
-  let currentPlayerIcon = L.divIcon(useIconLeaflet({ icon: "defender-swordsman",  label: currentPlayer.value.name }));
+  let currentPlayerIcon = L.divIcon(useIconLeaflet({ icon: "defender-swordsman-me",  label: currentPlayer.value.name }));
 
   L.TileLayer.Battlefield = L.TileLayer.extend({
     getTileUrl: function (coords: {x: string, y: string, z: string}) {
@@ -317,7 +317,7 @@ onMounted(async () => {
   // render PLAYER ICONS
   props.connectedPlayers.forEach((player: PlayerData) => {
     if (player.key !== currentPlayer.value.key && player.location.lat && player.location.lng) {
-      let otherPlayerIcon = L.divIcon(useIconLeaflet({ label: player.name }));
+      let otherPlayerIcon = L.divIcon(useIconLeaflet({icon: 'defender-swordsman-other', label: player.name }));
       markers[player.key] = L.marker([player.location.lat, player.location.lng], { icon: otherPlayerIcon }).addTo(map);
     }
   })
