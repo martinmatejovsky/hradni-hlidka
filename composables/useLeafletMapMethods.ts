@@ -1,7 +1,7 @@
 import L from "leaflet";
 import {useCalculateSquareCorner} from "~/composables/useCoordinatesUtils";
 import ladderImage from "assets/icons/ladder.svg";
-import type {BattleZone, Invader, UtilityZone} from "~/types/CustomTypes";
+import type {BattleZone, Invader, InvaderType, UtilityZone} from "~/types/CustomTypes";
 import {useIconLeaflet} from "~/composables/useIconLeaflet";
 
 export function useLeafletMapUtilities() {
@@ -70,7 +70,14 @@ export function useLeafletMapUtilities() {
     })
   }
 
-  function createInvaderIcon(map: L.Map, id: number, zoneKey: string, battleZones: BattleZone[], invaderIcons: { [p: number]: L.Marker<any> }) {
+  function createInvaderIcon(
+      map: L.Map,
+      id: number,
+      zoneKey: string,
+      battleZones: BattleZone[],
+      invaderIcons: { [p: number]: L.Marker<any> },
+      type: InvaderType
+  ) {
     const battleZone = battleZones.find(zone => zone.key === zoneKey);
     if (!battleZone) {
       console.warn(`BattleZone with key ${zoneKey} not found`);
@@ -89,7 +96,7 @@ export function useLeafletMapUtilities() {
     const assemblyCoordinate = battleZone.assemblyArea[assemblyAreaIndex];
 
     if (assemblyCoordinate.lat && assemblyCoordinate.lng) {
-      let invaderIcon = L.divIcon(useIconLeaflet({ icon: "invader-standard", label: "" }));
+      let invaderIcon = L.divIcon(useIconLeaflet({ icon: `invader-${type}`, label: "" }));
       invaderIcons[id] = L.marker([assemblyCoordinate.lat, assemblyCoordinate.lng], { icon: invaderIcon }).addTo(map);
     } else {
       console.warn(`No coordinate found for assemblyArea index ${assemblyAreaIndex} in zone ${zoneKey}`);
@@ -104,7 +111,7 @@ export function useLeafletMapUtilities() {
     battleZones.forEach((zone: BattleZone) => {
       zone.invaders.forEach(invader => {
         if (!invaderIcons[invader.id]) {
-          createInvaderIcon(map, invader.id, zone.key, battleZones, invaderIcons);
+          createInvaderIcon(map, invader.id, zone.key, battleZones, invaderIcons, invader.type);
         }
       });
     });
