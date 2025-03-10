@@ -128,11 +128,11 @@ function updateInvadersOnMap(index: number) {
     if (newCoordinates?.lat && newCoordinates?.lng) {
       marker.setLatLng([newCoordinates.lat, newCoordinates.lng]);
 
-      const element = marker.getElement();
-
-      if (element) {
-        element.innerHTML = `${invader.health}`;
-      }
+      // const element = marker.getElement();
+      //
+      // if (element) {
+      //   element.innerHTML = `${invader.health}`;
+      // }
     } else {
       console.warn(`No valid coordinates found for invader ${invader.id}.`);
     }

@@ -70,7 +70,7 @@ export function useLeafletMapUtilities() {
     })
   }
 
-  function createInvaderIcon(map: L.Map, id: number, zoneKey: string, battleZones: BattleZone[], invaderIcons: any) {
+  function createInvaderIcon(map: L.Map, id: number, zoneKey: string, battleZones: BattleZone[], invaderIcons: { [p: number]: L.Marker<any> }) {
     const battleZone = battleZones.find(zone => zone.key === zoneKey);
     if (!battleZone) {
       console.warn(`BattleZone with key ${zoneKey} not found`);
@@ -85,11 +85,11 @@ export function useLeafletMapUtilities() {
     }
 
     // Get the coordinate for the invader's assembly area
-    const assemblyAreaIndex = invader.assemblyArea ? invader.assemblyArea: 0;
+    const assemblyAreaIndex = invader.assemblyArea ? invader.assemblyArea : 0;
     const assemblyCoordinate = battleZone.assemblyArea[assemblyAreaIndex];
 
     if (assemblyCoordinate.lat && assemblyCoordinate.lng) {
-      let invaderIcon = L.divIcon(useIconLeaflet({ icon: "invader-standard", label:"" }));
+      let invaderIcon = L.divIcon(useIconLeaflet({ icon: "invader-standard", label: "" }));
       invaderIcons[id] = L.marker([assemblyCoordinate.lat, assemblyCoordinate.lng], { icon: invaderIcon }).addTo(map);
     } else {
       console.warn(`No coordinate found for assemblyArea index ${assemblyAreaIndex} in zone ${zoneKey}`);
@@ -97,7 +97,7 @@ export function useLeafletMapUtilities() {
     }
   }
 
-  function handleUpdateInvadersIcons(map: L.Map, battleZones: BattleZone[], invaderIcons: any) {
+  function handleUpdateInvadersIcons(map: L.Map, battleZones: BattleZone[], invaderIcons: { [p: number]: L.Marker<any> }) {
     const currentInvaders: Invader[] = battleZones.flatMap((zone: BattleZone) => zone.invaders);
 
     // 1. Add new icons for invaders that don't have an icon yet

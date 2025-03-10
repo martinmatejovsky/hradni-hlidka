@@ -30,16 +30,16 @@ export function useIconLeaflet(options: IconLeafletOptions = {}): L.DivIconOptio
     } = options;
 
     return {
-        className,
-        html: `<div class="hh-icon-leaflet d-flex flex-column position-absolute align-center text-center">` +
-          `<img class="h-icon-image ${className}-image" alt="" src="${selectedIcon.src}"/>` +
-          (options.progress !== undefined
+        className: "",
+        html: `<div class="hh-icon-leaflet d-flex flex-column position-absolute align-center text-center">
+                 <img class="h-icon-image ${className}-image" alt="" src="${selectedIcon.src}"/>
+                 ${options.progress !== undefined
             ? `<div class="hh-progress-bar-container">
-             <div class="hh-progress-bar" style="width: ${options.progress}%;"></div>
-           </div>`
-            : '') +
-          `<span v-if="label.length" class="${className}-description">${label}</span>` +
-          `</div>`,
-        iconSize: options.size || [0, 0],
+                        <div class="hh-progress-bar" style="width: ${options.progress}%;"></div>
+                      </div>`
+            : ''}
+                 ${label.length ? `<span class="${className}-description">${label}</span>` : ''}
+               </div>`,
+        iconSize: options.size || [10, 10],
     };
 }
