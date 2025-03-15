@@ -36,6 +36,7 @@ export function useSocket(gameId: string) {
             const player = game.players.find(p => p.key === storeCurrentPlayer.currentPlayer.key);
             if (player) {
                 storeCurrentPlayer.currentPlayer.perks = player.perks;
+                storeCurrentPlayer.currentPlayer.canPourBoilingOil = player.canPourBoilingOil;
             }
         }
         useEventBus('updateLifeOfInvaders');

@@ -6,14 +6,15 @@ import {useState} from "nuxt/app";
 import {useReleaseWakeLockScreen, useRequestWakeLockScreen} from "~/composables/useWakeLockScreen";
 import type {Socket} from "socket.io-client";
 import MapLeaflet from "~/components/MapLeaflet.vue";
-import {useIntersectedAreaKey} from "~/composables/useIntersectedAreaKey";
 import {useListenBus} from "~/composables/useEventBus";
 import {useGameInstanceStore} from "~/stores/gameInstanceStore";
 import {useCurrentPlayerStore} from "~/stores/currentPlayerStore";
+import {useZoneIntersectionStore} from "~/stores/zoneIntersectionStore";
 
-// Pinia store
+// Pinia stores
 const storeGameInstance = useGameInstanceStore();
 const storeCurrentPlayer = useCurrentPlayerStore();
+const storeZoneIntersection = useZoneIntersectionStore();
 
 // DATA
 const runtimeConfig = useRuntimeConfig()
@@ -37,6 +38,9 @@ const currentPlayer = computed((): PlayerData => storeCurrentPlayer.currentPlaye
 const connectedPlayers = computed((): PlayerData[] => storeGameInstance.gameInstance.players);
 const battleZones = computed((): BattleZone[] => storeGameInstance.gameInstance.battleZones);
 const utilityZones = computed((): UtilityZone[] => storeGameInstance.gameInstance.utilityZones);
+
+const keyOfIntersectedArea = computed((): string => storeZoneIntersection.keyOfIntersectedArea);
+const nameOfIntersectedArea = computed((): string => storeZoneIntersection.nameOfIntersectedArea);
 
 // METHODS
 const getBack = (): void => {
@@ -83,23 +87,6 @@ const geolocationWarning = computed(() => {
   }
 })
 
-const keyOfIntersectedArea = computed((): string => {
-  if (currentPlayer?.value.location && battleZones) {
-    return useIntersectedAreaKey(currentPlayer.value.location);
-  } else {
-    return '';
-  }
-})
-const nameOfIntersectedArea = computed((): string => {
-  if (battleZones) {
-    const allAreas = [...battleZones.value, ...utilityZones.value];
-    const area = allAreas.find(zone => zone.key === keyOfIntersectedArea.value);
-    return area?.zoneName || '';
-  } else {
-    return '';
-  }
-})
-
 const currentPlayerMark = ((player: PlayerData) => {
   return currentPlayer.value?.key === player.key ? '(Já)' : '';
 })
@@ -109,10 +96,7 @@ const gameStateRunning = computed(() => gameState.value === 'running')
 const gameStateLost = computed(() => gameState.value === 'lost')
 const gameStateWon = computed(() => gameState.value === 'won')
 
-const isSmithyArea = (key: string): boolean => {
-  const area = utilityZones.value.find(zone => zone.key === key);
-  return area?.polygonType === 'smithy';
-}
+const isSmithyArea = computed(() => storeZoneIntersection.isInSmithyArea);
 
 const enterZoneTimer = () => {
   if (zoneTimer.value !== null) {
@@ -140,13 +124,14 @@ const dropUnsupportedOilPot = () => {
 };
 
 // WATCHERS
-watch(keyOfIntersectedArea, (newKey): void => {
+watch(keyOfIntersectedArea, (): void => {
+  storeZoneIntersection.updatePlayerZone();
+
   if (battleZones && currentPlayer.value.key) {
-    currentPlayer.value.insideZone = keyOfIntersectedArea.value;
     socket.emit('playerRelocatedToZone', {gameId: storeGameInstance.gameInstance.id, player: currentPlayer.value});
   }
 
-  if (isSmithyArea(newKey)) {
+  if (isSmithyArea.value) {
     enterZoneTimer();
   } else {
     leaveZoneTimer();
@@ -181,9 +166,9 @@ onBeforeMount(async () => {
       storeGameInstance.getGameInstance(),
       storeGameInstance.getGameSettings()
     ])
-    .then(() => {
-      socket = useSocket(storeGameInstance.gameInstance.id);
-    });
+        .then(() => {
+          socket = useSocket(storeGameInstance.gameInstance.id);
+        });
 
     if (intervalRunAttack.value !== null) {
       clearInterval(intervalRunAttack.value);
@@ -197,7 +182,8 @@ onBeforeMount(async () => {
     useEnsureSocketDisconnect();
   });
 
-  currentPlayer.value.insideZone = keyOfIntersectedArea.value; // manually setting zone where player is when opening the game lobby
+  // Set initial zone
+  storeZoneIntersection.updatePlayerZone();
   await useReleaseWakeLockScreen();
 })
 

@@ -18,6 +18,7 @@ export const useCurrentPlayerStore = defineStore('currentPlayer', {
         sharpSword: 0,
         boilingOil: false,
       },
+      canPourBoilingOil: false,
       socketId: '',
     } as PlayerData,
   }),
