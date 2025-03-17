@@ -238,6 +238,7 @@ onBeforeUnmount(() => {
           </div>
 
           <MapLeaflet
+            :socket="socket"
             :connectedPlayers="connectedPlayers"
             :mapCenter="storeGameInstance.gameInstance.gameLocation.mapCenter"
             :nameOfIntersectedArea="nameOfIntersectedArea"></MapLeaflet>

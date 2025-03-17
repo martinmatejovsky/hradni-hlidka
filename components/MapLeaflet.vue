@@ -27,6 +27,7 @@ import {useGameInstanceStore} from "~/stores/gameInstanceStore";
 import {useCurrentPlayerStore} from "~/stores/currentPlayerStore";
 import {useLeafletMapUtilities} from "@/composables/useLeafletMapMethods";
 import {useIconLeaflet} from "~/composables/useIconLeaflet";
+import {Socket} from "socket.io-client";
 
 const {
   addLabelsToPolygons,
@@ -54,6 +55,18 @@ const currentPlayer = computed(() => storeCurrentPlayer.currentPlayer);
 const battleZones = computed((): BattleZone[] => storeGameInstance.gameInstance.battleZones);
 const utilityZones = computed((): UtilityZone[] => storeGameInstance.gameInstance.utilityZones);
 
+const labelIconPouringOil = computed(() => {
+  const { currentPlayer } = storeCurrentPlayer;
+
+  if (currentPlayer.canPourBoilingOil) {
+    return "Vylejte otočením";
+  }
+
+  return partnerForBoilingOilName.value
+    ? `nesete s ${partnerForBoilingOilName.value}`
+    : "musí nést dva";
+});
+
 const partnerForBoilingOilName = computed((): string => {
   const myCarriedPot = storeGameInstance.gameInstance.carriedOilPots.find(pot =>
       pot.carriedBy.includes(currentPlayer.value.key)
@@ -70,6 +83,10 @@ const partnerForBoilingOilName = computed((): string => {
 });
 
 const props = defineProps({
+  socket: {
+    type: Socket || undefined,
+    required: true
+  },
   connectedPlayers: {
     type: Array as PropType<PlayerData[]>,
     required: true
@@ -89,6 +106,9 @@ const polygonColors = {
   utilityZone: '57,65,133,0.4',
   utilityZoneHighlighted: '57,65,133,0.8',
 }
+
+let oilPouringListener: ((event: DeviceOrientationEvent) => void) | null = null;
+
 
 // Simplified comparison function for Invader objects
 function simpleEqual (obj1: Invader, obj2: Invader): boolean {
@@ -179,7 +199,44 @@ function pauseTracking() {
   }, TRACKING_DELAY);
 }
 
+const startWatchingPouring = () => {
+  console.log('CAN pour', storeCurrentPlayer.currentPlayer.canPourBoilingOil)
+  if (!storeCurrentPlayer.currentPlayer.canPourBoilingOil) return;
+
+  oilPouringListener = (event: DeviceOrientationEvent): void => {
+    console.log(event.beta)
+    if (event.beta !== null) {
+      // `beta` měří naklonění kolem horizontální osy. -90° = vzhůru nohama
+      if (event.beta < -45) {
+        if (!storeCurrentPlayer.currentPlayer.insideZone) return
+        props.socket.emit(
+          'oilIsPouredOff',
+          {
+            player: storeCurrentPlayer.currentPlayer
+          },
+        );
+      }
+    }
+  };
+
+  window.addEventListener("deviceorientation", oilPouringListener);
+};
+
+const stopWatchingPouring = () => {
+  if (oilPouringListener) {
+    window.removeEventListener("deviceorientation", oilPouringListener);
+    oilPouringListener = null;
+  }
+};
+
 // WATCHERS
+
+// can pour boiling oil?
+watch(() => storeCurrentPlayer.currentPlayer.canPourBoilingOil, (canPour) => {
+  if (canPour) {
+    startWatchingPouring();
+  }
+});
 
 // change color of polygon where currentUser is
 watch(
@@ -367,8 +424,9 @@ onMounted(async () => {
 });
 
 onBeforeUnmount(() => {
-  clearInterval(checkLeafletInterval)
+  clearInterval(checkLeafletInterval);
   clearTimeout(trackingTimeout);
+  stopWatchingPouring()
 })
 </script>
 
@@ -384,14 +442,14 @@ onBeforeUnmount(() => {
       <div
         v-if="storeCurrentPlayer.currentPlayer.perks.boilingOil"
         class="hh-badge is-boiling-oil flex flex-column"
-        :class="{'is-incomplete': !partnerForBoilingOilName}">
+        :class="{
+          'is-incomplete': !partnerForBoilingOilName,
+          'is-ready-to-pour': storeCurrentPlayer.currentPlayer.canPourBoilingOil,
+        }">
 
         <img :src="cauldronFullIcon" alt="Cauldron" class="custom-icon hh-badge__icon" />
         <span class="pt-1">
-          {{ partnerForBoilingOilName
-            ? `nesete s ${partnerForBoilingOilName}`
-            : 'musí nést dva'
-          }}
+          {{ labelIconPouringOil }}
         </span>
       </div>
     </div>

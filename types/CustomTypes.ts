@@ -73,8 +73,9 @@ export interface UtilityZone {
         location: Coordinates,
     } | null,
 }
-export interface oilPot {
+export interface OilPot {
     carriedBy: string[], // IDs of players
+    pouredInZone: string[],
 }
 export interface GameInstance {
     id: string,
@@ -85,7 +86,7 @@ export interface GameInstance {
     players: PlayerData[],
     gameTempo: number,
     ladderLength: number,
-    carriedOilPots: oilPot[],
+    carriedOilPots: OilPot[],
 }
 export type InvaderType = "regular" | "captain"
 export type Invader = {

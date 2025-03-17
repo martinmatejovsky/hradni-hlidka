@@ -10,6 +10,16 @@
   }
 }
 
+@keyframes pourOil {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(-120deg);
+  }
+}
+
+
 .hh-battle-map {
   .leaflet-control-zoom-fullscreen {
     &:not(.leaflet-fullscreen-on) {
@@ -98,6 +108,24 @@
   justify-content: right;
   color: #000;
   margin-bottom: 20px;
+
+  &.is-boiling-oil {
+    .hh-badge__icon {
+      width: 48px;
+      height: 48px;
+      transition: transform 0.3s ease-in-out;
+    }
+
+    &.is-ready-to-pour .hh-badge__icon {
+      animation: pourOil 1.5s infinite ease-in-out;
+    }
+
+    &.is-incomplete {
+      .custom-icon {
+        // ?
+      }
+    }
+  }
 }
 
 .hh-badge__icon {
@@ -122,12 +150,4 @@
   height: 100%;
   background: #fff137;
   transition: width 5s ease-in-out;
-}
-
-.is-boiling-oil {
-  &.is-incomplete {
-    .custom-icon {
-      // ?
-    }
-  }
 }

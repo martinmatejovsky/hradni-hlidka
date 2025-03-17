@@ -36,7 +36,7 @@ const selectAssemblyCountdown = ref<number>(1)
 const selectWavesDelay = ref<number>(5)
 const selectDefendersHitStrength = ref<number>(1)
 const selectSmithyUpgradeWaiting = ref<number>(2000)
-const oilBoilingTime = ref<number>(2)
+const oilBoilingTime = ref<number>(1)
 const selectSmithyUpgradeDuration = ref<number>(2)
 const dataLoading = ref<boolean>(false);
 const pageError = useState(STORE_APPLICATION_ERROR);
@@ -83,7 +83,7 @@ const smithyUpgradeStrength: ComputedRef<number[]> = computed(() => {
   return [1, 2, 3, 4, 5, 6, 7];
 });
 const oilBoilingTimeOptions: ComputedRef<number[]> = computed(() => {
-  return [2, 4, 8, 16, 24];
+  return [1, 2, 4, 8, 16, 24];
 });
 
 // METHODS
