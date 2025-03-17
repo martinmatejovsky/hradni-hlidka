@@ -1,12 +1,13 @@
 import { defineStore } from 'pinia'
-import type {PlayerCoordinates, PlayerData} from "~/types/CustomTypes";
+import {type PlayerCoordinates, type PlayerData, WeaponType} from "~/types/CustomTypes";
 
 export const useCurrentPlayerStore = defineStore('currentPlayer', {
   state: () =>({
     geolocationWatcher: null as (number | null),
     currentPlayer: {
-      name: 'Beolf',
       key: '',
+      name: 'Beolf',
+      weaponType: WeaponType.SWORD,
       location: {
         lat: 0,
         lng: 0,

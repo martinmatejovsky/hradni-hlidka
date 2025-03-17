@@ -4,6 +4,7 @@ import {STORE_APPLICATION_ERROR} from "~/constants";
 import type {Socket} from 'socket.io-client'
 import {useCurrentPlayerStore} from "~/stores/currentPlayerStore";
 import {useGameInstanceStore} from "~/stores/gameInstanceStore";
+import {WeaponType, WeaponData} from "~/types/CustomTypes";
 
 // Pinia store
 const storeCurrentPlayer = useCurrentPlayerStore();
@@ -19,6 +20,13 @@ const isFormValid = computed(() => {
   return selectedPlayerName.value
 })
 const selectedPlayerName = ref<string>('Test Beolf')
+const weaponType = ref<string>(WeaponType.SWORD)
+
+// COMPUTED
+const weaponOptions = computed(() => Object.values(WeaponType).map(type => ({
+  value: type,
+  text: WeaponData[type].label
+})));
 
 // METHODS
 const submitForm = async () => {
@@ -46,7 +54,21 @@ const submitForm = async () => {
     <v-row>
       <v-col cols="12" sm="6" md="4">
         <v-form :fast-fail="true" @submit.prevent="submitForm">
-          <v-text-field :clearable="true" v-model="storeCurrentPlayer.currentPlayer.name" required label="Jméno"></v-text-field>
+          <v-text-field
+              :clearable="true"
+              v-model="storeCurrentPlayer.currentPlayer.name"
+              required
+              label="Jméno"
+          />
+
+          <v-select
+              :model-value="weaponType"
+              :items="weaponOptions"
+              item-title="text"
+              item-value="value"
+              label="Zbraň"
+          />
+
           <v-btn type="submit" class="mb-2" :block="true" :disabled="!isFormValid" rounded="xs">Přidat se</v-btn>
         </v-form>
       </v-col>
