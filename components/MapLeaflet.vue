@@ -18,7 +18,14 @@ useHead({
 });
 
 import type {LatLngExpression} from "leaflet";
-import type {BattleZone, Invader, PlayerData, Coordinates, UtilityZone} from '~/types/CustomTypes';
+import {
+  type BattleZone,
+  type Invader,
+  type PlayerData,
+  type Coordinates,
+  type UtilityZone,
+  WeaponType
+} from '~/types/CustomTypes';
 import {useEventBus, useListenBus} from "~/composables/useEventBus";
 import * as L from 'leaflet';
 import 'leaflet.fullscreen/Control.FullScreen.js';
@@ -109,6 +116,16 @@ const polygonColors = {
 
 let oilPouringListener: ((event: DeviceOrientationEvent) => void) | null = null;
 
+const getIconNameBasedOnWeaponType = (weaponType: WeaponType): string => {
+  switch (weaponType) {
+    case WeaponType.SWORD:
+      return 'defender-swordsman';
+    case WeaponType.CANON:
+      return 'defender-canon';
+    default:
+      return 'defender-swordsman';
+  }
+}
 
 // Simplified comparison function for Invader objects
 function simpleEqual (obj1: Invader, obj2: Invader): boolean {
@@ -285,7 +302,8 @@ watch(() => props.connectedPlayers, (updatedConnectedPlayers) => {
       if (marker) {
         marker.setLatLng([player.location.lat, player.location.lng]);
       } else {
-        let otherPlayerIcon = L.divIcon(useIconLeaflet({ icon: "defender-swordsman-other",  label: player.name }));
+        let iconToUse = getIconNameBasedOnWeaponType(player.weaponType) + '-other';
+        let otherPlayerIcon = L.divIcon(useIconLeaflet({ icon: iconToUse,  label: player.name }));
         marker = L.marker([player.location.lat, player.location.lng], { icon: otherPlayerIcon }).addTo(map);
       }
     }
@@ -310,7 +328,8 @@ onMounted(async () => {
   map = L.map('map').setView(props.mapCenter, zoom.value[1]);
 
   // create icon of recent player
-  let currentPlayerIcon = L.divIcon(useIconLeaflet({ icon: "defender-swordsman-me",  label: currentPlayer.value.name }));
+  let iconToUse = getIconNameBasedOnWeaponType(currentPlayer.value.weaponType) + '-me';
+  let currentPlayerIcon = L.divIcon(useIconLeaflet({ icon: iconToUse,  label: currentPlayer.value.name }));
 
   L.TileLayer.Battlefield = L.TileLayer.extend({
     getTileUrl: function (coords: {x: string, y: string, z: string}) {
@@ -374,7 +393,9 @@ onMounted(async () => {
   // render PLAYER ICONS
   props.connectedPlayers.forEach((player: PlayerData) => {
     if (player.key !== currentPlayer.value.key && player.location.lat && player.location.lng) {
-      let otherPlayerIcon = L.divIcon(useIconLeaflet({icon: 'defender-swordsman-other', label: player.name }));
+      let iconToUse = getIconNameBasedOnWeaponType(player.weaponType) + '-other';
+
+      let otherPlayerIcon = L.divIcon(useIconLeaflet({icon: iconToUse, label: player.name }));
       markers[player.key] = L.marker([player.location.lat, player.location.lng], { icon: otherPlayerIcon }).addTo(map);
     }
   })
@@ -383,7 +404,7 @@ onMounted(async () => {
     markers[currentPlayer.value.key] = L.marker([currentPlayer.value.location.lat, currentPlayer.value.location.lng], { icon: currentPlayerIcon }).addTo(map);
   }
 
-  // Přidání orientacnich obdélníků pro každou battleZone
+  // Přidání orientačních obdélníků pro každou battleZone
   battleZones.value.forEach(battleZone => {
     const corners = battleZone.areaPresentational as LatLngExpression[];
     const polygon = L.polygon(corners, {

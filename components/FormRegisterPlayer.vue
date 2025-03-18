@@ -28,6 +28,7 @@ const weaponOptions = computed(() => Object.values(WeaponType).map(type => ({
   text: WeaponData[type].label
 })));
 
+
 // METHODS
 const submitForm = async () => {
   if (!props.socket) {
@@ -62,7 +63,7 @@ const submitForm = async () => {
           />
 
           <v-select
-              :model-value="weaponType"
+              v-model="storeCurrentPlayer.currentPlayer.weaponType"
               :items="weaponOptions"
               item-title="text"
               item-value="value"
