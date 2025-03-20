@@ -1,6 +1,7 @@
 import L from "leaflet";
 import {useCalculateSquareCorner} from "~/composables/useCoordinatesUtils";
 import ladderImage from "assets/icons/ladder.svg";
+import bombardingMarkImage from "assets/icons/target-zone-aim.svg";
 import type {BattleZone, Invader, InvaderType, UtilityZone} from "~/types/CustomTypes";
 import {useIconLeaflet} from "~/composables/useIconLeaflet";
 
@@ -131,5 +132,18 @@ export function useLeafletMapUtilities() {
     });
   }
 
-  return { addLabelsToPolygons, addLadders, handleUpdateInvadersIcons, addBoilingOilPots };
+  function addBombardingMarks(map: L.Map, battleZones: BattleZone[]) {
+    battleZones.forEach(battleZone => {
+      const bombardingTargetPosition = battleZone.assemblyAreaCenter;
+
+      const imageBounds: L.LatLngBoundsExpression = [
+        [bombardingTargetPosition.lat - 0.005, bombardingTargetPosition.lng - 0.005], // Jihozápadní roh
+        [bombardingTargetPosition.lat + 0.005, bombardingTargetPosition.lng + 0.005], // Severovýchodní roh
+      ];
+
+      L.imageOverlay(bombardingMarkImage, imageBounds).addTo(map);
+    });
+  }
+
+  return { addLabelsToPolygons, addLadders, handleUpdateInvadersIcons, addBoilingOilPots, addBombardingMarks };
 }

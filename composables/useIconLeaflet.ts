@@ -4,6 +4,7 @@ import cauldronFullIcon from "assets/icons/cauldron-full.svg";
 import defenderSwordsmanMe from "assets/icons/defender-swordsman-me.svg";
 import defenderSwordsmanOther from "assets/icons/defender-swordsman-other.svg";
 import defenderCanonMe from "assets/icons/defender-canon-me.svg";
+import defenderCanonOther from "assets/icons/defender-canon-other.svg";
 import invaderStandard from "assets/icons/invader-regular.svg";
 import invaderCaptain from "assets/icons/invader-captain.svg";
 
@@ -14,6 +15,7 @@ interface IconLeafletOptions {
         | "defender-swordsman-me"
         | "defender-swordsman-other"
         | "defender-canon-me"
+        | "defender-canon-other"
         | "invader-regular"
         | "invader-captain";
     className?: string;
@@ -30,6 +32,7 @@ export function useIconLeaflet(options: IconLeafletOptions = {}): L.DivIconOptio
         "defender-swordsman-me": { src: defenderSwordsmanMe, defaultClass: "hh-defender-swordsman" },
         "defender-swordsman-other": { src: defenderSwordsmanOther, defaultClass: "hh-defender-swordsman" },
         "defender-canon-me": { src: defenderCanonMe, defaultClass: "hh-defender-canon" },
+        "defender-canon-other": { src: defenderCanonOther, defaultClass: "hh-defender-canon" },
         "invader-regular": { src: invaderStandard, defaultClass: "hh-invader-regular" },
         "invader-captain": { src: invaderCaptain, defaultClass: "hh-invader-captain" },
     };
