@@ -43,6 +43,26 @@ const keyOfIntersectedArea = computed((): string => storeZoneIntersection.keyOfI
 const nameOfIntersectedArea = computed((): string => storeZoneIntersection.nameOfIntersectedArea);
 
 // METHODS
+const onMapReady = () => {
+  startCannonLoading();
+}
+
+const startCannonLoading = () => {
+  console.log("__ Cannon loading...");
+  if (cannonLoadingInterval) return;
+
+  cannonLoadingInterval = setInterval(() => {
+    if (cannonLoadingTime.value < storeGameInstance.gameSettings.canonLoadingTime) {
+      cannonLoadingTime.value++;
+      console.log("__ Cannon ++");
+    } else {
+      clearInterval(cannonLoadingInterval as NodeJS.Timeout);
+      cannonLoadingInterval = null;
+      console.log("__ Cannon is fully loaded!");
+    }
+  }, 1000);
+};
+
 const getBack = (): void => {
   navigateTo('/');
 }
@@ -60,9 +80,6 @@ const useEnsureSocketDisconnect = async () => {
 
 const startAttack = async (): Promise<void> => {
   await useRequestWakeLockScreen();
-
-  // TODO: send to server that game has started. After response start also the game on client side,
-  // like for example with intervalRunAttack.value = useRunAttack();
 
   await $fetch(`${runtimeConfig.public.serverUrl}/api/game/start`, {
     method: 'POST',
@@ -241,7 +258,9 @@ onBeforeUnmount(() => {
             :socket="socket"
             :connectedPlayers="connectedPlayers"
             :mapCenter="storeGameInstance.gameInstance.gameLocation.mapCenter"
-            :nameOfIntersectedArea="nameOfIntersectedArea"></MapLeaflet>
+            :nameOfIntersectedArea="nameOfIntersectedArea">
+            @leafletMapLoaded="onMapReady()"
+          </MapLeaflet>
 
           <VFadeTransition>
             <smithy-shop-offer

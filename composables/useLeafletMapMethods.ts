@@ -4,6 +4,7 @@ import ladderImage from "assets/icons/ladder.svg";
 import bombardingMarkImage from "assets/icons/target-zone-aim.svg";
 import type {BattleZone, Invader, InvaderType, UtilityZone} from "~/types/CustomTypes";
 import {useIconLeaflet} from "~/composables/useIconLeaflet";
+import {useGameInstanceStore} from "~/stores/gameInstanceStore";
 
 export function useLeafletMapUtilities() {
   function addBoilingOilPots(map: L.Map, utilityZones: UtilityZone[], boilingOilIcons: Record<string, L.Marker>) {
@@ -133,15 +134,38 @@ export function useLeafletMapUtilities() {
   }
 
   function addBombardingMarks(map: L.Map, battleZones: BattleZone[]) {
+    const storeGameInstance = useGameInstanceStore()
+    let selectedMarker: L.Marker | null = null;
+
     battleZones.forEach(battleZone => {
       const bombardingTargetPosition = battleZone.assemblyAreaCenter;
 
-      const imageBounds: L.LatLngBoundsExpression = [
-        [bombardingTargetPosition.lat - 0.005, bombardingTargetPosition.lng - 0.005], // Jihozápadní roh
-        [bombardingTargetPosition.lat + 0.005, bombardingTargetPosition.lng + 0.005], // Severovýchodní roh
-      ];
+      const icon = L.divIcon({
+        className: "hh-bombarding-marker",
+        html: `<img src="${bombardingMarkImage}" alt="" class="hh-bombarding-img">`,
+        iconSize: [100, 100], // Adjust size as needed
+        iconAnchor: [50, 50], // Center the image
+      });
 
-      L.imageOverlay(bombardingMarkImage, imageBounds).addTo(map);
+      const bombardingMarker = L.marker(bombardingTargetPosition, {
+        icon,
+        interactive: true,
+      }).addTo(map);
+
+      // Click event for selecting the bombarding marker
+      bombardingMarker.on("click", () => {
+        // Remove animation from all other images
+        document.querySelectorAll(".hh-bombarding-img").forEach(img => {
+          img.classList.remove("hh-pulsate");
+        });
+
+        // Add animation to the clicked one
+        const imgElement = bombardingMarker.getElement()?.querySelector(".hh-bombarding-img");
+        imgElement?.classList.add("hh-pulsate");
+
+        selectedMarker = bombardingMarker;
+        storeGameInstance.canonUsage.targetZoneId = battleZone.key;
+      });
     });
   }
 

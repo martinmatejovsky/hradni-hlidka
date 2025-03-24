@@ -31,6 +31,8 @@ export interface BasePolygon {
     areaPresentational: Coordinates[],
     assemblyArea?: Coordinates[],
     assaultLadder?: AssaultLadder,
+    assemblyAreaCenter?: Coordinates,
+    boilingOilPotLocation?: Coordinates,
 }
 export interface GameLocation {
     locationName: string,
@@ -109,6 +111,7 @@ export type Settings = {
     smithyUpgradeWaiting: number,
     smithyUpgradeStrength: number,
     oilBoilingTime: number,
+    canonLoadingTime: number,
 }
 export type LastWaveNotice = 'none' | 'incoming' | 'running'
 export enum WeaponType {

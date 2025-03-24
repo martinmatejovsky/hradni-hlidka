@@ -35,13 +35,17 @@ import {useCurrentPlayerStore} from "~/stores/currentPlayerStore";
 import {useLeafletMapUtilities} from "@/composables/useLeafletMapMethods";
 import {useIconLeaflet} from "~/composables/useIconLeaflet";
 import {Socket} from "socket.io-client";
+import {useEvaluateWeaponAbility} from "~/composables/useEvaluateWeaponAbility";
 
 const {
   addLabelsToPolygons,
   addLadders,
   handleUpdateInvadersIcons,
-  addBoilingOilPots
+  addBoilingOilPots,
+  addBombardingMarks,
 } = useLeafletMapUtilities();
+
+const emit = defineEmits(['leafletMapLoaded'])
 
 // Pinia store
 const storeGameInstance = useGameInstanceStore();
@@ -58,9 +62,28 @@ const utilityZonePolygons = ref<L.Polygon[]>([]);
 const TRACKING_DELAY = 10000;
 let map: L.Map;
 
+const props = defineProps({
+  socket: {
+    type: Socket || undefined,
+    required: true
+  },
+  connectedPlayers: {
+    type: Array as PropType<PlayerData[]>,
+    required: true
+  },
+  mapCenter: {
+    type: Object as PropType<Coordinates>,
+    required: true
+  },
+  nameOfIntersectedArea: {
+    type: String as PropType<string>,
+  }
+});
+
 const currentPlayer = computed(() => storeCurrentPlayer.currentPlayer);
 const battleZones = computed((): BattleZone[] => storeGameInstance.gameInstance.battleZones);
 const utilityZones = computed((): UtilityZone[] => storeGameInstance.gameInstance.utilityZones);
+
 
 const labelIconPouringOil = computed(() => {
   const { currentPlayer } = storeCurrentPlayer;
@@ -87,24 +110,6 @@ const partnerForBoilingOilName = computed((): string => {
   const otherPlayer = storeGameInstance.gameInstance.players.find(player => player.key === otherPlayerId);
 
   return otherPlayer ? otherPlayer.name : '';
-});
-
-const props = defineProps({
-  socket: {
-    type: Socket || undefined,
-    required: true
-  },
-  connectedPlayers: {
-    type: Array as PropType<PlayerData[]>,
-    required: true
-  },
-  mapCenter: {
-    type: Object as PropType<Coordinates>,
-    required: true
-  },
-  nameOfIntersectedArea: {
-    type: String as PropType<string>,
-  }
 });
 
 const polygonColors = {
@@ -164,12 +169,6 @@ function updateInvadersOnMap(index: number) {
 
     if (newCoordinates?.lat && newCoordinates?.lng) {
       marker.setLatLng([newCoordinates.lat, newCoordinates.lng]);
-
-      // const element = marker.getElement();
-      //
-      // if (element) {
-      //   element.innerHTML = `${invader.health}`;
-      // }
     } else {
       console.warn(`No valid coordinates found for invader ${invader.id}.`);
     }
@@ -217,11 +216,9 @@ function pauseTracking() {
 }
 
 const startWatchingPouring = () => {
-  console.log('CAN pour', storeCurrentPlayer.currentPlayer.canPourBoilingOil)
   if (!storeCurrentPlayer.currentPlayer.canPourBoilingOil) return;
 
   oilPouringListener = (event: DeviceOrientationEvent): void => {
-    console.log(event.beta)
     if (event.beta !== null) {
       // `beta` měří naklonění kolem horizontální osy. -90° = vzhůru nohama
       if (event.beta < -45) {
@@ -404,7 +401,6 @@ onMounted(async () => {
     markers[currentPlayer.value.key] = L.marker([currentPlayer.value.location.lat, currentPlayer.value.location.lng], { icon: currentPlayerIcon }).addTo(map);
   }
 
-  // Přidání orientačních obdélníků pro každou battleZone
   battleZones.value.forEach(battleZone => {
     const corners = battleZone.areaPresentational as LatLngExpression[];
     const polygon = L.polygon(corners, {
@@ -415,7 +411,6 @@ onMounted(async () => {
     battleZonePolygons.value.push(polygon);
   });
 
-  // Přidání orientacnich obdélníků pro každou utilityZone. Testovací účely.
   utilityZones.value.forEach(utilityZone => {
     const corners = utilityZone.areaPresentational as LatLngExpression[];
     const polygon = L.polygon(corners, {
@@ -439,7 +434,13 @@ onMounted(async () => {
   checkLeafletInterval = setInterval(() => {
     if (L.imageOverlay && typeof L.imageOverlay.rotated === "function") {
       clearInterval(checkLeafletInterval);
+
       addLadders(map, battleZones.value);
+      addBombardingMarks(map, battleZones.value, (position) => {
+        console.log("Player selected bombarding position:", position);
+      });
+      console.log('leafletMapLoaded');
+      emit('leafletMapLoaded');
     }
   }, 200);
 });
@@ -471,6 +472,20 @@ onBeforeUnmount(() => {
         <img :src="cauldronFullIcon" alt="Cauldron" class="custom-icon hh-badge__icon" />
         <span class="pt-1">
           {{ labelIconPouringOil }}
+        </span>
+      </div>
+
+      <div
+          v-if="useEvaluateWeaponAbility(currentPlayer.weaponType).canBombardAssemblyArea"
+          class="hh-badge is-boiling-oil flex flex-column"
+          :class="{
+          'is-incomplete': !partnerForBoilingOilName,
+          'is-ready-to-pour': storeCurrentPlayer.currentPlayer.canPourBoilingOil,
+        }">
+
+        <img :src="cauldronFullIcon" alt="Canon" class="custom-icon hh-badge__icon" />
+        <span class="pt-1">
+          DELO
         </span>
       </div>
     </div>

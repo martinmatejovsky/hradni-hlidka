@@ -7,6 +7,9 @@ export const useGameInstanceStore = defineStore('gameInstance', {
   state: () => ({
     gameInstance: {} as GameInstance,
     gameSettings: {} as Settings,
+    canonUsage: {
+      targetZoneId: '',
+    }
   }),
   actions: {
     setGameInstance(gameInstance: GameInstance): void {
