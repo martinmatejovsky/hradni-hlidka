@@ -9,9 +9,15 @@ export const useGameInstanceStore = defineStore('gameInstance', {
     gameSettings: {} as Settings,
     canonUsage: {
       targetZoneId: '',
+      loadingProgress: 0,
     }
   }),
   actions: {
+    increaseCannonProgress() {
+      if (this.canonUsage.loadingProgress < this.gameSettings.canonLoadingTime) {
+        this.canonUsage.loadingProgress++;
+      }
+    },
     setGameInstance(gameInstance: GameInstance): void {
       this.gameInstance = gameInstance
     },

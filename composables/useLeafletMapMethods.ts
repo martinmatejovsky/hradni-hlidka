@@ -143,7 +143,7 @@ export function useLeafletMapUtilities() {
       const icon = L.divIcon({
         className: "hh-bombarding-marker",
         html: `<img src="${bombardingMarkImage}" alt="" class="hh-bombarding-img">`,
-        iconSize: [100, 100], // Adjust size as needed
+        iconSize: [100, 100],
         iconAnchor: [50, 50], // Center the image
       });
 

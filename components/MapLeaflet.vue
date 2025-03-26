@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import cauldronFullIcon from "assets/icons/cauldron-full.svg";
+import canonLoading from "assets/icons/canon-loading.svg";
 
 useHead({
   script: [
@@ -436,9 +437,7 @@ onMounted(async () => {
       clearInterval(checkLeafletInterval);
 
       addLadders(map, battleZones.value);
-      addBombardingMarks(map, battleZones.value, (position) => {
-        console.log("Player selected bombarding position:", position);
-      });
+      addBombardingMarks(map, battleZones.value);
       console.log('leafletMapLoaded');
       emit('leafletMapLoaded');
     }
@@ -476,14 +475,14 @@ onBeforeUnmount(() => {
       </div>
 
       <div
-          v-if="useEvaluateWeaponAbility(currentPlayer.weaponType).canBombardAssemblyArea"
-          class="hh-badge is-boiling-oil flex flex-column"
-          :class="{
-          'is-incomplete': !partnerForBoilingOilName,
-          'is-ready-to-pour': storeCurrentPlayer.currentPlayer.canPourBoilingOil,
-        }">
+        v-if="useEvaluateWeaponAbility(currentPlayer.weaponType).canBombardAssemblyArea"
+        class="hh-badge is-canon-empty flex flex-column"
+        :class="{
+          'is-ready-to-fire': storeCurrentPlayer.currentPlayer.canPourBoilingOil,
+        }"
+      >
 
-        <img :src="cauldronFullIcon" alt="Canon" class="custom-icon hh-badge__icon" />
+        <img :src="canonLoading" alt="Canon" class="custom-icon hh-badge__icon" />
         <span class="pt-1">
           DELO
         </span>

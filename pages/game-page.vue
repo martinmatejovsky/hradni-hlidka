@@ -27,6 +27,7 @@ const leafletIsFullscreen = ref<boolean>(false);
 const smithyOfferOpened = ref<boolean>(false);
 
 const zoneTimer = ref<NodeJS.Timeout | null>(null);
+let cannonLoadingInterval: NodeJS.Timeout | null = null;
 
 // COMPUTED
 const currentPlayerIsLeader = computed(() => {
@@ -48,12 +49,11 @@ const onMapReady = () => {
 }
 
 const startCannonLoading = () => {
-  console.log("__ Cannon loading...");
   if (cannonLoadingInterval) return;
 
   cannonLoadingInterval = setInterval(() => {
-    if (cannonLoadingTime.value < storeGameInstance.gameSettings.canonLoadingTime) {
-      cannonLoadingTime.value++;
+    if (storeGameInstance.canonUsage.loadingProgress < storeGameInstance.gameSettings.canonLoadingTime) {
+      storeGameInstance.increaseCannonProgress();
       console.log("__ Cannon ++");
     } else {
       clearInterval(cannonLoadingInterval as NodeJS.Timeout);
@@ -258,8 +258,8 @@ onBeforeUnmount(() => {
             :socket="socket"
             :connectedPlayers="connectedPlayers"
             :mapCenter="storeGameInstance.gameInstance.gameLocation.mapCenter"
-            :nameOfIntersectedArea="nameOfIntersectedArea">
-            @leafletMapLoaded="onMapReady()"
+            :nameOfIntersectedArea="nameOfIntersectedArea"
+            @leaflet-map-loaded="onMapReady">
           </MapLeaflet>
 
           <VFadeTransition>
