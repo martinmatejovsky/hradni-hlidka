@@ -5,21 +5,20 @@
     }
   }
 
-  .hh-smithy-shop-offer {
+  .hh-smithy-shop-offer,
+  .hh-panel-fire-cannon {
+    position: absolute;
     bottom: 0;
     left: 0;
     right: 0;
     z-index: $z-index-leaflet-map;
   }
 
-  .hh-smithy-shop-offer {
-    position: absolute;
-  }
-
   &.is-full-screen {
     .hh-alert-wave-container,
     .hh-area-switchers,
     .hh-smithy-shop-offer,
+    .hh-panel-fire-cannon,
     .hh-badges {
       @include above-fullscreen-leaflet
     }
@@ -37,7 +36,8 @@
       left: 0;
     }
 
-    .hh-smithy-shop-offer {
+    .hh-smithy-shop-offer,
+    .hh-panel-fire-cannon {
       position: fixed;
       left: 0;
       right: 0;

@@ -7,15 +7,24 @@ export const useGameInstanceStore = defineStore('gameInstance', {
   state: () => ({
     gameInstance: {} as GameInstance,
     gameSettings: {} as Settings,
-    canonUsage: {
+    cannonUsage: {
       targetZoneId: '',
       loadingProgress: 0,
     }
   }),
+  getters: {
+    getIsCannonReadyToFire(): boolean {
+      return this.cannonUsage.loadingProgress === this.gameSettings.cannonLoadingTime;
+    }
+  },
   actions: {
+    resetCannonProperties() {
+      this.cannonUsage.targetZoneId = '';
+      this.cannonUsage.loadingProgress = 0;
+    },
     increaseCannonProgress() {
-      if (this.canonUsage.loadingProgress < this.gameSettings.canonLoadingTime) {
-        this.canonUsage.loadingProgress++;
+      if (this.cannonUsage.loadingProgress < this.gameSettings.cannonLoadingTime) {
+        this.cannonUsage.loadingProgress++;
       }
     },
     setGameInstance(gameInstance: GameInstance): void {

@@ -2,7 +2,7 @@ import {WeaponAbility, WeaponType} from '~/types/CustomTypes';
 
 export const useEvaluateWeaponAbility = (weapon: WeaponType): WeaponAbility => ({
   perkSharpSword: weapon === WeaponType.SWORD,
-  perkBoilingOil: weapon === WeaponType.SWORD || weapon === WeaponType.CANON,
+  perkBoilingOil: weapon === WeaponType.SWORD || weapon === WeaponType.CANNON,
   canDefeatInvaders: weapon === WeaponType.SWORD,
-  canBombardAssemblyArea: weapon === WeaponType.CANON,
+  canBombardAssemblyArea: weapon === WeaponType.CANNON,
 });

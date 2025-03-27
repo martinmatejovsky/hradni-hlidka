@@ -10,6 +10,7 @@ import {useListenBus} from "~/composables/useEventBus";
 import {useGameInstanceStore} from "~/stores/gameInstanceStore";
 import {useCurrentPlayerStore} from "~/stores/currentPlayerStore";
 import {useZoneIntersectionStore} from "~/stores/zoneIntersectionStore";
+import PanelFireCannon from "~/components/PanelFireCannon.vue";
 
 // Pinia stores
 const storeGameInstance = useGameInstanceStore();
@@ -52,13 +53,11 @@ const startCannonLoading = () => {
   if (cannonLoadingInterval) return;
 
   cannonLoadingInterval = setInterval(() => {
-    if (storeGameInstance.canonUsage.loadingProgress < storeGameInstance.gameSettings.canonLoadingTime) {
+    if (storeGameInstance.cannonUsage.loadingProgress < storeGameInstance.gameSettings.cannonLoadingTime) {
       storeGameInstance.increaseCannonProgress();
-      console.log("__ Cannon ++");
     } else {
       clearInterval(cannonLoadingInterval as NodeJS.Timeout);
       cannonLoadingInterval = null;
-      console.log("__ Cannon is fully loaded!");
     }
   }, 1000);
 };
@@ -215,6 +214,7 @@ onBeforeUnmount(() => {
     sharpSword: 0,
     boilingOil: false,
   };
+  storeGameInstance.resetCannonProperties();
 })
 </script>
 
@@ -263,9 +263,17 @@ onBeforeUnmount(() => {
           </MapLeaflet>
 
           <VFadeTransition>
-            <smithy-shop-offer
+            <Smithy-shop-offer
               :socket="socket"
               v-if="smithyOfferOpened"
+              @perkChosen="smithyOfferOpened = false"
+            />
+          </VFadeTransition>
+
+          <VFadeTransition>
+            <PanelFireCannon
+              v-if="storeGameInstance.getIsCannonReadyToFire"
+              :socket="socket"
               @perkChosen="smithyOfferOpened = false"
             />
           </VFadeTransition>

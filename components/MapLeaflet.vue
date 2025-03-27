@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import cauldronFullIcon from "assets/icons/cauldron-full.svg";
-import canonLoading from "assets/icons/canon-loading.svg";
+import cannonLoading from "assets/icons/cannon-loading.svg";
+import cannonFiring from "assets/icons/cannon-firing.svg";
 
 useHead({
   script: [
@@ -84,7 +85,7 @@ const props = defineProps({
 const currentPlayer = computed(() => storeCurrentPlayer.currentPlayer);
 const battleZones = computed((): BattleZone[] => storeGameInstance.gameInstance.battleZones);
 const utilityZones = computed((): UtilityZone[] => storeGameInstance.gameInstance.utilityZones);
-
+const cannonLoadingProgress = computed((): number => Math.min(100, (storeGameInstance.cannonUsage.loadingProgress / storeGameInstance.gameSettings.cannonLoadingTime) * 100));
 
 const labelIconPouringOil = computed(() => {
   const { currentPlayer } = storeCurrentPlayer;
@@ -126,8 +127,8 @@ const getIconNameBasedOnWeaponType = (weaponType: WeaponType): string => {
   switch (weaponType) {
     case WeaponType.SWORD:
       return 'defender-swordsman';
-    case WeaponType.CANON:
-      return 'defender-canon';
+    case WeaponType.CANNON:
+      return 'defender-cannon';
     default:
       return 'defender-swordsman';
   }
@@ -476,16 +477,19 @@ onBeforeUnmount(() => {
 
       <div
         v-if="useEvaluateWeaponAbility(currentPlayer.weaponType).canBombardAssemblyArea"
-        class="hh-badge is-canon-empty flex flex-column"
-        :class="{
-          'is-ready-to-fire': storeCurrentPlayer.currentPlayer.canPourBoilingOil,
-        }"
+        class="hh-badge is-cannon flex flex-column"
       >
+        <template v-if="storeGameInstance.getIsCannonReadyToFire">
+          <img :src="cannonFiring" alt="cannon" class="custom-icon hh-badge__icon" />
+        </template>
 
-        <img :src="canonLoading" alt="Canon" class="custom-icon hh-badge__icon" />
-        <span class="pt-1">
-          DELO
-        </span>
+        <template v-else>
+          <img :src="cannonLoading" alt="cannon" class="custom-icon hh-badge__icon" />
+
+          <div class="hh-progress-bar-container">
+            <div class="hh-progress-bar" :style="`width: ${cannonLoadingProgress}%;`"></div>
+          </div>
+        </template>
       </div>
     </div>
 

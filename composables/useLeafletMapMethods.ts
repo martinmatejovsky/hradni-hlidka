@@ -6,6 +6,8 @@ import type {BattleZone, Invader, InvaderType, UtilityZone} from "~/types/Custom
 import {useIconLeaflet} from "~/composables/useIconLeaflet";
 import {useGameInstanceStore} from "~/stores/gameInstanceStore";
 
+const classPulsatingAnimation = "hh-pulsate";
+
 export function useLeafletMapUtilities() {
   function addBoilingOilPots(map: L.Map, utilityZones: UtilityZone[], boilingOilIcons: Record<string, L.Marker>) {
     const placesWithBoilingOil = utilityZones.filter(zone => zone.boilingOil);
@@ -154,17 +156,23 @@ export function useLeafletMapUtilities() {
 
       // Click event for selecting the bombarding marker
       bombardingMarker.on("click", () => {
+        const imgElement = bombardingMarker.getElement()?.querySelector(".hh-bombarding-img");
+        const alreadySelected = imgElement?.classList.contains(classPulsatingAnimation);
+
         // Remove animation from all other images
         document.querySelectorAll(".hh-bombarding-img").forEach(img => {
-          img.classList.remove("hh-pulsate");
+          img.classList.remove(classPulsatingAnimation);
         });
 
-        // Add animation to the clicked one
-        const imgElement = bombardingMarker.getElement()?.querySelector(".hh-bombarding-img");
-        imgElement?.classList.add("hh-pulsate");
+        // Toggle animation to the clicked one
+        if (alreadySelected) {
+          storeGameInstance.cannonUsage.targetZoneId = '';
+        } else {
+          storeGameInstance.cannonUsage.targetZoneId = battleZone.key;
+          imgElement?.classList.add(classPulsatingAnimation);
+        }
 
         selectedMarker = bombardingMarker;
-        storeGameInstance.canonUsage.targetZoneId = battleZone.key;
       });
     });
   }

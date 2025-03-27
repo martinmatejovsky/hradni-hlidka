@@ -7,7 +7,7 @@ export const useCurrentPlayerStore = defineStore('currentPlayer', {
     currentPlayer: {
       key: '',
       name: 'Beolf',
-      weaponType: WeaponType.CANON,
+      weaponType: WeaponType.CANNON,
       location: {
         lat: 0,
         lng: 0,

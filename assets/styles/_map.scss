@@ -151,7 +151,7 @@
   border: 1px solid rgba(0, 0, 0, 0.5);
   width: 32px;
   height: 8px;
-  background: rgba(100, 100, 100, 0.1);
+  background: rgba(100, 100, 100, 0.4);
   border-radius: 3px;
   margin-top: 4px;
   overflow: hidden;
@@ -160,7 +160,7 @@
 .hh-progress-bar {
   height: 100%;
   background: #fff137;
-  transition: width 5s ease-in-out;
+  transition: width 1s ease-in-out;
 }
 
 .hh-bombarding-marker {

@@ -111,16 +111,16 @@ export type Settings = {
     smithyUpgradeWaiting: number,
     smithyUpgradeStrength: number,
     oilBoilingTime: number,
-    canonLoadingTime: number,
+    cannonLoadingTime: number,
 }
 export type LastWaveNotice = 'none' | 'incoming' | 'running'
 export enum WeaponType {
     SWORD = 'sword',
-    CANON = 'canon'
+    CANNON = 'cannon'
 }
 export const WeaponData: Record<WeaponType, { label: string }> = {
     [WeaponType.SWORD]: { label: 'Meč' },
-    [WeaponType.CANON]: { label: 'Dělo' }
+    [WeaponType.CANNON]: { label: 'Dělo' }
 };
 export type WeaponAbility = {
     perkSharpSword: boolean,

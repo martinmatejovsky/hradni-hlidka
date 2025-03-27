@@ -37,7 +37,7 @@ const selectWavesDelay = ref<number>(5)
 const selectDefendersHitStrength = ref<number>(1)
 const selectSmithyUpgradeWaiting = ref<number>(2000)
 const oilBoilingTime = ref<number>(1)
-const canonLoadingTime = ref<number>(10)
+const cannonLoadingTime = ref<number>(10)
 const selectSmithyUpgradeDuration = ref<number>(2)
 const dataLoading = ref<boolean>(false);
 const pageError = useState(STORE_APPLICATION_ERROR);
@@ -86,8 +86,8 @@ const smithyUpgradeStrength: ComputedRef<number[]> = computed(() => {
 const oilBoilingTimeOptions: ComputedRef<number[]> = computed(() => {
   return [1, 2, 4, 8, 16, 24];
 });
-const canonLoadingTimeOptions: ComputedRef<number[]> = computed(() => {
-  return [10, 20, 30, 40, 50, 60]
+const cannonLoadingTimeOptions: ComputedRef<number[]> = computed(() => {
+  return [10, 30, 40, 50, 60, 70, 80]
 })
 
 // METHODS
@@ -142,7 +142,7 @@ const createNewBattle = async (): Promise<void> => {
       smithyUpgradeWaiting: selectSmithyUpgradeWaiting.value,
       smithyUpgradeStrength: selectSmithyUpgradeDuration.value,
       oilBoilingTime: oilBoilingTime.value,
-      canonLoadingTime: canonLoadingTime.value,
+      cannonLoadingTime: cannonLoadingTime.value,
     }
 
     const gameLocation = storeZones.gameLocations.find(location => location.locationName === selectedLocationKey.value) as GameLocation;
@@ -290,8 +290,8 @@ onBeforeMount(async () => {
                     label="Doba vaření oleje"
                 ></v-select>
                 <v-select
-                    v-model="canonLoadingTime"
-                    :items="canonLoadingTimeOptions"
+                    v-model="cannonLoadingTime"
+                    :items="cannonLoadingTimeOptions"
                     class="mb-2"
                     label="Doba nabíjení děla"
                 ></v-select>

@@ -1,0 +1,43 @@
+<script setup lang="ts">
+import type {Socket} from "socket.io-client";
+import {useGameInstanceStore} from "~/stores/gameInstanceStore";
+import {useCurrentPlayerStore} from "~/stores/currentPlayerStore";
+
+const storeGameInstance = useGameInstanceStore();
+const storeCurrentPlayer = useCurrentPlayerStore();
+
+// PROPS
+const props = defineProps<{socket: Socket | undefined}>();
+
+const nameOfSelectedBombardZone = computed(() => {
+  return storeGameInstance.gameInstance.battleZones.find(zone => {
+    return zone.key === storeGameInstance.cannonUsage.targetZoneId;
+  })?.zoneName;
+});
+</script>
+
+<template>
+<div class="hh-panel-fire-cannon pa-3">
+  <h3 class="hh-panel-fire-cannon__heading mb-2 text-center text-black">K palbě připraven!</h3>
+
+  <div class="d-flex justify-center align-center font-weight-bold text-red ga-5">
+    <span>Mířím na {{ nameOfSelectedBombardZone ?? '(klikni na mapě)' }}</span>
+
+    <v-btn
+      v-if="storeGameInstance.cannonUsage.targetZoneId"
+      @click="props.socket.emit('fireCannon',
+        {
+          targetZoneKey: storeGameInstance.cannonUsage.targetZoneId
+        })"
+      color="red"
+      class="ml-3"
+    >
+      BUM!
+    </v-btn>
+  </div>
+</div>
+</template>
+
+<style scoped lang="scss">
+
+</style>
