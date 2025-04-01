@@ -5,8 +5,7 @@
     }
   }
 
-  .hh-smithy-shop-offer,
-  .hh-panel-fire-cannon {
+  .hh-map-bottom-sticky-container {
     position: absolute;
     bottom: 0;
     left: 0;
@@ -17,8 +16,7 @@
   &.is-full-screen {
     .hh-alert-wave-container,
     .hh-area-switchers,
-    .hh-smithy-shop-offer,
-    .hh-panel-fire-cannon,
+    .hh-map-bottom-sticky-container,
     .hh-badges {
       @include above-fullscreen-leaflet
     }
@@ -36,8 +34,7 @@
       left: 0;
     }
 
-    .hh-smithy-shop-offer,
-    .hh-panel-fire-cannon {
+    .hh-map-bottom-sticky-container {
       position: fixed;
       left: 0;
       right: 0;

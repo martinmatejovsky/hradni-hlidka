@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import {STORE_APPLICATION_ERROR} from "~/constants";
-import type {BattleZone, LastWaveNotice, PlayerData, UtilityZone} from "~/types/CustomTypes";
+import type {BattleZone, LastWaveNotice, PlayerData} from "~/types/CustomTypes";
 import {computed, watch} from "vue";
 import {useState} from "nuxt/app";
 import {useReleaseWakeLockScreen, useRequestWakeLockScreen} from "~/composables/useWakeLockScreen";
@@ -11,6 +11,7 @@ import {useGameInstanceStore} from "~/stores/gameInstanceStore";
 import {useCurrentPlayerStore} from "~/stores/currentPlayerStore";
 import {useZoneIntersectionStore} from "~/stores/zoneIntersectionStore";
 import PanelFireCannon from "~/components/PanelFireCannon.vue";
+import {canUseSmithyPerks} from "~/composables/useEvaluateWeaponAbility";
 
 // Pinia stores
 const storeGameInstance = useGameInstanceStore();
@@ -39,12 +40,19 @@ const gameState = computed((): string => storeGameInstance.gameInstance.gameStat
 const currentPlayer = computed((): PlayerData => storeCurrentPlayer.currentPlayer);
 const connectedPlayers = computed((): PlayerData[] => storeGameInstance.gameInstance.players);
 const battleZones = computed((): BattleZone[] => storeGameInstance.gameInstance.battleZones);
-const utilityZones = computed((): UtilityZone[] => storeGameInstance.gameInstance.utilityZones);
 
 const keyOfIntersectedArea = computed((): string => storeZoneIntersection.keyOfIntersectedArea);
 const nameOfIntersectedArea = computed((): string => storeZoneIntersection.nameOfIntersectedArea);
 
 // METHODS
+const clearCannonProcesses = () => {
+  if (cannonLoadingInterval) {
+    clearInterval(cannonLoadingInterval);
+    cannonLoadingInterval = null;
+  }
+  storeGameInstance.resetCannonProperties();
+}
+
 const onMapReady = () => {
   startCannonLoading();
 }
@@ -177,6 +185,11 @@ onBeforeMount(async () => {
     leafletIsFullscreen.value = value;
   });
 
+  useListenBus('ownCannonFired', (): void => {
+    clearCannonProcesses();
+    startCannonLoading();
+  });
+
   try {
     await Promise.all([
       storeGameInstance.getGameInstance(),
@@ -214,7 +227,8 @@ onBeforeUnmount(() => {
     sharpSword: 0,
     boilingOil: false,
   };
-  storeGameInstance.resetCannonProperties();
+
+  clearCannonProcesses();
 })
 </script>
 
@@ -262,21 +276,23 @@ onBeforeUnmount(() => {
             @leaflet-map-loaded="onMapReady">
           </MapLeaflet>
 
-          <VFadeTransition>
-            <Smithy-shop-offer
-              :socket="socket"
-              v-if="smithyOfferOpened"
-              @perkChosen="smithyOfferOpened = false"
-            />
-          </VFadeTransition>
+          <div class="hh-map-bottom-sticky-container">
+            <VFadeTransition>
+              <Smithy-shop-offer
+                :socket="socket"
+                v-if="smithyOfferOpened && canUseSmithyPerks(currentPlayer.weaponType)"
+                @perkChosen="smithyOfferOpened = false"
+              />
+            </VFadeTransition>
 
-          <VFadeTransition>
-            <PanelFireCannon
-              v-if="storeGameInstance.getIsCannonReadyToFire"
-              :socket="socket"
-              @perkChosen="smithyOfferOpened = false"
-            />
-          </VFadeTransition>
+            <VFadeTransition>
+              <PanelFireCannon
+                v-if="storeGameInstance.getIsCannonReadyToFire"
+                :socket="socket"
+                @perkChosen="smithyOfferOpened = false"
+              />
+            </VFadeTransition>
+          </div>
         </div>
       </template>
 

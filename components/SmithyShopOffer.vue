@@ -6,6 +6,7 @@ import type {PlayerData} from "~/types/CustomTypes";
 import {useCurrentPlayerStore} from "~/stores/currentPlayerStore";
 import {Perks} from "~/types/CustomTypes"; // to enable enum to be defined at runtime it must be imported without "type" prefix
 import cauldronFullIcon from "assets/icons/cauldron-full.svg";
+import {useEvaluateWeaponAbility} from "~/composables/useEvaluateWeaponAbility";
 const storeGameInstance = useGameInstanceStore();
 const storeCurrentPlayer = useCurrentPlayerStore();
 
@@ -51,6 +52,7 @@ const activatePerkBoilingOil = (smithyKey: string) => {
 
     <div class="d-flex justify-center align-center ga-5">
       <v-btn
+        v-if="useEvaluateWeaponAbility(currentPlayer.weaponType).perkSharpSword"
         variant="outlined"
         icon="mdi-sword"
         @click="activatePerkSharpSword"
@@ -60,6 +62,7 @@ const activatePerkBoilingOil = (smithyKey: string) => {
       </v-btn>
 
       <v-btn
+        v-if="useEvaluateWeaponAbility(currentPlayer.weaponType).perkBoilingOil"
         :disabled="!boilingOilIsReady || storeCurrentPlayer.playerAlreadyCarriesOilPot"
         variant="outlined"
         @click="activatePerkBoilingOil(currentSmithy?.key)"

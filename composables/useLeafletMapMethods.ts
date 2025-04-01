@@ -7,6 +7,7 @@ import {useIconLeaflet} from "~/composables/useIconLeaflet";
 import {useGameInstanceStore} from "~/stores/gameInstanceStore";
 
 const classPulsatingAnimation = "hh-pulsate";
+const bombardingMarkClass = ".hh-bombarding-img";
 
 export function useLeafletMapUtilities() {
   function addBoilingOilPots(map: L.Map, utilityZones: UtilityZone[], boilingOilIcons: Record<string, L.Marker>) {
@@ -156,11 +157,11 @@ export function useLeafletMapUtilities() {
 
       // Click event for selecting the bombarding marker
       bombardingMarker.on("click", () => {
-        const imgElement = bombardingMarker.getElement()?.querySelector(".hh-bombarding-img");
+        const imgElement = bombardingMarker.getElement()?.querySelector(bombardingMarkClass);
         const alreadySelected = imgElement?.classList.contains(classPulsatingAnimation);
 
         // Remove animation from all other images
-        document.querySelectorAll(".hh-bombarding-img").forEach(img => {
+        document.querySelectorAll(bombardingMarkClass).forEach(img => {
           img.classList.remove(classPulsatingAnimation);
         });
 
@@ -177,5 +178,12 @@ export function useLeafletMapUtilities() {
     });
   }
 
-  return { addLabelsToPolygons, addLadders, handleUpdateInvadersIcons, addBoilingOilPots, addBombardingMarks };
+  function removeBombardingMarkerAnimation() {
+    const imgElements = document.querySelectorAll(bombardingMarkClass);
+    imgElements.forEach(img => {
+      img.classList.remove(classPulsatingAnimation);
+    });
+  }
+
+  return { addLabelsToPolygons, addLadders, handleUpdateInvadersIcons, addBoilingOilPots, addBombardingMarks, removeBombardingMarkerAnimation };
 }

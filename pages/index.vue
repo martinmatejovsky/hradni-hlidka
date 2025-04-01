@@ -37,7 +37,7 @@ const selectWavesDelay = ref<number>(5)
 const selectDefendersHitStrength = ref<number>(1)
 const selectSmithyUpgradeWaiting = ref<number>(2000)
 const oilBoilingTime = ref<number>(1)
-const cannonLoadingTime = ref<number>(10)
+const cannonLoadingTime = ref<number>(2)
 const selectSmithyUpgradeDuration = ref<number>(2)
 const dataLoading = ref<boolean>(false);
 const pageError = useState(STORE_APPLICATION_ERROR);
@@ -87,7 +87,7 @@ const oilBoilingTimeOptions: ComputedRef<number[]> = computed(() => {
   return [1, 2, 4, 8, 16, 24];
 });
 const cannonLoadingTimeOptions: ComputedRef<number[]> = computed(() => {
-  return [10, 30, 40, 50, 60, 70, 80]
+  return [2, 10, 30, 40, 50, 60, 70, 80]
 })
 
 // METHODS

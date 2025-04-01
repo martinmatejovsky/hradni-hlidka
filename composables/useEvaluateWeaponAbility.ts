@@ -1,4 +1,5 @@
-import {WeaponAbility, WeaponType} from '~/types/CustomTypes';
+import type {WeaponAbility} from '~/types/CustomTypes';
+import {WeaponType} from '~/types/CustomTypes';
 
 export const useEvaluateWeaponAbility = (weapon: WeaponType): WeaponAbility => ({
   perkSharpSword: weapon === WeaponType.SWORD,
@@ -6,3 +7,10 @@ export const useEvaluateWeaponAbility = (weapon: WeaponType): WeaponAbility => (
   canDefeatInvaders: weapon === WeaponType.SWORD,
   canBombardAssemblyArea: weapon === WeaponType.CANNON,
 });
+
+export const canUseSmithyPerks = (weapon: WeaponType): boolean => {
+  return (
+    useEvaluateWeaponAbility(weapon).perkSharpSword ||
+    useEvaluateWeaponAbility(weapon).perkBoilingOil
+  )
+}

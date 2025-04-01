@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import type {Socket} from "socket.io-client";
 import {useGameInstanceStore} from "~/stores/gameInstanceStore";
-import {useCurrentPlayerStore} from "~/stores/currentPlayerStore";
+import {useLeafletMapUtilities} from "~/composables/useLeafletMapMethods";
+
+const {
+  removeBombardingMarkerAnimation
+} = useLeafletMapUtilities();
 
 const storeGameInstance = useGameInstanceStore();
-const storeCurrentPlayer = useCurrentPlayerStore();
 
 // PROPS
 const props = defineProps<{socket: Socket | undefined}>();
@@ -14,6 +17,27 @@ const nameOfSelectedBombardZone = computed(() => {
     return zone.key === storeGameInstance.cannonUsage.targetZoneId;
   })?.zoneName;
 });
+
+
+watch(() => storeGameInstance.cannonUsage.targetZoneId, (newValue) => {
+  console.log("targetZoneId se změnilo na:", newValue);
+});
+
+// METHODS
+const fireCannon = () => {
+  if (!props.socket) {
+    console.error('Socket not connected. Firing cannon failed.');
+    return;
+  }
+
+  props.socket.emit('fireCannon',
+    {
+      targetZoneKey: storeGameInstance.cannonUsage.targetZoneId
+    })
+
+  removeBombardingMarkerAnimation();
+  useEventBus('ownCannonFired', true);
+};
 </script>
 
 <template>
@@ -25,10 +49,7 @@ const nameOfSelectedBombardZone = computed(() => {
 
     <v-btn
       v-if="storeGameInstance.cannonUsage.targetZoneId"
-      @click="props.socket.emit('fireCannon',
-        {
-          targetZoneKey: storeGameInstance.cannonUsage.targetZoneId
-        })"
+      @click="fireCannon"
       color="red"
       class="ml-3"
     >
