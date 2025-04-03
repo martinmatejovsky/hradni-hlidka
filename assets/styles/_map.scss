@@ -181,3 +181,15 @@
 .hh-bombarding-img.hh-pulsate {
   animation: pulse-linear 1s infinite alternate ease-in-out;
 }
+
+.cannonball-icon {
+  background: transparent;
+}
+
+.cannonball {
+  width: 15px;
+  height: 15px;
+  background: black;
+  border-radius: 50%;
+  box-shadow: 0 0 10px rgba(0,0,0,0.5);
+}

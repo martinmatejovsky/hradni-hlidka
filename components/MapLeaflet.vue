@@ -45,6 +45,7 @@ const {
   handleUpdateInvadersIcons,
   addBoilingOilPots,
   addBombardingMarks,
+  cannonBallTravel,
 } = useLeafletMapUtilities();
 
 const emit = defineEmits(['leafletMapLoaded'])
@@ -323,7 +324,7 @@ watch(() => props.connectedPlayers, (updatedConnectedPlayers) => {
 // LIFECYCLE
 onMounted(async () => {
   useListenBus('updateLifeOfInvaders', () => handleUpdateInvadersIcons(map, battleZones.value, invaderIcons));
-
+  useListenBus('ownCannonFired', (zoneKey) => cannonBallTravel(map, currentPlayer.value.location, zoneKey));
   map = L.map('map').setView(props.mapCenter, zoom.value[1]);
 
   // create icon of recent player
@@ -439,7 +440,6 @@ onMounted(async () => {
 
       addLadders(map, battleZones.value);
       addBombardingMarks(map, battleZones.value);
-      console.log('leafletMapLoaded');
       emit('leafletMapLoaded');
     }
   }, 200);

@@ -18,11 +18,6 @@ const nameOfSelectedBombardZone = computed(() => {
   })?.zoneName;
 });
 
-
-watch(() => storeGameInstance.cannonUsage.targetZoneId, (newValue) => {
-  console.log("targetZoneId se změnilo na:", newValue);
-});
-
 // METHODS
 const fireCannon = () => {
   if (!props.socket) {
@@ -30,13 +25,13 @@ const fireCannon = () => {
     return;
   }
 
+  const targetZoneKey = storeGameInstance.cannonUsage.targetZoneId;
+
   props.socket.emit('fireCannon',
-    {
-      targetZoneKey: storeGameInstance.cannonUsage.targetZoneId
-    })
+    { targetZoneKey })
 
   removeBombardingMarkerAnimation();
-  useEventBus('ownCannonFired', true);
+  useEventBus('ownCannonFired', targetZoneKey);
 };
 </script>
 

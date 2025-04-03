@@ -25,6 +25,7 @@
     "@mdi/font": "^7.4.47",
     "dotenv": "^16.4.3",
     "geolib": "^3.3.4",
+    "gsap": "^3.12.7",
     "leaflet.fullscreen": "^3.0.2",
     "mitt": "^3.0.1",
     "pinia": "^2.3.1",

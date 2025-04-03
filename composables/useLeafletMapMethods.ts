@@ -2,12 +2,66 @@ import L from "leaflet";
 import {useCalculateSquareCorner} from "~/composables/useCoordinatesUtils";
 import ladderImage from "assets/icons/ladder.svg";
 import bombardingMarkImage from "assets/icons/target-zone-aim.svg";
-import type {BattleZone, Invader, InvaderType, UtilityZone} from "~/types/CustomTypes";
+import type {BattleZone, Coordinates, Invader, InvaderType, PlayerCoordinates, UtilityZone} from "~/types/CustomTypes";
 import {useIconLeaflet} from "~/composables/useIconLeaflet";
 import {useGameInstanceStore} from "~/stores/gameInstanceStore";
+import {gsap} from "gsap";
 
 const classPulsatingAnimation = "hh-pulsate";
 const bombardingMarkClass = ".hh-bombarding-img";
+
+const bezierInterpolation = (t: number, points: [any]) => {
+  const x = (1 - t) * (1 - t) * points[0].lng +
+    2 * (1 - t) * t * points[1].lng +
+    t * t * points[2].lng;
+
+  const y = (1 - t) * (1 - t) * points[0].lat +
+    2 * (1 - t) * t * points[1].lat +
+    t * t * points[2].lat;
+
+  return L.latLng(y, x);
+};
+
+
+
+const animateCannonball = (map: L.Map, marker: L.Marker, startLatLng: PlayerCoordinates, endLatLng: Coordinates) => {
+  const startLatLngClipped = {lat: startLatLng.lat, lng: startLatLng.lng};
+
+  const controlPoint = L.latLng(
+    (startLatLngClipped.lat + endLatLng.lat) / 2 + 0.001,  // Střed lat + posunutí nahoru
+    (startLatLngClipped.lng + endLatLng.lng) / 2  // Střed lng
+  );
+
+  const cannonballIconFinish = L.divIcon({
+    className: 'cannonball-icon',
+    html: '<div class="cannonball"></div>',
+    iconSize: [20, 20]
+  });
+
+  L.marker(endLatLng, { icon: cannonballIconFinish }).addTo(map);
+
+  // create small marker on endLatLng
+  const smallMarker = L.marker(endLatLng, {
+    icon: L.divIcon({
+      className: 'cannonball-end-marker',
+      html: '<div class="cannonball-end"></div>',
+      iconSize: [20, 20]
+    })
+  }).addTo(map);
+
+  gsap.to(marker, {
+    duration: 1,
+    ease: "power1.inOut",
+    onUpdate: function () {
+      const progress = this.progress();
+      const currentLatLng = bezierInterpolation(progress, [startLatLngClipped, controlPoint, endLatLng]);
+      marker.setLatLng(currentLatLng);
+    },
+    onComplete: () => {
+      map.removeLayer(marker);
+    }
+  });
+};
 
 export function useLeafletMapUtilities() {
   function addBoilingOilPots(map: L.Map, utilityZones: UtilityZone[], boilingOilIcons: Record<string, L.Marker>) {
@@ -76,12 +130,12 @@ export function useLeafletMapUtilities() {
   }
 
   function createInvaderIcon(
-      map: L.Map,
-      id: number,
-      zoneKey: string,
-      battleZones: BattleZone[],
-      invaderIcons: { [p: number]: L.Marker<any> },
-      type: InvaderType
+    map: L.Map,
+    id: number,
+    zoneKey: string,
+    battleZones: BattleZone[],
+    invaderIcons: { [p: number]: L.Marker<any> },
+    type: InvaderType
   ) {
     const battleZone = battleZones.find(zone => zone.key === zoneKey);
     if (!battleZone) {
@@ -101,15 +155,17 @@ export function useLeafletMapUtilities() {
     const assemblyCoordinate = battleZone.assemblyArea[assemblyAreaIndex];
 
     if (assemblyCoordinate.lat && assemblyCoordinate.lng) {
-      let invaderIcon = L.divIcon(useIconLeaflet({ icon: `invader-${type}`, label: "" }));
-      invaderIcons[id] = L.marker([assemblyCoordinate.lat, assemblyCoordinate.lng], { icon: invaderIcon }).addTo(map);
+      let invaderIcon = L.divIcon(useIconLeaflet({icon: `invader-${type}`, label: ""}));
+      invaderIcons[id] = L.marker([assemblyCoordinate.lat, assemblyCoordinate.lng], {icon: invaderIcon}).addTo(map);
     } else {
       console.warn(`No coordinate found for assemblyArea index ${assemblyAreaIndex} in zone ${zoneKey}`);
       return;
     }
   }
 
-  function handleUpdateInvadersIcons(map: L.Map, battleZones: BattleZone[], invaderIcons: { [p: number]: L.Marker<any> }) {
+  function handleUpdateInvadersIcons(map: L.Map, battleZones: BattleZone[], invaderIcons: {
+    [p: number]: L.Marker<any>
+  }) {
     const currentInvaders: Invader[] = battleZones.flatMap((zone: BattleZone) => zone.invaders);
 
     // 1. Add new icons for invaders that don't have an icon yet
@@ -185,5 +241,32 @@ export function useLeafletMapUtilities() {
     });
   }
 
-  return { addLabelsToPolygons, addLadders, handleUpdateInvadersIcons, addBoilingOilPots, addBombardingMarks, removeBombardingMarkerAnimation };
+  function cannonBallTravel(
+    map: L.Map,
+    from: PlayerCoordinates,
+    toZoneKey: string,
+  ) {
+    const storeGameInstance = useGameInstanceStore()
+    const targetZoneCoordinates = storeGameInstance.gameInstance.battleZones.find(zone => zone.key === toZoneKey)?.assemblyAreaCenter;
+
+    const cannonballIcon = L.divIcon({
+      className: 'cannonball-icon',
+      html: '<div class="cannonball"></div>',
+      iconSize: [20, 20]
+    });
+
+    const cannonballMarker = L.marker(from, { icon: cannonballIcon }).addTo(map);
+
+    animateCannonball(map, cannonballMarker, from, targetZoneCoordinates);
+  }
+
+  return {
+    addLabelsToPolygons,
+    addLadders,
+    handleUpdateInvadersIcons,
+    addBoilingOilPots,
+    addBombardingMarks,
+    removeBombardingMarkerAnimation,
+    cannonBallTravel,
+  };
 }

@@ -132,5 +132,5 @@ export type MittEvents = {
     lastWaveNotice: LastWaveNotice;
     updateLifeOfInvaders: void;
     leafletFullscreen: boolean;
-    ownCannonFired: boolean;
+    ownCannonFired: string;
 };
