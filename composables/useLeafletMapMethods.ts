@@ -6,6 +6,7 @@ import type {BattleZone, Coordinates, Invader, InvaderType, PlayerCoordinates, U
 import {useIconLeaflet} from "~/composables/useIconLeaflet";
 import {useGameInstanceStore} from "~/stores/gameInstanceStore";
 import {gsap} from "gsap";
+import {cannonBallSpeed} from "~/constants";
 
 const classPulsatingAnimation = "hh-pulsate";
 const bombardingMarkClass = ".hh-bombarding-img";
@@ -22,8 +23,6 @@ const bezierInterpolation = (t: number, points: [any]) => {
   return L.latLng(y, x);
 };
 
-
-
 const animateCannonball = (map: L.Map, marker: L.Marker, startLatLng: PlayerCoordinates, endLatLng: Coordinates) => {
   const startLatLngClipped = {lat: startLatLng.lat, lng: startLatLng.lng};
 
@@ -32,25 +31,8 @@ const animateCannonball = (map: L.Map, marker: L.Marker, startLatLng: PlayerCoor
     (startLatLngClipped.lng + endLatLng.lng) / 2  // Střed lng
   );
 
-  const cannonballIconFinish = L.divIcon({
-    className: 'cannonball-icon',
-    html: '<div class="cannonball"></div>',
-    iconSize: [20, 20]
-  });
-
-  L.marker(endLatLng, { icon: cannonballIconFinish }).addTo(map);
-
-  // create small marker on endLatLng
-  const smallMarker = L.marker(endLatLng, {
-    icon: L.divIcon({
-      className: 'cannonball-end-marker',
-      html: '<div class="cannonball-end"></div>',
-      iconSize: [20, 20]
-    })
-  }).addTo(map);
-
   gsap.to(marker, {
-    duration: 1,
+    duration: cannonBallSpeed / 1000,
     ease: "power1.inOut",
     onUpdate: function () {
       const progress = this.progress();
@@ -59,6 +41,26 @@ const animateCannonball = (map: L.Map, marker: L.Marker, startLatLng: PlayerCoor
     },
     onComplete: () => {
       map.removeLayer(marker);
+
+      // explosion effect
+      const explosionIcon = L.divIcon({
+        className: "cannonball-explosion",
+        html: '<div class="cannonball-explosion"></div>',
+        iconSize: [20, 20]
+      });
+
+      const explosionMarker = L.marker(endLatLng, { icon: explosionIcon }).addTo(map);
+
+      requestAnimationFrame(() => {
+        gsap.fromTo(
+          ".cannonball-explosion",
+          { scale: 0.5, opacity: 1 },
+          { scale: 3, opacity: 0, duration: 1, ease: "power2.out", onComplete: () => {
+              map.removeLayer(explosionMarker);
+            }
+          }
+        );
+      });
     }
   });
 };
