@@ -115,10 +115,12 @@ export type Settings = {
 }
 export type LastWaveNotice = 'none' | 'incoming' | 'running'
 export enum WeaponType {
+    NONE = 'none',
     SWORD = 'sword',
     CANNON = 'cannon'
 }
 export const WeaponData: Record<WeaponType, { label: string }> = {
+    [WeaponType.NONE]: { label: 'Žádná'},
     [WeaponType.SWORD]: { label: 'Meč' },
     [WeaponType.CANNON]: { label: 'Dělo' }
 };

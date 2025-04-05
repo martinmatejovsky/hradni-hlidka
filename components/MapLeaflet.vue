@@ -439,7 +439,7 @@ onMounted(async () => {
       clearInterval(checkLeafletInterval);
 
       addLadders(map, battleZones.value);
-      addBombardingMarks(map, battleZones.value);
+      if (useEvaluateWeaponAbility(currentPlayer.value.weaponType).canBombardAssemblyArea) addBombardingMarks(map, battleZones.value);
       emit('leafletMapLoaded');
     }
   }, 200);

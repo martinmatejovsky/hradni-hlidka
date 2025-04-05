@@ -11,7 +11,7 @@ import {useGameInstanceStore} from "~/stores/gameInstanceStore";
 import {useCurrentPlayerStore} from "~/stores/currentPlayerStore";
 import {useZoneIntersectionStore} from "~/stores/zoneIntersectionStore";
 import PanelFireCannon from "~/components/PanelFireCannon.vue";
-import {canUseSmithyPerks} from "~/composables/useEvaluateWeaponAbility";
+import {canUseSmithyPerks, useEvaluateWeaponAbility} from "~/composables/useEvaluateWeaponAbility";
 
 // Pinia stores
 const storeGameInstance = useGameInstanceStore();
@@ -54,7 +54,9 @@ const clearCannonProcesses = () => {
 }
 
 const onMapReady = () => {
-  startCannonLoading();
+  if (useEvaluateWeaponAbility(currentPlayer.value.weaponType).canBombardAssemblyArea) {
+    startCannonLoading();
+  }
 }
 
 const startCannonLoading = () => {
