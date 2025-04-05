@@ -46,5 +46,9 @@ export function useSocket(gameId: string) {
         useEventBus('lastWaveNotice', status)
     })
 
+    socket.on('oilIsPoured', (affectedZone: string) => {
+        useEventBus('oilIsPouredGlobalEvent', affectedZone);
+    })
+
     return socket;
 }

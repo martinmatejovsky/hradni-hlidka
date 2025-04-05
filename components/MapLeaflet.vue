@@ -219,7 +219,7 @@ function pauseTracking() {
 }
 
 const startWatchingPouring = () => {
-  if (!storeCurrentPlayer.currentPlayer.canPourBoilingOil) return;
+  // if (!storeCurrentPlayer.currentPlayer.canPourBoilingOil) return;
 
   oilPouringListener = (event: DeviceOrientationEvent): void => {
     if (event.beta !== null) {
@@ -250,9 +250,9 @@ const stopWatchingPouring = () => {
 
 // can pour boiling oil?
 watch(() => storeCurrentPlayer.currentPlayer.canPourBoilingOil, (canPour) => {
-  if (canPour) {
+  // if (canPour) {
     startWatchingPouring();
-  }
+  // }
 });
 
 // change color of polygon where currentUser is
@@ -325,6 +325,8 @@ watch(() => props.connectedPlayers, (updatedConnectedPlayers) => {
 onMounted(async () => {
   useListenBus('updateLifeOfInvaders', () => handleUpdateInvadersIcons(map, battleZones.value, invaderIcons));
   useListenBus('ownCannonFired', (zoneKey) => cannonBallTravel(map, currentPlayer.value.location, zoneKey));
+  useListenBus('oilIsPouredGlobalEvent', (zoneKey) => animatePouredOil(map, zoneKey));
+
   map = L.map('map').setView(props.mapCenter, zoom.value[1]);
 
   // create icon of recent player

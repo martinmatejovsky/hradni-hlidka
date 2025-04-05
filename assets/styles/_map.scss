@@ -202,3 +202,25 @@
   position: relative;
   transform-origin: center;
 }
+
+.boiling-oil {
+  width: 20px;
+  height: 20px;
+  background: radial-gradient(circle, #3b2f0b, #827213);
+  border-radius: 50%;
+  animation: blob 0.5s infinite alternate;
+}
+
+@keyframes blob {
+  0% { transform: scale(1); }
+  100% { transform: scale(1.2); }
+}
+
+.oil-splash {
+  width: 30px;
+  height: 30px;
+  background: radial-gradient(circle, #cc9b1d, transparent);
+  border-radius: 50%;
+  opacity: 1;
+  transform: scale(0.5);
+}

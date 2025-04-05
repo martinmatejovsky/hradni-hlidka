@@ -2,7 +2,15 @@ import L from "leaflet";
 import {useCalculateSquareCorner} from "~/composables/useCoordinatesUtils";
 import ladderImage from "assets/icons/ladder.svg";
 import bombardingMarkImage from "assets/icons/target-zone-aim.svg";
-import type {BattleZone, Coordinates, Invader, InvaderType, PlayerCoordinates, UtilityZone} from "~/types/CustomTypes";
+import type {
+  AssaultLadder,
+  BattleZone,
+  Coordinates,
+  Invader,
+  InvaderType,
+  PlayerCoordinates,
+  UtilityZone
+} from "~/types/CustomTypes";
 import {useIconLeaflet} from "~/composables/useIconLeaflet";
 import {useGameInstanceStore} from "~/stores/gameInstanceStore";
 import {gsap} from "gsap";
@@ -27,7 +35,7 @@ const animateCannonball = (map: L.Map, marker: L.Marker, startLatLng: PlayerCoor
   const startLatLngClipped = {lat: startLatLng.lat, lng: startLatLng.lng};
 
   const controlPoint = L.latLng(
-    (startLatLngClipped.lat + endLatLng.lat) / 2 + 0.001,  // Střed lat + posunutí nahoru
+    (startLatLngClipped.lat + endLatLng.lat) / 2 + 0.0003,  // Střed lat + posunutí nahoru
     (startLatLngClipped.lng + endLatLng.lng) / 2  // Střed lng
   );
 
@@ -64,6 +72,67 @@ const animateCannonball = (map: L.Map, marker: L.Marker, startLatLng: PlayerCoor
     }
   });
 };
+
+export function animatePouredOil(map: L.Map, zoneKey: string) {
+  const storeGameInstance = useGameInstanceStore();
+
+  const affectedZone = storeGameInstance.gameInstance.battleZones.find(
+      (zone) => zone.key === zoneKey
+  );
+  if (!affectedZone) return;
+
+  const affectedLadder: AssaultLadder = affectedZone.assaultLadder;
+  const start = affectedLadder.location.start;
+  const end = affectedLadder.location.end;
+
+  const oilIcon = L.divIcon({
+    className: "oil-icon",
+    html: '<div class="boiling-oil"></div>',
+    iconSize: [20, 20],
+  });
+
+  const oilMarker = L.marker(start, { icon: oilIcon }).addTo(map);
+
+  const controlPoint = L.latLng(
+      (start.lng + end.lng) / 2,
+      (start.lat + end.lat) / 2
+  );
+
+  gsap.to(oilMarker, {
+    duration: 1.2,
+    ease: "power1.inOut",
+    onUpdate: function () {
+      const progress = this.progress();
+      const currentLatLng = bezierInterpolation(progress, [start, controlPoint, end]);
+      oilMarker.setLatLng(currentLatLng);
+    },
+    onComplete: () => {
+      const splashIcon = L.divIcon({
+        className: "oil-splash-icon",
+        html: '<div class="oil-splash"></div>',
+        iconSize: [30, 30],
+      });
+
+      const splashMarker = L.marker(end, { icon: splashIcon }).addTo(map);
+
+      gsap.fromTo(
+          ".oil-splash",
+          { scale: 0.5, opacity: 1 },
+          {
+            scale: 3,
+            opacity: 0,
+            duration: 1,
+            ease: "power2.out",
+            onComplete: () => {
+              map.removeLayer(splashMarker);
+            },
+          }
+      );
+
+      map.removeLayer(oilMarker);
+    },
+  });
+}
 
 export function useLeafletMapUtilities() {
   function addBoilingOilPots(map: L.Map, utilityZones: UtilityZone[], boilingOilIcons: Record<string, L.Marker>) {
@@ -270,5 +339,6 @@ export function useLeafletMapUtilities() {
     addBombardingMarks,
     removeBombardingMarkerAnimation,
     cannonBallTravel,
+    animatePouredOil,
   };
 }

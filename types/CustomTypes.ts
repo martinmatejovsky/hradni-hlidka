@@ -135,4 +135,5 @@ export type MittEvents = {
     updateLifeOfInvaders: void;
     leafletFullscreen: boolean;
     ownCannonFired: string;
+    oilIsPouredGlobalEvent: string;
 };
