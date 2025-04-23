@@ -38,7 +38,7 @@ const selectDefendersHitStrength = ref<number>(1)
 const selectSmithyUpgradeWaiting = ref<number>(2000)
 const oilBoilingTime = ref<number>(1)
 const cannonLoadingTime = ref<number>(2)
-const selectSmithyUpgradeDuration = ref<number>(2)
+const selectSmithyUpgradeDuration = ref<number>(4)
 const dataLoading = ref<boolean>(false);
 const pageError = useState(STORE_APPLICATION_ERROR);
 const gameAlreadyCreated = ref(false)
@@ -229,72 +229,88 @@ onBeforeMount(async () => {
                     label="Výška hradeb"
                     required
                 ></v-select>
-                <v-btn type="submit" :disabled="!isFormValid" :block="true" rounded="xs" class="mb-2">Založit novou bitvu</v-btn>
-              </v-col>
 
-              <v-col cols="12" sm="6" md="4">
-                Herní konstanty:
-                <v-select
-                    v-model="selectWaveVolume"
-                    :items="waveVolumeOptions"
-                    class="mb-2"
-                    label="Početnost ve vlně"
-                    required
-                ></v-select>
-                <v-select
-                    v-model="selectedGameLength"
-                    :items="gameLengthOptions"
-                    class="mb-2"
-                    label="Délka hry"
-                    required
-                ></v-select>
-                <v-select
-                    v-model="selectAssemblyCountdown"
-                    :items="assemblyCountdown"
-                    class="mb-2"
-                    label="Čekání před žebříkem"
-                    required
-                ></v-select>
-                <v-select
-                    v-model="selectWavesDelay"
-                    :items="wavesDelay"
-                    class="mb-2"
-                    label="Pauza mezi vlnami"
-                    required
-                ></v-select>
-                <v-select
-                    v-model="selectDefendersHitStrength"
-                    :items="defendersStrength"
-                    class="mb-2"
-                    label="ÚČ obránce"
-                    required
-                ></v-select>
-                <v-select
-                    v-model="selectSmithyUpgradeDuration"
-                    :items="smithyUpgradeStrength"
-                    class="mb-2"
-                    label="Výdrž vylepšení kovárny"
-                    required
-                ></v-select>
-                <v-select
-                    v-model="selectSmithyUpgradeWaiting"
-                    :items="[selectSmithyUpgradeWaiting]"
-                    class="mb-2 readonly"
-                    label="Čekání na vylepšení kovárny"
-                    readonly
-                ></v-select>
-                <v-select
-                    v-model="oilBoilingTime"
-                    :items="oilBoilingTimeOptions"
-                    class="mb-2"
-                    label="Doba vaření oleje"
-                ></v-select>
-                <v-select
-                    v-model="cannonLoadingTime"
-                    :items="cannonLoadingTimeOptions"
-                    class="mb-2"
-                    label="Doba nabíjení děla"
-                ></v-select>
+                <v-btn type="submit" :disabled="!isFormValid" :block="true" rounded="xs" class="mb-8">Založit novou bitvu</v-btn>
+
+                <v-expansion-panels>
+                  <v-expansion-panel
+                      title="&nbsp;"
+                      class="text-white"
+                  >
+                    <template #text>
+                      <v-select
+                          v-model="selectWaveVolume"
+                          :items="waveVolumeOptions"
+                          class="mb-2"
+                          label="Početnost ve vlně"
+                          required
+                      ></v-select>
+
+                      <v-select
+                          v-model="selectedGameLength"
+                          :items="gameLengthOptions"
+                          class="mb-2"
+                          label="Délka hry"
+                          required
+                      ></v-select>
+
+                      <v-select
+                          v-model="selectAssemblyCountdown"
+                          :items="assemblyCountdown"
+                          class="mb-2"
+                          label="Čekání před žebříkem"
+                          required
+                      ></v-select>
+
+                      <v-select
+                          v-model="selectWavesDelay"
+                          :items="wavesDelay"
+                          class="mb-2"
+                          label="Pauza mezi vlnami"
+                          required
+                      ></v-select>
+
+                      <v-select
+                          v-model="selectDefendersHitStrength"
+                          :items="defendersStrength"
+                          class="mb-2"
+                          label="ÚČ obránce"
+                          required
+                      ></v-select>
+
+                      <v-select
+                          v-model="selectSmithyUpgradeDuration"
+                          :items="smithyUpgradeStrength"
+                          class="mb-2"
+                          label="Výdrž vylepšení kovárny"
+                          required
+                      ></v-select>
+
+                      <v-select
+                          v-model="selectSmithyUpgradeWaiting"
+                          :items="[selectSmithyUpgradeWaiting]"
+                          class="mb-2 readonly"
+                          label="Čekání na vylepšení kovárny"
+                          readonly
+                      ></v-select>
+
+                      <v-select
+                          v-model="oilBoilingTime"
+                          :items="oilBoilingTimeOptions"
+                          class="mb-2"
+                          label="Doba vaření oleje"
+                      ></v-select>
+
+                      <v-select
+                          v-model="cannonLoadingTime"
+                          :items="cannonLoadingTimeOptions"
+                          class="mb-2"
+                          label="Doba nabíjení děla"
+                      ></v-select>
+                    </template>
+                  </v-expansion-panel>
+                </v-expansion-panels>
+
               </v-col>
             </v-row>
           </v-form>

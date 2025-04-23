@@ -1,10 +1,12 @@
 import horseRiderIcon from "assets/icons/horse-rider.svg";
 import cauldronEmptyIcon from "assets/icons/cauldron-empty.svg";
 import cauldronFullIcon from "assets/icons/cauldron-full.svg";
+import defenderNoWeaponMe from "assets/icons/defender-no-weapon-me.svg";
+import defenderNoWeaponOther from "assets/icons/defender-no-weapon-other.svg";
 import defenderSwordsmanMe from "assets/icons/defender-swordsman-me.svg";
 import defenderSwordsmanOther from "assets/icons/defender-swordsman-other.svg";
-import defendercannonMe from "assets/icons/defender-cannon-me.svg";
-import defendercannonOther from "assets/icons/defender-cannon-other.svg";
+import defenderCannonMe from "assets/icons/defender-cannon-me.svg";
+import defenderCannonOther from "assets/icons/defender-cannon-other.svg";
 import invaderStandard from "assets/icons/invader-regular.svg";
 import invaderCaptain from "assets/icons/invader-captain.svg";
 
@@ -12,6 +14,8 @@ interface IconLeafletOptions {
     icon?: "horse-rider"
         | "cauldron-empty"
         | "cauldron-full"
+        | "defender-no-weapon-me"
+        | "defender-no-weapon-other"
         | "defender-swordsman-me"
         | "defender-swordsman-other"
         | "defender-cannon-me"
@@ -29,10 +33,12 @@ export function useIconLeaflet(options: IconLeafletOptions = {}): L.DivIconOptio
         "horse-rider": { src: horseRiderIcon, defaultClass: "hh-rider-icon" },
         "cauldron-empty": { src: cauldronEmptyIcon, defaultClass: "hh-cauldron-empty" },
         "cauldron-full": { src: cauldronFullIcon, defaultClass: "hh-cauldron-full" },
+        "defender-no-weapon-me": { src: defenderNoWeaponMe, defaultClass: "hh-defender-no-weapon" },
+        "defender-no-weapon-other": { src: defenderNoWeaponOther, defaultClass: "hh-defender-no-weapon" },
         "defender-swordsman-me": { src: defenderSwordsmanMe, defaultClass: "hh-defender-swordsman" },
         "defender-swordsman-other": { src: defenderSwordsmanOther, defaultClass: "hh-defender-swordsman" },
-        "defender-cannon-me": { src: defendercannonMe, defaultClass: "hh-defender-cannon" },
-        "defender-cannon-other": { src: defendercannonOther, defaultClass: "hh-defender-cannon" },
+        "defender-cannon-me": { src: defenderCannonMe, defaultClass: "hh-defender-cannon" },
+        "defender-cannon-other": { src: defenderCannonOther, defaultClass: "hh-defender-cannon" },
         "invader-regular": { src: invaderStandard, defaultClass: "hh-invader-regular" },
         "invader-captain": { src: invaderCaptain, defaultClass: "hh-invader-captain" },
     };

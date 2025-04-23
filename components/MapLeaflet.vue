@@ -126,6 +126,8 @@ let oilPouringListener: ((event: DeviceOrientationEvent) => void) | null = null;
 
 const getIconNameBasedOnWeaponType = (weaponType: WeaponType): string => {
   switch (weaponType) {
+    case WeaponType.NONE:
+      return 'defender-no-weapon';
     case WeaponType.SWORD:
       return 'defender-swordsman';
     case WeaponType.CANNON:
@@ -331,6 +333,7 @@ onMounted(async () => {
 
   // create icon of recent player
   let iconToUse = getIconNameBasedOnWeaponType(currentPlayer.value.weaponType) + '-me';
+  console.log('iconToUse', iconToUse);
   let currentPlayerIcon = L.divIcon(useIconLeaflet({ icon: iconToUse,  label: currentPlayer.value.name }));
 
   L.TileLayer.Battlefield = L.TileLayer.extend({
