@@ -10,7 +10,7 @@ import defenderCannon from "assets/icons/defender-cannon-me.svg";
 <template>
   <h2 class="mb-2 text-h4">Jak hrát Hradní hlídku</h2>
 
-  <h3 class="mb-2 text-h5">Na vaše pozice se dobívají nepřátelé!</h3>
+  <h3 class="mb-2 text-h5">Na vaše pozice se dobývají nepřátelé!</h3>
 
   <p class="mb-2">Přistavili žebřík na několika místeh a po něm se šplhají nahoru. Pokud se byť jen jediný z nich dostane
     až na vrchol, bude bitva ztracena. Jak je odrazit?</p>
@@ -28,11 +28,22 @@ import defenderCannon from "assets/icons/defender-cannon-me.svg";
     Jakmile se na žebříku ocitne Kapitán, je možné jej zranit a zničit jen pokud přiběhnou
   žebřík bránit všichni obránci, kteří umí shazovat ze žebříku (takže ne obránce s dělem). <strong>Jinak je Kapitán nezranitelný</strong>.</p>
 
+  <h3 class="mb-2 text-h5">Vaše zbraně</h3>
+
+  <p>I bez zbraně můžete tím, že budete stát nad žebříkem, zraňovat nepřátele. Také můžete vyzvednout vroucí olej z kovárny,
+  pokud je již připraven. Olej musí vždy nést dva obránci.</p>
+
+  <p>S Mečem máte stejné možnosti, jako beze zbraně, ale navíc si v kovárně můžete zvolit vylepšení Ostrý meč.</p>
+
+  <p>Dělostřelec nemůže shazovat útočníky, kteří již započali výstup po žebříku. Může ovšem ostřelovat shromažďovací
+  prostor před žebříkem. Kliknutím na shromažďovací prostor zaměříte, kam vaše dělo vypálí. Nabíjení děla zabere nějaký čas,
+  proto važte, kdY a kam se vyplatí střelit. Dělostřelec může z kovárny vyzvednout vroucí olej (musí jej nést dva obránci)</p>
+
   <h3 class="mb-2 text-h5">Kovárna</h3>
 
-  <p class="mb-2">Každý obránce může přijít do Kovárny, kde lze vyzvednout kotel s vroucím olejem. Kotel se musí nějaký
-    <strong>čas vařit</strong>, než
-  je možné jej použít. Zvažte proto pečlivě, kdy jej použijete.
+  <p class="mb-2">Jeden region na mapě je označen jako <strong>kovárna</strong>.
+    Každý obránce může přijít do Kovárny, kde lze vyzvednout kotel s vroucím olejem. Kotel se musí nějaký
+    <strong>čas vařit</strong>, než je možné jej použít. Zvažte proto pečlivě, kdy jej použijete.
     <img :src="cauldronFullIcon" alt="Cauldron" class="custom-icon hh-badge__icon ma-2" />
     Kotel s vroucím olejem musí vyzvednout <strong>naráz dva</strong> hráči a vylít jej také najednou na
     stejném úseku hradeb.
