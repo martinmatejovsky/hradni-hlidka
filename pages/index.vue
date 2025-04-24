@@ -174,7 +174,8 @@ onBeforeMount(async () => {
         v-model="tab"
     >
       <v-tab value="join">Přidat se</v-tab>
-      <v-tab value="create">Založit novou</v-tab>
+      <v-tab value="create">Založit hru</v-tab>
+      <v-tab value="rules">Pravidla</v-tab>
     </v-tabs>
 
     <v-card-text>
@@ -310,10 +311,13 @@ onBeforeMount(async () => {
                     </template>
                   </v-expansion-panel>
                 </v-expansion-panels>
-
               </v-col>
             </v-row>
           </v-form>
+        </v-window-item>
+
+        <v-window-item value="rules">
+          <rules-description />
         </v-window-item>
       </v-window>
     </v-card-text>
