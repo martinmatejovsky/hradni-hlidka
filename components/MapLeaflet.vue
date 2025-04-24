@@ -333,7 +333,6 @@ onMounted(async () => {
 
   // create icon of recent player
   let iconToUse = getIconNameBasedOnWeaponType(currentPlayer.value.weaponType) + '-me';
-  console.log('iconToUse', iconToUse);
   let currentPlayerIcon = L.divIcon(useIconLeaflet({ icon: iconToUse,  label: currentPlayer.value.name }));
 
   L.TileLayer.Battlefield = L.TileLayer.extend({
@@ -407,6 +406,10 @@ onMounted(async () => {
 
   if (currentPlayer.value.location.lat && currentPlayer.value.location.lng) {
     markers[currentPlayer.value.key] = L.marker([currentPlayer.value.location.lat, currentPlayer.value.location.lng], { icon: currentPlayerIcon }).addTo(map);
+  }
+
+  for (const marker of Object.values(markers)) {
+    L.DomUtil.addClass(marker._icon, 'hh-live-player-icon');
   }
 
   battleZones.value.forEach(battleZone => {

@@ -1,6 +1,7 @@
 import horseRiderIcon from "assets/icons/horse-rider.svg";
 import cauldronEmptyIcon from "assets/icons/cauldron-empty.svg";
 import cauldronFullIcon from "assets/icons/cauldron-full.svg";
+import oilBlobIcon from "assets/icons/oil-blob.svg";
 import defenderNoWeaponMe from "assets/icons/defender-no-weapon-me.svg";
 import defenderNoWeaponOther from "assets/icons/defender-no-weapon-other.svg";
 import defenderSwordsmanMe from "assets/icons/defender-swordsman-me.svg";
@@ -11,17 +12,7 @@ import invaderStandard from "assets/icons/invader-regular.svg";
 import invaderCaptain from "assets/icons/invader-captain.svg";
 
 interface IconLeafletOptions {
-    icon?: "horse-rider"
-        | "cauldron-empty"
-        | "cauldron-full"
-        | "defender-no-weapon-me"
-        | "defender-no-weapon-other"
-        | "defender-swordsman-me"
-        | "defender-swordsman-other"
-        | "defender-cannon-me"
-        | "defender-cannon-other"
-        | "invader-regular"
-        | "invader-captain";
+    icon?: string;
     className?: string;
     label?: string;
     size?: [number, number];
@@ -33,6 +24,7 @@ export function useIconLeaflet(options: IconLeafletOptions = {}): L.DivIconOptio
         "horse-rider": { src: horseRiderIcon, defaultClass: "hh-rider-icon" },
         "cauldron-empty": { src: cauldronEmptyIcon, defaultClass: "hh-cauldron-empty" },
         "cauldron-full": { src: cauldronFullIcon, defaultClass: "hh-cauldron-full" },
+        "oil-blob": { src: oilBlobIcon, defaultClass: "hh-oil-blob" },
         "defender-no-weapon-me": { src: defenderNoWeaponMe, defaultClass: "hh-defender-no-weapon" },
         "defender-no-weapon-other": { src: defenderNoWeaponOther, defaultClass: "hh-defender-no-weapon" },
         "defender-swordsman-me": { src: defenderSwordsmanMe, defaultClass: "hh-defender-swordsman" },
@@ -52,7 +44,7 @@ export function useIconLeaflet(options: IconLeafletOptions = {}): L.DivIconOptio
     return {
         className: "",
         html: `<div class="hh-icon-leaflet d-flex flex-column position-absolute align-center text-center">
-                 <img class="h-icon-image ${className}-image" alt="" src="${selectedIcon.src}"/>
+                 <img class="hh-icon-image ${className}-image" alt="" src="${selectedIcon.src}"/>
                  ${options.progress !== undefined
             ? `<div class="hh-progress-bar-container">
                 <div class="hh-progress-bar" style="width: ${options.progress}%;"></div>

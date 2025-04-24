@@ -67,7 +67,7 @@
 
 .h-rider-icon {
   &.has-upgrade-smithy {
-    .h-icon-image {
+    .hh-icon-image {
       box-shadow: $box-shadow-badge-active;
       border-radius: 20px;
     }
@@ -76,7 +76,10 @@
 
 .leaflet-marker-icon {
   position: relative;
-  transition: all 0.3s;
+}
+
+.hh-live-player-icon {
+  transition: transform 0.3s;
 }
 
 .hh-ladder-image {
@@ -203,7 +206,7 @@
   transform-origin: center;
 }
 
-.boiling-oil {
+.boiling-oil-mass {
   width: 20px;
   height: 20px;
   background: radial-gradient(circle, #3b2f0b, #827213);

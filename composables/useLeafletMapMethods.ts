@@ -19,6 +19,66 @@ import {cannonBallSpeed} from "~/constants";
 const classPulsatingAnimation = "hh-pulsate";
 const bombardingMarkClass = ".hh-bombarding-img";
 
+function animateStraightLine(
+  map: L.Map,
+  marker: L.Marker,
+  start: L.LatLng,
+  end: L.LatLng,
+  duration: number = 1200,
+  onComplete?: () => void
+) {
+  const startTime = performance.now();
+
+  function step(currentTime: number) {
+    const elapsed = currentTime - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    const easedProgress = progress * progress;
+
+    const lat = start.lat + (end.lat - start.lat) * easedProgress;
+    const lng = start.lng + (end.lng - start.lng) * easedProgress;
+
+    marker.setLatLng([lat, lng]);
+
+    if (progress < 1) {
+      requestAnimationFrame(step);
+    } else {
+      map.removeLayer(marker);
+      if (onComplete) onComplete();
+    }
+  }
+
+  requestAnimationFrame(step);
+}
+
+function showOilSplashEffect(map: L.Map, position: L.LatLng) {
+  const splashIcon = L.divIcon({
+    className: 'oil-splash-icon',
+    html: '<div class="oil-splash"></div>',
+    iconSize: [20, 20],
+  });
+
+  const splashMarker = L.marker(position, { icon: splashIcon }).addTo(map);
+
+  const splashEl = splashMarker.getElement()?.querySelector('.oil-splash') as HTMLElement;
+
+  if (splashEl) {
+    splashEl.style.transition = 'transform 0.6s ease-out, opacity 0.6s ease-out';
+    splashEl.style.transform = 'scale(0.5)';
+    splashEl.style.opacity = '1';
+
+    // Trigger transition
+    setTimeout(() => {
+      splashEl.style.transform = 'scale(3)';
+      splashEl.style.opacity = '0';
+    }, 20);
+
+    // Remove marker after animation
+    setTimeout(() => {
+      map.removeLayer(splashMarker);
+    }, 700);
+  }
+}
+
 const bezierInterpolation = (t: number, points: [any]) => {
   const x = (1 - t) * (1 - t) * points[0].lng +
     2 * (1 - t) * t * points[1].lng +
@@ -82,55 +142,18 @@ export function animatePouredOil(map: L.Map, zoneKey: string) {
   if (!affectedZone) return;
 
   const affectedLadder: AssaultLadder = affectedZone.assaultLadder;
-  const start = affectedLadder.location.start;
-  const end = affectedLadder.location.end;
+  const start = affectedLadder.location.end;
+  const end = affectedLadder.location.start;
 
-  const oilIcon = L.divIcon({
-    className: "oil-icon",
-    html: '<div class="boiling-oil"></div>',
-    iconSize: [20, 20],
-  });
+  const oilBlobIcon = L.divIcon(useIconLeaflet({
+    icon: "oil-blob",
+    label: "",
+  }));
 
-  const oilMarker = L.marker(start, { icon: oilIcon }).addTo(map);
+  const oilMarker = L.marker(start, { icon: oilBlobIcon }).addTo(map);
 
-  const controlPoint = L.latLng(
-      (start.lng + end.lng) / 2,
-      (start.lat + end.lat) / 2
-  );
-
-  gsap.to(oilMarker, {
-    duration: 1.2,
-    ease: "power1.inOut",
-    onUpdate: function () {
-      const progress = this.progress();
-      const currentLatLng = bezierInterpolation(progress, [start, controlPoint, end]);
-      oilMarker.setLatLng(currentLatLng);
-    },
-    onComplete: () => {
-      const splashIcon = L.divIcon({
-        className: "oil-splash-icon",
-        html: '<div class="oil-splash"></div>',
-        iconSize: [30, 30],
-      });
-
-      const splashMarker = L.marker(end, { icon: splashIcon }).addTo(map);
-
-      gsap.fromTo(
-          ".oil-splash",
-          { scale: 0.5, opacity: 1 },
-          {
-            scale: 3,
-            opacity: 0,
-            duration: 1,
-            ease: "power2.out",
-            onComplete: () => {
-              map.removeLayer(splashMarker);
-            },
-          }
-      );
-
-      map.removeLayer(oilMarker);
-    },
+  animateStraightLine(map, oilMarker, start, end, 800, () => {
+    showOilSplashEffect(map, end);
   });
 }
 
