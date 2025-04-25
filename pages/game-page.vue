@@ -139,7 +139,7 @@ const leaveZoneTimer = () => {
   }
   zoneTimer.value = setTimeout(() => {
     smithyOfferOpened.value = false;
-    // dropUnsupportedOilPot();
+    dropUnsupportedOilPot();
   }, gameSettings.value.smithyUpgradeWaiting);
 }
 

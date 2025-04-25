@@ -2,6 +2,9 @@
 import cauldronFullIcon from "assets/icons/cauldron-full.svg";
 import cannonLoading from "assets/icons/cannon-loading.svg";
 import cannonFiring from "assets/icons/cannon-firing.svg";
+const {
+  animatePouredOil
+} = useLeafletMapUtilities();
 
 useHead({
   script: [
@@ -220,20 +223,24 @@ function pauseTracking() {
   }, TRACKING_DELAY);
 }
 
+function triggerPouringOil() {
+  if (!storeCurrentPlayer.currentPlayer.insideZone) return
+  props.socket.emit(
+      'oilIsPouredOff',
+      {
+        player: storeCurrentPlayer.currentPlayer
+      },
+  );
+}
+
 const startWatchingPouring = () => {
-  // if (!storeCurrentPlayer.currentPlayer.canPourBoilingOil) return;
+  if (!storeCurrentPlayer.currentPlayer.canPourBoilingOil) return;
 
   oilPouringListener = (event: DeviceOrientationEvent): void => {
     if (event.beta !== null) {
       // `beta` měří naklonění kolem horizontální osy. -90° = vzhůru nohama
-      if (event.beta < -45) {
-        if (!storeCurrentPlayer.currentPlayer.insideZone) return
-        props.socket.emit(
-          'oilIsPouredOff',
-          {
-            player: storeCurrentPlayer.currentPlayer
-          },
-        );
+      if (event.beta < -70) {
+        triggerPouringOil();
       }
     }
   };
@@ -252,9 +259,9 @@ const stopWatchingPouring = () => {
 
 // can pour boiling oil?
 watch(() => storeCurrentPlayer.currentPlayer.canPourBoilingOil, (canPour) => {
-  // if (canPour) {
+  if (canPour) {
     startWatchingPouring();
-  // }
+  }
 });
 
 // change color of polygon where currentUser is
@@ -475,7 +482,9 @@ onBeforeUnmount(() => {
         :class="{
           'is-incomplete': !partnerForBoilingOilName,
           'is-ready-to-pour': storeCurrentPlayer.currentPlayer.canPourBoilingOil,
-        }">
+        }"
+        @click="triggerPouringOil()"
+      >
 
         <img :src="cauldronFullIcon" alt="Cauldron" class="custom-icon hh-badge__icon" />
         <span class="pt-1">
