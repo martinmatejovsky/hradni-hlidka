@@ -278,10 +278,23 @@ export function useLeafletMapUtilities() {
 
       if (!invaderStillExists) {
         const markerToRemove = invaderIcons[invaderId];
+
         if (markerToRemove) {
-          markerToRemove.remove();
+          const markerElement = markerToRemove.getElement();
+
+          if (markerElement) {
+            const markerImg = markerElement.getElementsByClassName('hh-icon-image')[0]
+            markerImg.classList.add('invader-dying');
+
+            setTimeout(() => {
+              markerToRemove.remove();
+              delete invaderIcons[invaderId];
+            }, 3000);
+          } else {
+            markerToRemove.remove();
+            delete invaderIcons[invaderId];
+          }
         }
-        delete invaderIcons[invaderId];
       }
     });
   }
