@@ -2,12 +2,14 @@
 import type {Socket} from "socket.io-client";
 import {useGameInstanceStore} from "~/stores/gameInstanceStore";
 import {useLeafletMapUtilities} from "~/composables/useLeafletMapMethods";
+import {useCurrentPlayerStore} from "~/stores/currentPlayerStore";
 
 const {
   removeBombardingMarkerAnimation
 } = useLeafletMapUtilities();
 
 const storeGameInstance = useGameInstanceStore();
+const storeCurrentPlayer = useCurrentPlayerStore();
 
 // PROPS
 const props = defineProps<{socket: Socket | undefined}>();
@@ -28,7 +30,7 @@ const fireCannon = () => {
   const targetZoneKey = storeGameInstance.cannonUsage.targetZoneId;
 
   props.socket.emit('fireCannon',
-    { targetZoneKey })
+    { targetZoneKey, firedBy: storeCurrentPlayer.currentPlayer.key },)
 
   removeBombardingMarkerAnimation();
   useEventBus('ownCannonFired', targetZoneKey);

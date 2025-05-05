@@ -13,6 +13,7 @@ import type {
 } from "~/types/CustomTypes";
 import {useIconLeaflet} from "~/composables/useIconLeaflet";
 import {useGameInstanceStore} from "~/stores/gameInstanceStore";
+import {useCurrentPlayerStore} from "~/stores/currentPlayerStore";
 import {gsap} from "gsap";
 import {cannonBallSpeed} from "~/constants";
 
@@ -350,11 +351,15 @@ export function useLeafletMapUtilities() {
 
   function cannonBallTravel(
     map: L.Map,
-    from: PlayerCoordinates,
+    firedBy: string,
     toZoneKey: string,
   ) {
     const storeGameInstance = useGameInstanceStore()
+    const storeCurrentPlayer = useCurrentPlayerStore();
     const targetZoneCoordinates = storeGameInstance.gameInstance.battleZones.find(zone => zone.key === toZoneKey)?.assemblyAreaCenter;
+    const from = firedBy === storeCurrentPlayer.currentPlayer.key
+      ? storeCurrentPlayer.currentPlayer.location
+      : storeGameInstance.gameInstance.players.find(player => player.key === firedBy)?.location;
 
     const cannonballIcon = L.divIcon({
       className: 'cannonball-icon',

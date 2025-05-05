@@ -50,5 +50,9 @@ export function useSocket(gameId: string) {
         useEventBus('oilIsPouredGlobalEvent', affectedZone);
     })
 
+    socket.on('cannonIsFired', (affectedZone: string, firedBy: string) => {
+        useEventBus('cannonIsFiredGlobalEvent', [affectedZone, firedBy]);
+    })
+
     return socket;
 }

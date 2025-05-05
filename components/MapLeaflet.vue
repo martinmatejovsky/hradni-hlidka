@@ -41,6 +41,7 @@ import {useLeafletMapUtilities} from "@/composables/useLeafletMapMethods";
 import {useIconLeaflet} from "~/composables/useIconLeaflet";
 import {Socket} from "socket.io-client";
 import {useEvaluateWeaponAbility} from "~/composables/useEvaluateWeaponAbility";
+import PanelFireCannon from "~/components/PanelFireCannon.vue";
 
 const {
   addLabelsToPolygons,
@@ -333,9 +334,8 @@ watch(() => props.connectedPlayers, (updatedConnectedPlayers) => {
 // LIFECYCLE
 onMounted(async () => {
   useListenBus('updateLifeOfInvaders', () => handleUpdateInvadersIcons(map, battleZones.value, invaderIcons));
-  useListenBus('ownCannonFired', (zoneKey) => cannonBallTravel(map, currentPlayer.value.location, zoneKey));
   useListenBus('oilIsPouredGlobalEvent', (zoneKey) => animatePouredOil(map, zoneKey));
-
+  useListenBus('cannonIsFiredGlobalEvent', ([zoneKey, firedBy]) => cannonBallTravel(map, firedBy, zoneKey));
   map = L.map('map').setView(props.mapCenter, zoom.value[1]);
 
   // create icon of recent player
@@ -471,7 +471,7 @@ onBeforeUnmount(() => {
   <div class="hh-battle-map position-relative">
     <div id="map"></div>
 
-    <div class="hh-badges hh-above-fullscreen-leaflet pa-3">
+    <div class="hh-badges pa-3">
       <div v-if="storeCurrentPlayer.currentPlayer.perks.sharpSword > 0" class="hh-badge is-sharp-sword">
         <v-icon icon="mdi-sword" color="black" class="hh-badge__icon" size="32px"></v-icon>
       </div>
@@ -510,20 +510,29 @@ onBeforeUnmount(() => {
       </div>
     </div>
 
-    <div class="hh-area-switchers hh-above-fullscreen-leaflet pa-2 flex justify-space-between">
-      <v-row align="center" justify="center">
-        <v-col cols="auto" v-for="zone in battleZones" :key="zone.zoneName">
-          <v-btn
-              rounded="xs"
-              size="small"
-              @click="map.setView(zone.assaultLadder.steps[5], zoom[1])"
-              class="hh-area-switcher-btn"
-              :text="zone.zoneName"
-          >
-            {{ zone.zoneName }}
-          </v-btn>
-        </v-col>
-      </v-row>
+    <div class="hh-map-bottom-controls">
+      <VFadeTransition>
+        <PanelFireCannon
+          v-if="storeGameInstance.getIsCannonReadyToFire"
+          :socket="socket"
+        />
+      </VFadeTransition>
+
+      <div class="hh-area-switchers pa-2 flex justify-space-between">
+        <v-row align="center" justify="center">
+          <v-col cols="auto" v-for="zone in battleZones" :key="zone.zoneName">
+            <v-btn
+                rounded="xs"
+                size="small"
+                @click="map.setView(zone.assaultLadder.steps[5], zoom[1])"
+                class="hh-area-switcher-btn"
+                :text="zone.zoneName"
+            >
+              {{ zone.zoneName }}
+            </v-btn>
+          </v-col>
+        </v-row>
+      </div>
     </div>
   </div>
 </template>

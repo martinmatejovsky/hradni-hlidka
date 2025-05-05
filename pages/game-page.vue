@@ -10,7 +10,6 @@ import {useListenBus} from "~/composables/useEventBus";
 import {useGameInstanceStore} from "~/stores/gameInstanceStore";
 import {useCurrentPlayerStore} from "~/stores/currentPlayerStore";
 import {useZoneIntersectionStore} from "~/stores/zoneIntersectionStore";
-import PanelFireCannon from "~/components/PanelFireCannon.vue";
 import {canUseSmithyPerks, useEvaluateWeaponAbility} from "~/composables/useEvaluateWeaponAbility";
 
 // Pinia stores
@@ -283,14 +282,6 @@ onBeforeUnmount(() => {
               <Smithy-shop-offer
                 :socket="socket"
                 v-if="smithyOfferOpened && canUseSmithyPerks(currentPlayer.weaponType)"
-                @perkChosen="smithyOfferOpened = false"
-              />
-            </VFadeTransition>
-
-            <VFadeTransition>
-              <PanelFireCannon
-                v-if="storeGameInstance.getIsCannonReadyToFire"
-                :socket="socket"
                 @perkChosen="smithyOfferOpened = false"
               />
             </VFadeTransition>

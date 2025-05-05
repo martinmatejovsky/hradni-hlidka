@@ -15,9 +15,9 @@
 
   &.is-full-screen {
     .hh-alert-wave-container,
-    .hh-area-switchers,
+    .hh-map-bottom-controls,
     .hh-map-bottom-sticky-container,
-    .hh-badges {
+    .hh-badges, {
       @include above-fullscreen-leaflet
     }
 
@@ -27,8 +27,7 @@
         left: 15%;
     }
 
-    .hh-area-switchers {
-      position: fixed;
+    .hh-map-bottom-controls {
       bottom: 0;
       right: 0;
       left: 0;
@@ -40,5 +39,9 @@
       right: 0;
       bottom: 0;
     }
+  }
+
+  .hh-area-switchers {
+    background: rgba(255, 255, 255, 0.47);
   }
 }

@@ -136,4 +136,5 @@ export type MittEvents = {
     leafletFullscreen: boolean;
     ownCannonFired: string;
     oilIsPouredGlobalEvent: string;
+    cannonIsFiredGlobalEvent: [string, string];
 };
