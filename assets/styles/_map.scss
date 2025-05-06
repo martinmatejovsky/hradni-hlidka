@@ -132,12 +132,11 @@
   align-items: flex-end;
   justify-content: right;
   color: #000;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
 
   &.is-boiling-oil {
     .hh-badge__icon {
-      width: 48px;
-      height: 48px;
+      pointer-events: auto;
       transition: transform 0.3s ease-in-out;
     }
 
@@ -153,6 +152,14 @@
   }
 }
 
+.hh-kill-score {
+  width: 30px;
+  height: 30px;
+  background-color: rgba(0, 0, 0, 0.63);
+  color: #fff;
+  border-radius: 50%;
+  font-size: 18px;
+}
 .hh-badge__icon {
   width: 32px;
   height: 32px;

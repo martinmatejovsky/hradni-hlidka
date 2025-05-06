@@ -37,6 +37,7 @@ export function useSocket(gameId: string) {
             if (player) {
                 storeCurrentPlayer.currentPlayer.perks = player.perks;
                 storeCurrentPlayer.currentPlayer.canPourBoilingOil = player.canPourBoilingOil;
+                storeCurrentPlayer.currentPlayer.killScore = player.killScore;
             }
         }
         useEventBus('updateLifeOfInvaders');

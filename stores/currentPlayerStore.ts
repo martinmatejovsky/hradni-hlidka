@@ -21,6 +21,7 @@ export const useCurrentPlayerStore = defineStore('currentPlayer', {
       },
       canPourBoilingOil: false,
       socketId: '',
+      killScore: 0,
     } as PlayerData,
   }),
   getters: {

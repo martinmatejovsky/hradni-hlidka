@@ -228,6 +228,7 @@ onBeforeUnmount(() => {
     sharpSword: 0,
     boilingOil: false,
   };
+  currentPlayer.value.killScore = 0;
 
   clearCannonProcesses();
 })

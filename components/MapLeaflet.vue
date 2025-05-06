@@ -471,7 +471,7 @@ onBeforeUnmount(() => {
   <div class="hh-battle-map position-relative">
     <div id="map"></div>
 
-    <div class="hh-badges pa-3">
+    <div class="hh-badges pa-3 no-pointer-events">
       <div v-if="storeCurrentPlayer.currentPlayer.perks.sharpSword > 0" class="hh-badge is-sharp-sword">
         <v-icon icon="mdi-sword" color="black" class="hh-badge__icon" size="32px"></v-icon>
       </div>
@@ -483,11 +483,11 @@ onBeforeUnmount(() => {
           'is-incomplete': !partnerForBoilingOilName,
           'is-ready-to-pour': storeCurrentPlayer.currentPlayer.canPourBoilingOil,
         }"
-        @click="triggerPouringOil()"
       >
 
-        <img :src="cauldronFullIcon" alt="Cauldron" class="custom-icon hh-badge__icon" />
-        <span class="pt-1">
+        <img :src="cauldronFullIcon" alt="Cauldron" class="custom-icon hh-badge__icon pb-1" @click="triggerPouringOil()" />
+
+        <span>
           {{ labelIconPouringOil }}
         </span>
       </div>
@@ -507,6 +507,10 @@ onBeforeUnmount(() => {
             <div class="hh-progress-bar" :style="`width: ${cannonLoadingProgress}%;`"></div>
           </div>
         </template>
+      </div>
+
+      <div class="hh-kill-score d-flex justify-center align-center ml-auto">
+        <span>{{ currentPlayer.killScore }}</span>
       </div>
     </div>
 
