@@ -42,6 +42,15 @@ const battleZones = computed((): BattleZone[] => storeGameInstance.gameInstance.
 
 const keyOfIntersectedArea = computed((): string => storeZoneIntersection.keyOfIntersectedArea);
 const nameOfIntersectedArea = computed((): string => storeZoneIntersection.nameOfIntersectedArea);
+const victoryMessage = `
+  Vítězství! Dobývání Lokte je tímto úspěšně u konce. Následuje volná zábava. Moudro dne:<br><br><br>
+  „Doktore, řekněte mi pravdu. Umře tchyně?“<br>
+  „Ne.“<br>
+  „A teď?“<br>
+  „Ne.“<br>
+  „A teď?“<br>
+  „Ne a přestaňte mi do kapsy strkat ty peníze!“
+`;
 
 // METHODS
 const clearCannonProcesses = () => {
@@ -253,9 +262,10 @@ onBeforeUnmount(() => {
       <template v-if="gameStateReady">
         <h2>Ke hře připraveni:</h2>
         <p v-if="connectedPlayers.length === 0">Nikdo se zatím nepřipojil.</p>
-        <ul v-else>
+        <ul v-else class="mb-4">
           <li v-for="player in connectedPlayers" :key="player.key" class="text-green">{{ player.name }} {{ currentPlayerMark(player) }}</li>
         </ul>
+        <p v-if="currentPlayerIsLeader">Jsou-li tu všichni, můžete</p>
         <v-btn v-if="currentPlayerIsLeader" @click="startAttack" rounded="xs" class="mt-3 mb-3">Zahájit útok</v-btn>
         <p v-else>Útok může zahájit první hráč seznamu.</p>
       </template>
@@ -292,13 +302,15 @@ onBeforeUnmount(() => {
 
       <!-- LOST OR WON-->
       <div v-else-if="gameStateLost || gameStateWon">
-        <h4 class="text-h4 mb-4" :class="[gameStateWon ? 'text-green' : 'text-red']">
-          {{ gameStateWon ? 'Vítězství' : 'Prohráli jste' }}
-        </h4>
+        <h4
+          class="text-h4 mb-4"
+          :class="[gameStateWon ? 'text-green' : 'text-red']"
+          v-html="gameStateWon ? victoryMessage : 'Prohráli jste'"
+        ></h4>
       </div>
     </section>
 
-    <v-btn @click="getBack" size="small" rounded="xs" class="mt-3 mr-4 mb-3">
+    <v-btn @click="getBack" size="small" rounded="xs" class="mt-6 mr-4 mb-3">
       {{ gameStateRunning ? 'Opustit bitvu' : 'Zpět' }}
     </v-btn>
   </template>

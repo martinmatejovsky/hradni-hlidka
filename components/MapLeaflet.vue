@@ -64,6 +64,7 @@ let trackingTimeout: ReturnType<typeof setTimeout>;
 const markers = reactive<{ [key: string]: L.Marker }>({});
 const invaderIcons = reactive<{ [key: number]: L.Marker }>({});
 const boilingOilIcons: Record<string, L.Marker> = {};
+const boilingOilPerkIcon = ref<HTMLElement | null>(null);
 const battleZonePolygons = ref<L.Polygon[]>([]);
 const utilityZonePolygons = ref<L.Polygon[]>([]);
 const TRACKING_DELAY = 10000;
@@ -232,6 +233,10 @@ function triggerPouringOil() {
         player: storeCurrentPlayer.currentPlayer
       },
   );
+
+  if (boilingOilPerkIcon.value) {
+    boilingOilPerkIcon.value.classList.remove('is-ready-to-pour');
+  }
 }
 
 const startWatchingPouring = () => {
@@ -477,6 +482,7 @@ onBeforeUnmount(() => {
       </div>
 
       <div
+        ref="boilingOilPerkIcon"
         v-if="storeCurrentPlayer.currentPlayer.perks.boilingOil"
         class="hh-badge is-boiling-oil flex flex-column"
         :class="{
