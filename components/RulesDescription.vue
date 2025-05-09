@@ -67,8 +67,8 @@ import bombardingTargetAim from "assets/icons/target-zone-aim.svg";
       </li>
 
       <li><strong>Dělo</strong> - pokud máte dělo, nemůžete zranit nepřátele na žebříku a je jedno, kde stojíte.
-        Nepřátele ničíte ostřelováním shromažďovacího prostoru před žebříkem. Počkejte na nabití děla, zvolte
-        na mapě cíl, a vystřelte.
+        Nepřátele ničíte ostřelováním shromažďovacího prostoru před žebříkem. Počkejte na nabití děla, klikněte
+        na mapě na cíl, a vystřelte.
 
         <img :src="bombardingTargetAim" alt="Target" class="custom-icon ma-2 d-block" width="60px" height="60px" />
         V kovárně smíte vyzvednout vroucí olej. Nemůžete se podílet na zničení kapitána, který leze po žebříku.

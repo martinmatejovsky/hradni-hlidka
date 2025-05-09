@@ -39,7 +39,7 @@ const fireCannon = () => {
 
 <template>
 <div class="hh-panel-fire-cannon pa-3">
-  <h3 class="hh-panel-fire-cannon__heading mb-2 text-center text-black">K palbě připraven!</h3>
+  <h3 class="hh-panel-fire-cannon__heading text-center text-black">K palbě připraven!</h3>
 
   <div class="d-flex justify-center align-center font-weight-bold text-red ga-5">
     <span>Mířím na {{ nameOfSelectedBombardZone ?? '(klikni na mapě)' }}</span>

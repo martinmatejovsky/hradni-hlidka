@@ -529,13 +529,13 @@ onBeforeUnmount(() => {
       </VFadeTransition>
 
       <div class="hh-area-switchers pa-2 flex justify-space-between">
-        <v-row align="center" justify="center">
+        <v-row align="center" justify="center" no-gutters>
           <v-col cols="auto" v-for="zone in battleZones" :key="zone.zoneName">
             <v-btn
                 rounded="xs"
                 size="small"
                 @click="map.setView(zone.assaultLadder.steps[5], zoom[1])"
-                class="hh-area-switcher-btn"
+                class="hh-area-switcher-btn mx-3 my-1"
                 :text="zone.zoneName"
             >
               {{ zone.zoneName }}

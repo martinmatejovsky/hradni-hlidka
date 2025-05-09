@@ -307,6 +307,8 @@ onBeforeUnmount(() => {
           :class="[gameStateWon ? 'text-green' : 'text-red']"
           v-html="gameStateWon ? victoryMessage : 'Prohráli jste'"
         ></h4>
+
+        <p>Zabito nepřátel: {{ currentPlayer.killScore }}</p>
       </div>
     </section>
 
