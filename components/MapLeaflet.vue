@@ -460,6 +460,7 @@ onMounted(async () => {
 
       addLadders(map, battleZones.value);
       if (useEvaluateWeaponAbility(currentPlayer.value.weaponType).canBombardAssemblyArea) addBombardingMarks(map, battleZones.value);
+      if(props.nameOfIntersectedArea) highlightOccupiedPolygon(props.nameOfIntersectedArea)
       emit('leafletMapLoaded');
     }
   }, 200);

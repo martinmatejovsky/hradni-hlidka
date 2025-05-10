@@ -30,6 +30,9 @@ export const useCurrentPlayerStore = defineStore('currentPlayer', {
     }
   },
   actions: {
+    setCurrentPlayerKey(key: string): void {
+        this.currentPlayer.key = key
+    },
     setCurrentPlayerGeolocation(coordinates: PlayerCoordinates): void {
       this.currentPlayer.location = coordinates
     }

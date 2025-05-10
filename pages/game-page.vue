@@ -106,6 +106,8 @@ const startAttack = async (): Promise<void> => {
     body: JSON.stringify({
       gameId: storeGameInstance.gameInstance.id
     })
+  }).then(() => {
+    handlePlayerZoneChange();
   }).catch((error) => {
     applicationError.value = 'Nepodařilo se zahájit útok.<br />' + error
   });
@@ -157,8 +159,7 @@ const dropUnsupportedOilPot = () => {
   socket.emit('dropUnsupportedOilPot', {gameId: storeGameInstance.gameInstance.id, player: currentPlayer.value})
 };
 
-// WATCHERS
-watch(keyOfIntersectedArea, (): void => {
+const handlePlayerZoneChange = () => {
   storeZoneIntersection.updatePlayerZone();
 
   if (battleZones && currentPlayer.value.key) {
@@ -170,6 +171,13 @@ watch(keyOfIntersectedArea, (): void => {
   } else {
     leaveZoneTimer();
   }
+}
+
+// WATCHERS
+watch(keyOfIntersectedArea, (): void => {
+  storeZoneIntersection.updatePlayerZone();
+
+  handlePlayerZoneChange();
 });
 
 watch(gameState, (newValue): void => {
@@ -221,8 +229,6 @@ onBeforeMount(async () => {
     useEnsureSocketDisconnect();
   });
 
-  // Set initial zone
-  storeZoneIntersection.updatePlayerZone();
   await useReleaseWakeLockScreen();
 })
 

@@ -15,7 +15,6 @@ const props = defineProps<{socket: Socket | undefined}>();
 
 // DATA
 const pageError = useState(STORE_APPLICATION_ERROR);
-const emit = defineEmits(['@form-submitted'])
 const isFormValid = computed(() => {
   return selectedPlayerName.value
 })
@@ -36,17 +35,10 @@ const submitForm = async () => {
     return
   }
 
-  storeCurrentPlayer.currentPlayer.key = props.socket.id as string;
+  storeCurrentPlayer.setCurrentPlayerKey(props.socket.id as string);
   storeCurrentPlayer.currentPlayer.strength = storeGameInstance.gameSettings.defendersHitStrength;
 
-  props.socket.emit('joinGame', {gameId: storeGameInstance.gameInstance.id, player: storeCurrentPlayer.currentPlayer}, (response: string) => {
-    if (response === 'ok') {
-      emit('@form-submitted')
-    } else {
-      pageError.value = 'Nepodařilo se připojit ke hře'
-      console.error('Failed to join game', response)
-    }
-  })
+  props.socket.emit('joinGame', {gameId: storeGameInstance.gameInstance.id, player: storeCurrentPlayer.currentPlayer})
 }
 </script>
 
