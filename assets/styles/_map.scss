@@ -98,19 +98,7 @@
 }
 
 .hh-invader-icon {
-  position: relative;
-  width: auto;
-  height: auto;
-  padding: 4px;
-  border-radius: 4px;
-  background-color: #85567b;
-  color: white;
-  float: right;
-  z-index: $z-index-leaflet-map;
-
-  &.is-captain {
-    background-color: #fa1458;
-  }
+  transition: transform 0.3s;
 }
 
 // to override Leaflet style

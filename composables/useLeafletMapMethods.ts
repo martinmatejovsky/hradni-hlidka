@@ -252,6 +252,9 @@ export function useLeafletMapUtilities() {
     if (assemblyCoordinate.lat && assemblyCoordinate.lng) {
       let invaderIcon = L.divIcon(useIconLeaflet({icon: `invader-${type}`, label: ""}));
       invaderIcons[id] = L.marker([assemblyCoordinate.lat, assemblyCoordinate.lng], {icon: invaderIcon}).addTo(map);
+
+      L.DomUtil.addClass(invaderIcons[id]._icon, 'hh-invader-icon');
+
     } else {
       console.warn(`No coordinate found for assemblyArea index ${assemblyAreaIndex} in zone ${zoneKey}`);
       return;
