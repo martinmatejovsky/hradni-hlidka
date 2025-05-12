@@ -1,0 +1,47 @@
+.hh-leaflet-container {
+  .hh-alert-wave-container {
+    .v-alert-title {
+      font-size: 16px
+    }
+  }
+
+  .hh-map-bottom-sticky-container {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: $z-index-leaflet-map;
+  }
+
+  &.is-full-screen {
+    .hh-alert-wave-container,
+    .hh-map-bottom-controls,
+    .hh-map-bottom-sticky-container,
+    .hh-badges, {
+      @include above-fullscreen-leaflet
+    }
+
+    .hh-alert-wave-container {
+        top: 0;
+        right: 15%;
+        left: 15%;
+    }
+
+    .hh-map-bottom-controls {
+      bottom: 0;
+      right: 0;
+      left: 0;
+    }
+
+    .hh-map-bottom-sticky-container {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+    }
+  }
+
+  .hh-area-switchers {
+    background: rgba(255, 255, 255, 0.47);
+  }
+}
