@@ -5,7 +5,8 @@
    viewBox="0 0 7.9374994 7.9375"
    version="1.1"
    id="svg1"
-   xmlns="http://www.w3.org/2000/svg">
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
   <defs
      id="defs1" />
   <g
@@ -20,7 +21,7 @@
        id="path4" />
     <path
        style="fill:none;stroke:#111111;stroke-width:1;stroke-linecap:round;stroke-dasharray:none;stroke-opacity:1"
-       d="M 0.7666791,5.1201814 C 1.7609572,3.6575483 2.3848314,3.2051497 3.5849011,2.883095 5.1228684,2.470361 4.5855593,4.5476581 3.796645,5.020319"
+       d="M 1.8011644,3.5152789 C 2.7954425,2.0526458 3.4193167,1.6002472 4.6193864,1.2781925 6.1573537,0.8654585 4.5855593,4.5476581 3.796645,5.020319"
        id="path2" />
     <path
        style="fill:none;stroke:#dd2200;stroke-width:1.05833;stroke-dasharray:none;stroke-opacity:1"
@@ -35,11 +36,11 @@
        ry="1.1652169" />
     <path
        style="fill:none;stroke:#ff5555;stroke-width:0.6;stroke-linecap:round;stroke-dasharray:none;stroke-opacity:1"
-       d="M 0.77653911,5.1742248 C 3.2530208,5.3821603 4.4817582,4.9084778 5.6637613,4.4008174 6.7299749,3.9428876 7.7152349,3.2704518 7.7152349,3.2704518"
+       d="M 0.35114327,1.1232962 C 1.5127651,3.4485429 2.0266249,4.1695158 3.198399,4.8165451 3.911891,5.2105206 4.7514293,5.4941514 5.4432344,5.6681375"
        id="path5" />
   </g>
   <path
      style="fill:none;stroke:#111111;stroke-width:0.529;stroke-dasharray:none;stroke-opacity:1"
-     d="M 1.2563649,1.3245398 C 2.6338154,-0.11481749 5.2877708,0.19555508 6.5642634,1.0518405"
+     d="M 1.4207224,1.2955355 C 2.9030866,-0.1205076 5.5788185,0.19470419 6.7286209,1.0228362"
      id="path6" />
 </svg>

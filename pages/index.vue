@@ -28,7 +28,7 @@ const accuracyClass = computed(() => {
   }
 });
 const selectedLocationKey = ref<string>('Loket Sportovní')
-const selectedGameTempo = ref<number>(5000)
+const selectedGameTempo = ref<number>(60000)
 const selectedLadderLength = ref<number>(30)
 const selectedGameLength = ref<number>(10)
 const selectWaveVolume = ref<number>(4)
@@ -210,7 +210,7 @@ onBeforeMount(async () => {
                 <v-select
                     v-model="selectedLocationKey"
                     :items="locationOptions"
-                    class="mb-2"
+                    class="mb-2 mt-2"
                     label="Vyberte bitevní pole"
                     value="loketSportovni"
                     required
@@ -220,7 +220,7 @@ onBeforeMount(async () => {
                     :items="gameTemposOptions"
                     class="mb-2"
                     label="Tempo hry"
-                    value="10000"
+                    value="60000"
                     required
                 ></v-select>
                 <v-select
@@ -236,7 +236,7 @@ onBeforeMount(async () => {
                 <v-expansion-panels>
                   <v-expansion-panel
                       title="&nbsp;"
-                      class="text-white"
+                      class="hh-expansion-hidden"
                   >
                     <template #text>
                       <v-select
