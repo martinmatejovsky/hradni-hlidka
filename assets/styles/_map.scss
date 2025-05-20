@@ -132,9 +132,9 @@
       animation: pourOil 1.5s infinite ease-in-out;
     }
 
-    &.is-incomplete {
+    &.is-already-poured {
       .custom-icon {
-        // ?
+        opacity: 0.5;
       }
     }
   }
