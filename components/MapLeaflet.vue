@@ -308,7 +308,7 @@ watch(() => currentPlayer.value.location, (newLocation) => {
   }
 });
 
-watch(() => props.connectedPlayers, (updatedConnectedPlayers) => {
+watch(() => props.connectedPlayers, (updatedConnectedPlayers: PlayerData[]) => {
   updatedConnectedPlayers.forEach((player: PlayerData) => {
     let marker = markers[player.key];
     if(!marker) return;
@@ -318,7 +318,7 @@ watch(() => props.connectedPlayers, (updatedConnectedPlayers) => {
         marker.setLatLng([player.location.lat, player.location.lng]);
       } else {
         let iconToUse = getIconNameBasedOnWeaponType(player.weaponType) + '-other';
-        let otherPlayerIcon = L.divIcon(useIconLeaflet({ icon: iconToUse,  label: player.name }));
+        let otherPlayerIcon = L.divIcon(useIconLeaflet({ icon: iconToUse, label: player.name }));
         marker = L.marker([player.location.lat, player.location.lng], { icon: otherPlayerIcon }).addTo(map);
       }
     }

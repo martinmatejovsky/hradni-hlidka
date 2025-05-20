@@ -36,6 +36,7 @@ import bombardingTargetAim from "assets/icons/target-zone-aim.svg";
 
      Automatické zraňování neplatí pro obránce s dělem - dělo naopak může ostřelovat jen nepřátele, co stojí teprve
       <strong>před</strong> žebříkem. Obránce s dělem se proto nemusí pohybovat vůbec.
+      Mapu je možno zvětšit přes celou obrazovku tlačítkem vlevo nahoře.
     </p>
   </article>
 
