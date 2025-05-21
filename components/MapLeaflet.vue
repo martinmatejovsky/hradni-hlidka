@@ -229,7 +229,8 @@ function pauseTracking() {
 }
 
 function triggerPouringOil() {
-  if (!storeCurrentPlayer.currentPlayer.insideZone) return
+  if (!storeCurrentPlayer.currentPlayer.canPourBoilingOil) return
+
   props.socket.emit(
       'oilIsPouredOff',
       {

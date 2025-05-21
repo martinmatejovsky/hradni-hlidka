@@ -28,7 +28,7 @@ const accuracyClass = computed(() => {
   }
 });
 const selectedLocationKey = ref<string>('Loket Sportovní')
-const selectedGameTempo = ref<number>(60000)
+const selectedGameTempo = ref<number>(15000)
 const selectedLadderLength = ref<number>(30)
 const selectedGameLength = ref<number>(10)
 const selectWaveVolume = ref<number>(4)
