@@ -224,7 +224,7 @@ export function useLeafletMapUtilities() {
     })
   }
 
-  function createInvaderIcon(
+  function drawInvaderIcon(
     map: L.Map,
     id: number,
     zoneKey: string,
@@ -250,7 +250,16 @@ export function useLeafletMapUtilities() {
     const assemblyCoordinate = battleZone.assemblyArea[assemblyAreaIndex];
 
     if (assemblyCoordinate.lat && assemblyCoordinate.lng) {
-      let invaderIcon = L.divIcon(useIconLeaflet({icon: `invader-${type}`, label: ""}));
+      let iconVariation: string;
+
+      if (type === 'captain') {
+          iconVariation = 'invader-captain';
+      } else {
+        const randomIndex = Math.floor(Math.random() * 3) + 1;
+        iconVariation = 'invader-regular-' + randomIndex;
+      }
+
+      let invaderIcon = L.divIcon(useIconLeaflet({icon: iconVariation, label: ""}));
       invaderIcons[id] = L.marker([assemblyCoordinate.lat, assemblyCoordinate.lng], {icon: invaderIcon}).addTo(map);
 
       L.DomUtil.addClass(invaderIcons[id]._icon, 'hh-invader-icon');
@@ -270,7 +279,7 @@ export function useLeafletMapUtilities() {
     battleZones.forEach((zone: BattleZone) => {
       zone.invaders.forEach(invader => {
         if (!invaderIcons[invader.id]) {
-          createInvaderIcon(map, invader.id, zone.key, battleZones, invaderIcons, invader.type);
+          drawInvaderIcon(map, invader.id, zone.key, battleZones, invaderIcons, invader.type);
         }
       });
     });

@@ -27,17 +27,17 @@ const accuracyClass = computed(() => {
     return 'text-red';
   }
 });
-const selectedLocationKey = ref<string>('Loket Sportovní')
-const selectedGameTempo = ref<number>(5000)
-const selectedLadderLength = ref<number>(30)
-const selectedGameLength = ref<number>(10)
+const selectedLocationKey = ref<string>('Loket Východní hradba')
+const selectedGameTempo = ref<number>(10000)
+const selectedLadderLength = ref<number>(40)
+const selectedGameLength = ref<number>(15)
 const selectWaveVolume = ref<number>(4)
-const selectAssemblyCountdown = ref<number>(1)
-const selectWavesDelay = ref<number>(5)
+const selectAssemblyCountdown = ref<number>(2)
+const selectWavesDelay = ref<number>(4)
 const selectDefendersHitStrength = ref<number>(1)
 const selectSmithyUpgradeWaiting = ref<number>(2000)
-const oilBoilingTime = ref<number>(1)
-const cannonLoadingTime = ref<number>(2)
+const oilBoilingTime = ref<number>(20)
+const cannonLoadingTime = ref<number>(80)
 const selectSmithyUpgradeDuration = ref<number>(4)
 const dataLoading = ref<boolean>(false);
 const pageError = useState(STORE_APPLICATION_ERROR);
@@ -87,7 +87,7 @@ const oilBoilingTimeOptions: ComputedRef<number[]> = computed(() => {
   return [1, 2, 4, 8, 16, 24];
 });
 const cannonLoadingTimeOptions: ComputedRef<number[]> = computed(() => {
-  return [2, 10, 30, 40, 50, 60, 70, 80]
+  return [2, 10, 40, 50, 60, 70, 80, 90, 100];
 })
 
 // METHODS
@@ -210,7 +210,7 @@ onBeforeMount(async () => {
                 <v-select
                     v-model="selectedLocationKey"
                     :items="locationOptions"
-                    class="mb-2"
+                    class="mb-2 mt-2"
                     label="Vyberte bitevní pole"
                     value="loketSportovni"
                     required
@@ -220,7 +220,7 @@ onBeforeMount(async () => {
                     :items="gameTemposOptions"
                     class="mb-2"
                     label="Tempo hry"
-                    value="10000"
+                    value="60000"
                     required
                 ></v-select>
                 <v-select
@@ -236,7 +236,7 @@ onBeforeMount(async () => {
                 <v-expansion-panels>
                   <v-expansion-panel
                       title="&nbsp;"
-                      class="text-white"
+                      class="hh-expansion-hidden"
                   >
                     <template #text>
                       <v-select

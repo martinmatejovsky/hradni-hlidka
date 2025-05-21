@@ -98,7 +98,7 @@
 }
 
 .hh-invader-icon {
-  transition: transform 0.3s;
+  transition: transform 1.5s;
 }
 
 // to override Leaflet style
@@ -132,9 +132,9 @@
       animation: pourOil 1.5s infinite ease-in-out;
     }
 
-    &.is-incomplete {
+    &.is-already-poured {
       .custom-icon {
-        // ?
+        opacity: 0.5;
       }
     }
   }

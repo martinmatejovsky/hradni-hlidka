@@ -1,6 +1,6 @@
   <script setup lang="ts">
 import cauldronFullIcon from "assets/icons/cauldron-full.svg";
-import invaderStandard from "assets/icons/invader-regular.svg";
+import invaderStandard from "assets/icons/invader-regular-3.svg";
 import invaderCaptain from "assets/icons/invader-captain.svg";
 import defenderNoWeapon from "assets/icons/defender-no-weapon-me.svg";
 import defenderSword from "assets/icons/defender-swordsman-me.svg";
@@ -36,6 +36,7 @@ import bombardingTargetAim from "assets/icons/target-zone-aim.svg";
 
      Automatické zraňování neplatí pro obránce s dělem - dělo naopak může ostřelovat jen nepřátele, co stojí teprve
       <strong>před</strong> žebříkem. Obránce s dělem se proto nemusí pohybovat vůbec.
+      Mapu je možno zvětšit přes celou obrazovku tlačítkem vlevo nahoře.
     </p>
   </article>
 

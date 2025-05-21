@@ -42,6 +42,7 @@ import {useIconLeaflet} from "~/composables/useIconLeaflet";
 import {Socket} from "socket.io-client";
 import {useEvaluateWeaponAbility} from "~/composables/useEvaluateWeaponAbility";
 import PanelFireCannon from "~/components/PanelFireCannon.vue";
+import {useZoneIntersectionStore} from "~/stores/zoneIntersectionStore";
 
 const {
   addLabelsToPolygons,
@@ -57,6 +58,7 @@ const emit = defineEmits(['leafletMapLoaded'])
 // Pinia store
 const storeGameInstance = useGameInstanceStore();
 const storeCurrentPlayer = useCurrentPlayerStore();
+const zoneIntersection = useZoneIntersectionStore();
 
 const zoom = ref([18, 19, 20]);
 let checkLeafletInterval: ReturnType<typeof setInterval>;
@@ -68,6 +70,7 @@ const boilingOilPerkIcon = ref<HTMLElement | null>(null);
 const battleZonePolygons = ref<L.Polygon[]>([]);
 const utilityZonePolygons = ref<L.Polygon[]>([]);
 const TRACKING_DELAY = 10000;
+let oilPouredInLocation = ref<string>('')
 let map: L.Map;
 
 const props = defineProps({
@@ -226,7 +229,8 @@ function pauseTracking() {
 }
 
 function triggerPouringOil() {
-  if (!storeCurrentPlayer.currentPlayer.insideZone) return
+  if (!storeCurrentPlayer.currentPlayer.canPourBoilingOil) return
+
   props.socket.emit(
       'oilIsPouredOff',
       {
@@ -234,9 +238,7 @@ function triggerPouringOil() {
       },
   );
 
-  if (boilingOilPerkIcon.value) {
-    boilingOilPerkIcon.value.classList.remove('is-ready-to-pour');
-  }
+  oilPouredInLocation.value = zoneIntersection.nameOfIntersectedArea;
 }
 
 const startWatchingPouring = () => {
@@ -270,6 +272,12 @@ watch(() => storeCurrentPlayer.currentPlayer.canPourBoilingOil, (canPour) => {
   }
 });
 
+// if new oil is picked, reset last location of poured oil
+watch(() => storeCurrentPlayer.currentPlayer.perks.boilingOil, (boilingOil) => {
+  if (boilingOil) {
+    oilPouredInLocation.value = '';
+  }
+});
 // change color of polygon where currentUser is
 watch(
   () => props.nameOfIntersectedArea,
@@ -308,7 +316,7 @@ watch(() => currentPlayer.value.location, (newLocation) => {
   }
 });
 
-watch(() => props.connectedPlayers, (updatedConnectedPlayers) => {
+watch(() => props.connectedPlayers, (updatedConnectedPlayers: PlayerData[]) => {
   updatedConnectedPlayers.forEach((player: PlayerData) => {
     let marker = markers[player.key];
     if(!marker) return;
@@ -318,7 +326,7 @@ watch(() => props.connectedPlayers, (updatedConnectedPlayers) => {
         marker.setLatLng([player.location.lat, player.location.lng]);
       } else {
         let iconToUse = getIconNameBasedOnWeaponType(player.weaponType) + '-other';
-        let otherPlayerIcon = L.divIcon(useIconLeaflet({ icon: iconToUse,  label: player.name }));
+        let otherPlayerIcon = L.divIcon(useIconLeaflet({ icon: iconToUse, label: player.name }));
         marker = L.marker([player.location.lat, player.location.lng], { icon: otherPlayerIcon }).addTo(map);
       }
     }
@@ -488,14 +496,15 @@ onBeforeUnmount(() => {
         class="hh-badge is-boiling-oil flex flex-column"
         :class="{
           'is-incomplete': !partnerForBoilingOilName,
-          'is-ready-to-pour': storeCurrentPlayer.currentPlayer.canPourBoilingOil,
+          'is-ready-to-pour': storeCurrentPlayer.currentPlayer.canPourBoilingOil && !oilPouredInLocation,
+          'is-already-poured': oilPouredInLocation,
         }"
       >
 
         <img :src="cauldronFullIcon" alt="Cauldron" class="custom-icon hh-badge__icon pb-1" @click="triggerPouringOil()" />
 
-        <span>
-          {{ labelIconPouringOil }}
+        <span class="mt-1">
+          {{ oilPouredInLocation ? 'Vylito v ' + oilPouredInLocation : labelIconPouringOil }}
         </span>
       </div>
 
