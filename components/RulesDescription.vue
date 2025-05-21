@@ -1,6 +1,6 @@
   <script setup lang="ts">
 import cauldronFullIcon from "assets/icons/cauldron-full.svg";
-import invaderStandard from "assets/icons/invader-regular.svg";
+import invaderStandard from "assets/icons/invader-regular-3.svg";
 import invaderCaptain from "assets/icons/invader-captain.svg";
 import defenderNoWeapon from "assets/icons/defender-no-weapon-me.svg";
 import defenderSword from "assets/icons/defender-swordsman-me.svg";

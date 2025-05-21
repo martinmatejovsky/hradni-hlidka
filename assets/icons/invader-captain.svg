@@ -5,8 +5,7 @@
    viewBox="0 0 7.9374994 7.9375"
    version="1.1"
    id="svg1"
-   xmlns="http://www.w3.org/2000/svg"
-   xmlns:svg="http://www.w3.org/2000/svg">
+   xmlns="http://www.w3.org/2000/svg">
   <defs
      id="defs1" />
   <g
@@ -35,8 +34,12 @@
      style="fill:none;stroke:#111111;stroke-width:0.529;stroke-dasharray:none;stroke-opacity:1"
      d="M 1.4207224,1.2955355 C 2.9030866,-0.1205076 5.5788185,0.19470419 6.7286209,1.0228362"
      id="path6" />
-  <path
-     style="fill:none;fill-opacity:1;stroke:#10005f;stroke-width:0.423333;stroke-dasharray:none;stroke-opacity:1"
-     d="M 1.1601705,0.07734469 C 1.1177853,1.4459733 1.6090571,3.5099119 2.1559835,5.0274053 v 0"
-     id="path2" />
+  <rect
+     style="fill:#c3c3c3;fill-opacity:1;stroke:#2e2e2e;stroke-width:0.0529167;stroke-dasharray:none;stroke-opacity:1"
+     id="rect7"
+     width="5.3754563"
+     height="0.36738729"
+     x="0.18784957"
+     y="-0.33713818"
+     transform="rotate(66.045411)" />
 </svg>
