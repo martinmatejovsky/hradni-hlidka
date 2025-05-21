@@ -10,7 +10,8 @@ export const useGameInstanceStore = defineStore('gameInstance', {
     cannonUsage: {
       targetZoneId: '',
       loadingProgress: 0,
-    }
+      cannonLoadingInterval: null as NodeJS.Timer | null,
+    },
   }),
   getters: {
     getIsCannonReadyToFire(): boolean {
@@ -18,6 +19,22 @@ export const useGameInstanceStore = defineStore('gameInstance', {
     }
   },
   actions: {
+    setCannonLoadingInterval(): void {
+      this.cannonUsage.cannonLoadingInterval = setInterval(() => {
+        if (this.cannonUsage.loadingProgress < this.gameSettings.cannonLoadingTime) {
+          this.increaseCannonProgress();
+        } else {
+          clearInterval(this.cannonUsage.cannonLoadingInterval);
+          this.cannonUsage.cannonLoadingInterval = null;
+        }
+      }, 1000);
+    },
+    clearCannonLoadingInterval(): void {
+        if (this.cannonUsage.cannonLoadingInterval) {
+            clearInterval(this.cannonUsage.cannonLoadingInterval);
+            this.cannonUsage.cannonLoadingInterval = null;
+        }
+    },
     resetCannonProperties() {
       this.cannonUsage.targetZoneId = '';
       this.cannonUsage.loadingProgress = 0;

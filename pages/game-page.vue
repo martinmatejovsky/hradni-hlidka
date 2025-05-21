@@ -28,7 +28,7 @@ const leafletIsFullscreen = ref<boolean>(false);
 const smithyOfferOpened = ref<boolean>(false);
 
 const zoneTimer = ref<NodeJS.Timeout | null>(null);
-let cannonLoadingInterval: NodeJS.Timeout | null = null;
+let cannonLoadingInterval = ref(storeGameInstance.cannonUsage.cannonLoadingInterval);
 
 // COMPUTED
 const currentPlayerIsLeader = computed(() => {
@@ -54,10 +54,7 @@ const victoryMessage = `
 
 // METHODS
 const clearCannonProcesses = () => {
-  if (cannonLoadingInterval) {
-    clearInterval(cannonLoadingInterval);
-    cannonLoadingInterval = null;
-  }
+  storeGameInstance.clearCannonLoadingInterval();
   storeGameInstance.resetCannonProperties();
 }
 
@@ -68,16 +65,8 @@ const onMapReady = () => {
 }
 
 const startCannonLoading = () => {
-  if (cannonLoadingInterval) return;
-
-  cannonLoadingInterval = setInterval(() => {
-    if (storeGameInstance.cannonUsage.loadingProgress < storeGameInstance.gameSettings.cannonLoadingTime) {
-      storeGameInstance.increaseCannonProgress();
-    } else {
-      clearInterval(cannonLoadingInterval as NodeJS.Timeout);
-      cannonLoadingInterval = null;
-    }
-  }, 1000);
+  if (cannonLoadingInterval.value) return;
+  storeGameInstance.setCannonLoadingInterval();
 };
 
 const getBack = (): void => {
