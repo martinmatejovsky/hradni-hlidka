@@ -13,19 +13,15 @@
      id="layer1">
     <path
        style="fill:none;stroke:#111111;stroke-width:1;stroke-linecap:round;stroke-dasharray:none;stroke-opacity:1"
-       d="M 3.3952237,3.2055463 C 3.4573266,4.4001957 2.8723242,6.2060978 2.4658049,7.4163825"
+       d="M 3.4048918,3.0315207 C 3.4669947,4.2261701 2.8723242,6.2060978 2.4658049,7.4163825"
        id="path3" />
     <path
        style="fill:none;stroke:#111111;stroke-width:1;stroke-linecap:round;stroke-dasharray:none;stroke-opacity:1"
        d="M 4.7229647,3.1107079 C 6.3653596,5.7963047 6.078653,5.5369021 6.2214156,7.3594795"
        id="path4" />
     <path
-       style="fill:none;stroke:#111111;stroke-width:1;stroke-linecap:round;stroke-dasharray:none;stroke-opacity:1"
-       d="M 1.8011644,3.5152789 C 2.7954425,2.0526458 3.4193167,1.6002472 4.6193864,1.2781925 6.1573537,0.8654585 4.5855593,4.5476581 3.796645,5.020319"
-       id="path2" />
-    <path
        style="fill:none;stroke:#dd2200;stroke-width:1.05833;stroke-dasharray:none;stroke-opacity:1"
-       d="M 1.7920245,3.8567484 C 3.0095651,2.4729196 5.0471543,2.5047024 4.5190181,4.0125765"
+       d="M 1.7726883,3.5473696 4.3035463,2.062594 4.7300239,2.9518054 4.6044332,3.6826183 2.1106922,4.8240421"
        id="path7" />
     <ellipse
        style="fill:#000000;stroke:#dd2200;stroke-width:0.547188;stroke-linecap:round"
@@ -34,13 +30,13 @@
        cy="1.5069857"
        rx="1.4040502"
        ry="1.1652169" />
-    <path
-       style="fill:none;stroke:#ff5555;stroke-width:0.6;stroke-linecap:round;stroke-dasharray:none;stroke-opacity:1"
-       d="M 0.35114327,1.1232962 C 1.5127651,3.4485429 2.0266249,4.1695158 3.198399,4.8165451 3.911891,5.2105206 4.7514293,5.4941514 5.4432344,5.6681375"
-       id="path5" />
   </g>
   <path
      style="fill:none;stroke:#111111;stroke-width:0.529;stroke-dasharray:none;stroke-opacity:1"
      d="M 1.4207224,1.2955355 C 2.9030866,-0.1205076 5.5788185,0.19470419 6.7286209,1.0228362"
      id="path6" />
+  <path
+     style="fill:none;fill-opacity:1;stroke:#10005f;stroke-width:0.423333;stroke-dasharray:none;stroke-opacity:1"
+     d="M 1.1601705,0.07734469 C 1.1177853,1.4459733 1.6090571,3.5099119 2.1559835,5.0274053 v 0"
+     id="path2" />
 </svg>
