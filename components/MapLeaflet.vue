@@ -96,6 +96,8 @@ const battleZones = computed((): BattleZone[] => storeGameInstance.gameInstance.
 const utilityZones = computed((): UtilityZone[] => storeGameInstance.gameInstance.utilityZones);
 const cannonLoadingProgress = computed((): number => Math.min(100, (storeGameInstance.cannonUsage.loadingProgress / storeGameInstance.gameSettings.cannonLoadingTime) * 100));
 
+// COMPUTED
+
 const labelIconPouringOil = computed(() => {
   const { currentPlayer } = storeCurrentPlayer;
 
@@ -131,6 +133,16 @@ const polygonColors = {
 }
 
 let oilPouringListener: ((event: DeviceOrientationEvent) => void) | null = null;
+
+// METHODS
+const playSound = (audioElement: string) => {
+  let audio = document.getElementById(audioElement)
+
+  console.log('-- audioElement --')
+  console.log(audio) // OK, found
+
+  if (audio) audio.play();
+}
 
 const getIconNameBasedOnWeaponType = (weaponType: WeaponType): string => {
   switch (weaponType) {
@@ -347,8 +359,14 @@ watch(() => props.connectedPlayers, (updatedConnectedPlayers: PlayerData[]) => {
 // LIFECYCLE
 onMounted(async () => {
   useListenBus('updateLifeOfInvaders', () => handleUpdateInvadersIcons(map, battleZones.value, invaderIcons));
-  useListenBus('oilIsPouredGlobalEvent', (zoneKey) => animatePouredOil(map, zoneKey));
-  useListenBus('cannonIsFiredGlobalEvent', ([zoneKey, firedBy]) => cannonBallTravel(map, firedBy, zoneKey));
+  useListenBus('oilIsPouredGlobalEvent', (zoneKey) => {
+    animatePouredOil(map, zoneKey);
+    playSound("oil-audio-input");
+  });
+  useListenBus('cannonIsFiredGlobalEvent', ([zoneKey, firedBy]) => {
+    cannonBallTravel(map, firedBy, zoneKey);
+    playSound("cannon-audio-input");
+  });
   map = L.map('map').setView(props.mapCenter, zoom.value[1]);
 
   // create icon of recent player
@@ -554,5 +572,13 @@ onBeforeUnmount(() => {
         </v-row>
       </div>
     </div>
+
+    <audio id="cannon-audio-input" class="d-none">
+      <source src="/sounds/heavy-cannon.mp3" type="audio/mp3">
+    </audio>
+
+    <audio id="oil-audio-input" class="d-none">
+      <source src="/sounds/wilhelm-scream.mp3" type="audio/mp3">
+    </audio>
   </div>
 </template>
