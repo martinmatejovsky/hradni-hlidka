@@ -324,4 +324,11 @@ onBeforeMount(async () => {
   </v-card>
 
   <p>Přesnost: <span :class="[accuracyClass, 'font-weight-bold']">{{ playerAccuracy }}</span> m</p>
+
+  <v-alert
+    v-if="gameNotYetCreated"
+    class="mb-4"
+    text="Máte zapnutou GPS lokaci? Povolili jste prohlížeči přístup k poloze? "
+    type="info"
+  ></v-alert>
 </template>
